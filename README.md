@@ -1,15 +1,15 @@
-# Queue Bundle
+# Queue Manager Bundle
 
 A bundle for accessing job queues
 
-[![Latest Stable Version](https://poser.pugx.org/mcfedr/queuebundle/v/stable.png)](https://packagist.org/packages/mcfedr/queuebundle)
-[![License](https://poser.pugx.org/mcfedr/queuebundle/license.png)](https://packagist.org/packages/mcfedr/queuebundle)
+[![Latest Stable Version](https://poser.pugx.org/mcfedr/queue-manager-bundle/v/stable.png)](https://packagist.org/packages/mcfedr/queue-manager-bundle)
+[![License](https://poser.pugx.org/mcfedr/queue-manager-bundle/license.png)](https://packagist.org/packages/mcfedr/queue-manager-bundle)
 
 ## Install
 
 ### Composer
 
-    php composer.phar require mcfedr/queuebundle
+    php composer.phar require mcfedr/queue-manager-bundle
 
 ### AppKernel
 
@@ -19,13 +19,13 @@ Include the bundle in your AppKernel
     {
         $bundles = array(
             ...
-            new mcfedr\QueueBundle\mcfedrQueueBundle(),
+            new mcfedr\Queue\QueueManagerBundle\mcfedrQueueManagerBundle(),
 
 ## Config
 
-This is an example config if you have installed `mcfedr/queue-driver-pheanstalk-bundle`
+This is an example config if you have installed [`mcfedr/queue-driver-pheanstalk-bundle`](https://github.com/mcfedr/queue-driver-pheanstalk-bundle)
 
-    mcfedr_queue:
+    mcfedr_queue_manager:
         managers:
             default:
                 driver: beanstalkd
