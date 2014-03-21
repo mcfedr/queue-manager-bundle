@@ -1,0 +1,24 @@
+{
+    "name": "mcfedr/queue-manager-bundle",
+    "type": "symfony-bundle",
+    "description": "A bundle for managing job queues",
+    "keywords": ["queue", "job", "schedule", "task", "beanstalkd"],
+    "require": {
+        "php": ">=5.4.0",
+        "symfony/symfony": "~2.3"
+    },
+    "suggest": {
+       "mcfedr/queue-driver-pheanstalk": "A driver for beanstalkd"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fred Cox",
+            "email": "mcfedr@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-0": { "mcfedr\\Queue\\QueueManagerBundle": "src/" }
+    }
+}
