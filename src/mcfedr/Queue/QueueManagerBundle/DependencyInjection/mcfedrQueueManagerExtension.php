@@ -3,6 +3,8 @@
 namespace mcfedr\Queue\QueueManagerBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
 
@@ -22,13 +24,12 @@ class mcfedrQueueManagerExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         foreach ($config['managers'] as $name => $manager) {
-            if (isset($config['drivers'][$manager['driver']])) {
-                $class = $config['drivers'][$manager['driver']]['class'];
-                $container->set(
-                    "mcfedr_queue_manager.$name",
-                    new $class($manager['options'])
-                );
+            if (!isset($config['drivers'][$manager['driver']])) {
+                throw new InvalidArgumentException("Manager '$name' uses unknown driver '{$manager['driver']}'");
             }
+            $container->setDefinition("mcfedr_queue_manager.$name", new Definition($config['drivers'][$manager['driver']]['class'], [
+                isset($manager['options']) ? $manager['options'] : []
+            ]));
         }
     }
 }

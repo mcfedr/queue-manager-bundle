@@ -24,7 +24,7 @@ class Configuration implements ConfigurationInterface
                     ->requiresAtLeastOneElement()
                     ->prototype('array')
                         ->children()
-                            ->scalarNode('class')->isRequired()->cannotBeEmtpy()->end()
+                            ->scalarNode('class')->isRequired()->cannotBeEmpty()->end()
                         ->end()
                     ->end()
                 ->end()
