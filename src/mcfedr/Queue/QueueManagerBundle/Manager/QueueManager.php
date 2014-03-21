@@ -5,6 +5,7 @@
 
 namespace mcfedr\Queue\QueueManagerBundle\Manager;
 
+use mcfedr\Queue\QueueManagerBundle\Exception\WrongJobException;
 use mcfedr\Queue\QueueManagerBundle\Queue\Job;
 
 interface QueueManager
@@ -37,6 +38,7 @@ interface QueueManager
      * Remove a job, you should call this when you have finished processing a job
      *
      * @param $job
+     * @throws WrongJobException
      */
     public function delete(Job $job);
 }
