@@ -30,9 +30,10 @@ interface QueueManager
      * Get the next job from the queue
      *
      * @param string $queue optional queue name, otherwise the default queue will be used
-     * @return Job
+     * @param int $timeout time to wait, otherwise return immediately
+     * @return Job|bool false when no job is available
      */
-    public function get($queue = null);
+    public function get($queue = null, $timeout = null);
 
     /**
      * Remove a job, you should call this when you have finished processing a job
