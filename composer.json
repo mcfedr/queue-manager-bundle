@@ -5,7 +5,8 @@
     "keywords": ["queue", "job", "schedule", "task", "beanstalkd"],
     "require": {
         "php": ">=5.4.0",
-        "symfony/symfony": "~2.3"
+        "symfony/symfony": "~2.3",
+        "mcfedr/queue-driver": "~1.0.0"
     },
     "suggest": {
        "mcfedr/queue-driver-pheanstalk": "A driver for beanstalkd"
