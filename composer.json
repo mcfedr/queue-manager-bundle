@@ -6,10 +6,13 @@
     "require": {
         "php": ">=5.4.0",
         "symfony/symfony": "~2.3",
-        "mcfedr/queue-driver": "~1.0.0"
+        "mcfedr/queue-driver-bundle": "~1.2"
+    },
+    "require-dev": {
+        "mcfedr/queue-driver-pheanstalk-bundle": "~1.2"
     },
     "suggest": {
-       "mcfedr/queue-driver-pheanstalk": "A driver for beanstalkd"
+       "mcfedr/queue-driver-pheanstalk-bundle": "A driver for beanstalkd"
     },
     "license": "MIT",
     "authors": [
