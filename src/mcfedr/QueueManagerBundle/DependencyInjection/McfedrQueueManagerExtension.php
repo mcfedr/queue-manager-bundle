@@ -33,7 +33,9 @@ class McfedrQueueManagerExtension extends Extension
             $options = isset($manager['options']) ? $manager['options'] : [];
 
             $container->setDefinition("mcfedr_queue_manager.$name", new Definition($class, [
-                array_merge($defaultOptions, $options)
+                array_merge([
+                    'debug' => $config['debug']
+                ], $defaultOptions, $options)
             ]));
         }
     }

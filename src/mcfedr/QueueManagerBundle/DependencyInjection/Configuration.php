@@ -20,11 +20,12 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('mcfedr_queue_manager')
             ->children()
+                ->booleanNode('debug')->defaultFalse()->end()
                 ->arrayNode('drivers')
                     ->prototype('array')
                         ->children()
                             ->scalarNode('class')->isRequired()->cannotBeEmpty()->end()
-                            ->arrayNode('options')->end()
+                            ->variableNode('options')->end()
                         ->end()
                     ->end()
                 ->end()
