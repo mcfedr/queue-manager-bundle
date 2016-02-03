@@ -27,8 +27,13 @@ class McfedrQueueManagerExtension extends Extension
             if (!isset($config['drivers'][$manager['driver']])) {
                 throw new InvalidArgumentException("Manager '$name' uses unknown driver '{$manager['driver']}'");
             }
-            $container->setDefinition("mcfedr_queue_manager.$name", new Definition($config['drivers'][$manager['driver']]['class'], [
-                isset($manager['options']) ? $manager['options'] : []
+            
+            $class = $config['drivers'][$manager['driver']]['class'];
+            $defaultOptions = isset($config['drivers'][$manager['driver']]['options']) ? $config['drivers'][$manager['driver']]['options'] : [];
+            $options = isset($manager['options']) ? $manager['options'] : [];
+
+            $container->setDefinition("mcfedr_queue_manager.$name", new Definition($class, [
+                array_merge($defaultOptions, $options)
             ]));
         }
     }
