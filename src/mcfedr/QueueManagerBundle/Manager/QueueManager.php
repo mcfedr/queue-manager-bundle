@@ -14,7 +14,7 @@ interface QueueManager
     /**
      * @param array $options
      */
-    public function __construct(array $options = []);
+    public function __construct(array $options);
 
     /**
      * Put a new job on a queue
