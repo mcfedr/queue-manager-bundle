@@ -1,6 +1,6 @@
 <?php
 
-namespace mcfedr\Queue\QueueManagerBundle\DependencyInjection;
+namespace Mcfedr\QueueManagerBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -13,7 +13,7 @@ use Symfony\Component\DependencyInjection\Loader;
  *
  * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/extension.html}
  */
-class mcfedrQueueManagerExtension extends Extension
+class McfedrQueueManagerExtension extends Extension
 {
     /**
      * {@inheritDoc}

@@ -1,6 +1,6 @@
 <?php
 
-namespace mcfedr\Queue\QueueManagerBundle\DependencyInjection;
+namespace Mcfedr\QueueManagerBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -21,7 +21,6 @@ class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->root('mcfedr_queue_manager')
             ->children()
                 ->arrayNode('drivers')
-                    ->requiresAtLeastOneElement()
                     ->prototype('array')
                         ->children()
                             ->scalarNode('class')->isRequired()->cannotBeEmpty()->end()
@@ -39,10 +38,6 @@ class Configuration implements ConfigurationInterface
                     ->end()
                 ->end()
             ->end();
-
-        // Here you should define the parameters that are allowed to
-        // configure your bundle. See the documentation linked above for
-        // more information on that topic.
 
         return $treeBuilder;
     }
