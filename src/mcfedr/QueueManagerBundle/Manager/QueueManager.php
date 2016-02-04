@@ -21,13 +21,13 @@ interface QueueManager
      *
      * @param string $name The service name of the worker that implements {@link \Mcfedr\QueueManagerBundle\Queue\Worker}
      * @param array $arguments Arguments to pass to execute - must be json serializable
-     * @param array $options Options for creating the job
+     * @param array $options Options for creating the job - these depend on the driver used
      * @return Job
      */
     public function put($name, array $arguments = [], array $options = []);
 
     /**
-     * Remove a job, you should call this when you have finished processing a job
+     * Remove a job, you should call this to cancel a job
      *
      * @param $job
      * @throws WrongJobException

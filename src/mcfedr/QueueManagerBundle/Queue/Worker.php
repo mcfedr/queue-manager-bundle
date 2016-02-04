@@ -10,8 +10,8 @@ interface Worker
     /**
      * Called to start the queued task
      *
-     * @param array $options
+     * @param array $arguments
      * @throws \Exception
      */
-    public function execute(array $options);
+    public function execute(array $arguments);
 }
