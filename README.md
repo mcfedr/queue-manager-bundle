@@ -37,5 +37,5 @@ This is an example config if you have installed [`mcfedr/queue-driver-pheanstalk
 
 ## Usage
 
-Each manager will be a service you can access with the name `"mcfedr_queue.$name"`.
+Each manager will be a service you can access with the name `"mcfedr_queue_manager.$name"`.
 It implements the `QueueManager` interface, where you can call just 2 simple methods.
