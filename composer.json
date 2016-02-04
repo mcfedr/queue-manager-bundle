@@ -18,8 +18,8 @@
         "symfony/monolog-bundle": "^2.8"
     },
     "suggest": {
-        "mcfedr/queue-driver-beanstalk-bundle": "A driver for beanstalkd",
-        "mcfedr/queue-driver-resque-bundle": "A driver for resque"
+        "mcfedr/beanstalk-queue-driver-bundle": "A driver for beanstalkd",
+        "mcfedr/resque-queue-driver-bundle": "A driver for resque"
     },
     "license": "MIT",
     "authors": [
