@@ -23,5 +23,12 @@ class McfedrQueueManagerExtensionTest extends WebTestCase
         $this->assertEquals('mcfedr_queue', $options['default_queue']);
         $this->assertEquals('1234', $options['port']);
         $this->assertFalse($options['debug']);
+
+        $parameterOptions = $client->getContainer()->getParameter('mcfedr_queue_manager.default.options');
+        $this->assertCount(4, $parameterOptions);
+        $this->assertEquals('127.0.0.2', $parameterOptions['host']);
+        $this->assertEquals('mcfedr_queue', $parameterOptions['default_queue']);
+        $this->assertEquals('1234', $parameterOptions['port']);
+        $this->assertFalse($parameterOptions['debug']);
     }
 }

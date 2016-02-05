@@ -32,10 +32,14 @@ class McfedrQueueManagerExtension extends Extension
             $defaultOptions = isset($config['drivers'][$manager['driver']]['options']) ? $config['drivers'][$manager['driver']]['options'] : [];
             $options = isset($manager['options']) ? $manager['options'] : [];
 
+            $merged = array_merge([
+                'debug' => $config['debug']
+            ], $defaultOptions, $options);
+
+            $container->setParameter("mcfedr_queue_manager.$name.options", $merged);
+
             $container->setDefinition("mcfedr_queue_manager.$name", new Definition($class, [
-                array_merge([
-                    'debug' => $config['debug']
-                ], $defaultOptions, $options)
+                $merged
             ]));
         }
     }
