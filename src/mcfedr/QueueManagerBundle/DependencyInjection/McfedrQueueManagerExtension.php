@@ -28,7 +28,7 @@ class McfedrQueueManagerExtension extends Extension
                 throw new InvalidArgumentException("Manager '$name' uses unknown driver '{$manager['driver']}'");
             }
 
-            $class = $config['drivers'][$manager['driver']]['class'];
+            $managerClass = $config['drivers'][$manager['driver']]['class'];
             $defaultOptions = isset($config['drivers'][$manager['driver']]['options']) ? $config['drivers'][$manager['driver']]['options'] : [];
             $options = isset($manager['options']) ? $manager['options'] : [];
 
@@ -38,9 +38,17 @@ class McfedrQueueManagerExtension extends Extension
 
             $container->setParameter("mcfedr_queue_manager.$name.options", $merged);
 
-            $container->setDefinition("mcfedr_queue_manager.$name", new Definition($class, [
+            $container->setDefinition("mcfedr_queue_manager.$name", new Definition($managerClass, [
                 $merged
             ]));
+
+            if (isset($config['drivers'][$manager['driver']]['command_class'])) {
+                $commandClass = $config['drivers'][$manager['driver']]['command_class'];
+                $container->setDefinition("mcfedr_queue_manager.runner.$name", new Definition($commandClass, [
+                    "mcfedr:queue:$name-runner",
+                    $merged
+                ]));
+            }
         }
     }
 }

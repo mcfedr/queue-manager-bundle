@@ -6,6 +6,7 @@
 
 namespace Mcfedr\QueueManagerBundle\Tests\DependencyInjection;
 
+use Mcfedr\QueueManagerBundle\Command\TestRunnerCommand;
 use Mcfedr\QueueManagerBundle\Driver\TestQueueManager;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -30,5 +31,15 @@ class McfedrQueueManagerExtensionTest extends WebTestCase
         $this->assertEquals('mcfedr_queue', $parameterOptions['default_queue']);
         $this->assertEquals('1234', $parameterOptions['port']);
         $this->assertFalse($parameterOptions['debug']);
+
+        $this->assertTrue($client->getContainer()->has('mcfedr_queue_manager.runner.default'));
+        $command = $client->getContainer()->get('mcfedr_queue_manager.runner.default');
+        $this->assertInstanceOf(TestRunnerCommand::class, $command);
+        $commandOptions = $command->getOptions();
+        $this->assertCount(4, $commandOptions);
+        $this->assertEquals('127.0.0.2', $commandOptions['host']);
+        $this->assertEquals('mcfedr_queue', $commandOptions['default_queue']);
+        $this->assertEquals('1234', $commandOptions['port']);
+        $this->assertFalse($commandOptions['debug']);
     }
 }

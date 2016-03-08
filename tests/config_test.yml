@@ -8,6 +8,7 @@ mcfedr_queue_manager:
     drivers:
         test:
             class: Mcfedr\QueueManagerBundle\Driver\TestQueueManager
+            command_class: Mcfedr\QueueManagerBundle\Command\TestRunnerCommand
             options:
                 host: 127.0.0.1
                 default_queue: mcfedr_queue
