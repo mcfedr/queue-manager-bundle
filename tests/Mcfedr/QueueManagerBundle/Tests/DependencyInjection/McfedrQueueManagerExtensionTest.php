@@ -33,8 +33,10 @@ class McfedrQueueManagerExtensionTest extends WebTestCase
         $this->assertFalse($parameterOptions['debug']);
 
         $this->assertTrue($client->getContainer()->has('mcfedr_queue_manager.runner.default'));
+        /** @var TestRunnerCommand $command */
         $command = $client->getContainer()->get('mcfedr_queue_manager.runner.default');
         $this->assertInstanceOf(TestRunnerCommand::class, $command);
+        $this->assertEquals('mcfedr:queue:default-runner', $command->getName());
         $commandOptions = $command->getOptions();
         $this->assertCount(4, $commandOptions);
         $this->assertEquals('127.0.0.2', $commandOptions['host']);
