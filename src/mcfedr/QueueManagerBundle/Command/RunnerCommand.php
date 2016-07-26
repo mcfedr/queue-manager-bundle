@@ -6,6 +6,7 @@
 namespace Mcfedr\QueueManagerBundle\Command;
 
 use Mcfedr\QueueManagerBundle\Exception\FailedToForkException;
+use Mcfedr\QueueManagerBundle\Exception\InvalidWorkerException;
 use Mcfedr\QueueManagerBundle\Exception\UnexpectedJobDataException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
 use Mcfedr\QueueManagerBundle\Manager\QueueManager;
@@ -119,12 +120,20 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     private function executeJob(Job $job)
     {
         try {
-            /** @var Worker $worker */
             $worker = $this->container->get($job->getName());
+            if (!$worker instanceof Worker) {
+                throw new InvalidWorkerException("The worker {$job->getName()} is not an instance of " . Worker::class);
+            }
+
             $worker->execute($job->getArguments());
         } catch (ServiceNotFoundException $e) {
             $this->logger && $this->logger->warning('Missing worker', [
                 'name' => $job->getName()
+            ]);
+        } catch (InvalidWorkerException $e) {
+            $this->logger && $this->logger->warning('Invalid worker', [
+                'name' => $job->getName(),
+                'message' => $e->getMessage()
             ]);
         } catch (UnrecoverableJobException $e) {
             $this->logger && $this->logger->warning('Job is unrecoverable', [
@@ -133,12 +142,8 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
                 'message' => $e->getMessage()
             ]);
         } catch (\Exception $e) {
-            if ($job instanceof RetryableJob && $this->queueManager instanceof RetryingQueueManager) {
-                if ($job->getRetryCount() < $this->retryLimit) {
-                    $this->queueManager->retry($job, $e);
-                    return;
-                }
-                $this->logger && $this->logger->info('Job reached retry limit and won\'t be retried again', [
+            if (!$job instanceof RetryableJob) {
+                $this->logger && $this->logger->info('Job failed and is not retryable', [
                     'name' => $job->getName(),
                     'arguments' => $job->getArguments(),
                     'message' => $e->getMessage()
@@ -146,11 +151,26 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
                 return;
             }
 
-            $this->logger && $this->logger->info('Job failed and cannot be retried', [
-                'name' => $job->getName(),
-                'arguments' => $job->getArguments(),
-                'message' => $e->getMessage()
-            ]);
+            if (!$this->queueManager instanceof RetryingQueueManager) {
+                $this->logger && $this->logger->info('Job failed and the manager does not support retries', [
+                    'name' => $job->getName(),
+                    'arguments' => $job->getArguments(),
+                    'message' => $e->getMessage()
+                ]);
+                return;
+            }
+
+            if ($job->getRetryCount() >= $this->retryLimit) {
+                $this->logger && $this->logger->info('Job reached retry limit and won\'t be retried again', [
+                    'name' => $job->getName(),
+                    'arguments' => $job->getArguments(),
+                    'message' => $e->getMessage(),
+                    'retry_limit' => $this->retryLimit
+                ]);
+                return;
+            }
+
+            $this->queueManager->retry($job, $e);
         }
     }
 
