@@ -3,8 +3,10 @@
 namespace Mcfedr\QueueManagerBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
 
@@ -33,21 +35,30 @@ class McfedrQueueManagerExtension extends Extension
             $options = isset($manager['options']) ? $manager['options'] : [];
 
             $merged = array_merge([
-                'debug' => $config['debug']
+                'debug' => $config['debug'],
+                'retry_limit' => $config['retry_limit'],
+                'sleep_seconds' => $config['sleep_seconds']
             ], $defaultOptions, $options);
 
             $container->setParameter("mcfedr_queue_manager.$name.options", $merged);
 
-            $container->setDefinition("mcfedr_queue_manager.$name", new Definition($managerClass, [
+            $managerServiceName = "mcfedr_queue_manager.$name";
+            $container->setDefinition($managerServiceName, new Definition($managerClass, [
                 $merged
             ]));
 
             if (isset($config['drivers'][$manager['driver']]['command_class'])) {
                 $commandClass = $config['drivers'][$manager['driver']]['command_class'];
-                $container->setDefinition("mcfedr_queue_manager.runner.$name", new Definition($commandClass, [
+                $commandDefinition = new Definition($commandClass, [
                     "mcfedr:queue:$name-runner",
-                    $merged
-                ]));
+                    $merged,
+                    new Reference($managerServiceName),
+                    new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE)
+                ]);
+                $commandDefinition->setTags(
+                    ['console.command' => []]
+                );
+                $container->setDefinition("mcfedr_queue_manager.runner.$name", $commandDefinition);
             }
         }
     }

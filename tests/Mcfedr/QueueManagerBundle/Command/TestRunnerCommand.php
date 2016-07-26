@@ -5,13 +5,18 @@
 
 namespace Mcfedr\QueueManagerBundle\Command;
 
+use Mcfedr\QueueManagerBundle\Manager\QueueManager;
+use Mcfedr\QueueManagerBundle\Queue\Job;
+use Mcfedr\QueueManagerBundle\Queue\TestJob;
+use Psr\Log\LoggerInterface;
+
 class TestRunnerCommand extends RunnerCommand
 {
     private $options;
 
-    public function __construct($name, array $options)
+    public function __construct($name, array $options, QueueManager $queueManager, LoggerInterface $logger = null)
     {
-        parent::__construct($name, $options);
+        parent::__construct($name, $options, $queueManager, $logger);
         $this->options = $options;
     }
 
@@ -23,13 +28,15 @@ class TestRunnerCommand extends RunnerCommand
         return $this->options;
     }
 
-    protected function executeJob($job)
+    protected function executeJob(Job $job)
     {
-        // TODO: Implement executeJob() method.
+        $this->container->get('logger')->info('executing job');
+        sleep(2);
+        $this->container->get('logger')->info('finished job');
     }
 
     protected function getJob()
     {
-        return "test job";
+        return new TestJob("a test job", [], []);
     }
 }
