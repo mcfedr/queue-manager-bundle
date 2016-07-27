@@ -12,7 +12,7 @@ abstract class AbstractRetryableJob extends AbstractJob implements RetryableJob
      */
     private $retryCount;
 
-    public function __construct($name, array $arguments, array $options, $retryCount)
+    public function __construct($name, array $arguments, array $options, $retryCount = 0)
     {
         parent::__construct($name, $arguments, $options);
         $this->retryCount = $retryCount;

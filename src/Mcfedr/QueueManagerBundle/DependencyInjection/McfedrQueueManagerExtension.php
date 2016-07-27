@@ -2,8 +2,9 @@
 
 namespace Mcfedr\QueueManagerBundle\DependencyInjection;
 
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Reference;
@@ -25,6 +26,9 @@ class McfedrQueueManagerExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader->load('services.yml');
+
         foreach ($config['managers'] as $name => $manager) {
             if (!isset($config['drivers'][$manager['driver']])) {
                 throw new InvalidArgumentException("Manager '$name' uses unknown driver '{$manager['driver']}'");
@@ -43,17 +47,22 @@ class McfedrQueueManagerExtension extends Extension
             $container->setParameter("mcfedr_queue_manager.$name.options", $merged);
 
             $managerServiceName = "mcfedr_queue_manager.$name";
-            $container->setDefinition($managerServiceName, new Definition($managerClass, [
+            $managerDefinition = new Definition($managerClass, [
                 $merged
-            ]));
+            ]);
+
+            if ((new \ReflectionClass($managerClass))->implementsInterface(ContainerAwareInterface::class)) {
+                $managerDefinition->addMethodCall('setContainer', [new Reference('service_container')]);
+            }
+
+            $container->setDefinition($managerServiceName, $managerDefinition);
 
             if (isset($config['drivers'][$manager['driver']]['command_class'])) {
                 $commandClass = $config['drivers'][$manager['driver']]['command_class'];
                 $commandDefinition = new Definition($commandClass, [
                     "mcfedr:queue:$name-runner",
                     $merged,
-                    new Reference($managerServiceName),
-                    new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE)
+                    new Reference($managerServiceName)
                 ]);
                 $commandDefinition->setTags(
                     ['console.command' => []]

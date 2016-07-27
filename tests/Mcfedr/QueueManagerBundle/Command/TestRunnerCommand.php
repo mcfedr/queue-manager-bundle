@@ -8,15 +8,16 @@ namespace Mcfedr\QueueManagerBundle\Command;
 use Mcfedr\QueueManagerBundle\Manager\QueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\TestJob;
+use Mcfedr\QueueManagerBundle\Queue\TestRetryableJob;
 use Psr\Log\LoggerInterface;
 
 class TestRunnerCommand extends RunnerCommand
 {
     private $options;
 
-    public function __construct($name, array $options, QueueManager $queueManager, LoggerInterface $logger = null)
+    public function __construct($name, array $options, QueueManager $queueManager)
     {
-        parent::__construct($name, $options, $queueManager, $logger);
+        parent::__construct($name, $options, $queueManager);
         $this->options = $options;
     }
 
@@ -28,15 +29,11 @@ class TestRunnerCommand extends RunnerCommand
         return $this->options;
     }
 
-    protected function executeJob(Job $job)
-    {
-        $this->container->get('logger')->info('executing job');
-        sleep(2);
-        $this->container->get('logger')->info('finished job');
-    }
-
     protected function getJob()
     {
-        return new TestJob("a test job", [], []);
+        if (rand(1, 2) == 1) {
+            return new TestRetryableJob('test_worker', [], []);
+        }
+        return new TestJob('test_worker', [], []);
     }
 }

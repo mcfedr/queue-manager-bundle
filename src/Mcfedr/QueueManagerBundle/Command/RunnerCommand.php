@@ -19,14 +19,18 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\HttpKernel\Kernel;
 
 abstract class RunnerCommand extends Command implements ContainerAwareInterface
 {
-    use ContainerAwareTrait;
+    use ContainerAwareTrait {
+        setContainer as setContainerInner;
+    }
 
     private $retryLimit = 3;
 
@@ -40,13 +44,12 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     /**
      * @var LoggerInterface
      */
-    protected $logger;
+    private $logger;
 
-    public function __construct($name, array $options, QueueManager $queueManager, LoggerInterface $logger = null)
+    public function __construct($name, array $options, QueueManager $queueManager)
     {
         parent::__construct($name);
         $this->queueManager = $queueManager;
-        $this->logger = $logger;
         if (array_key_exists('retry_limit', $options)) {
             $this->retryLimit = $options['retry_limit'];
         }
@@ -59,18 +62,29 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     {
         $this
             ->setDescription('Run a queue runner')
-            ->addOption('once', null, InputOption::VALUE_NONE, 'Run just one job')
-            ->addOption('singleProcess', null, InputOption::VALUE_NONE, 'Run all jobs in the same process');
+            ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Only run [limit] jobs', -1)
+            ->addOption('fork', null, InputOption::VALUE_NONE, 'Fork for each job');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->setInput($input);
+        $this->handleInput($input);
 
-        $once = $input->getOption('once');
-        $singleProcess = $input->getOption('singleProcess');
+        $limit = $input->getOption('limit');
+        $useFork = $input->getOption('fork');
 
-        if (!$singleProcess) {
+        $running = true;
+
+        if ($running && function_exists('pcntl_signal')) {
+            $handle = function($sig) use (&$running) {
+                $this->logger && $this->logger->info("Received sigle ($sig), stopping...");
+                $running = false;
+            };
+            pcntl_signal(SIGTERM, $handle);
+            pcntl_signal(SIGINT, $handle);
+        }
+
+        if ($useFork) {
             /** @var Kernel $kernel */
             $kernel = $this->container->get('kernel');
             $kernel->shutdown();
@@ -79,25 +93,34 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         do {
             try {
                 $job = $this->getJob();
-                if (!$job) {
-                    sleep($this->sleepSeconds);
-                    continue;
-                }
-
-                if ($singleProcess) {
-                    $this->executeJob($job);
+                if ($job) {
+                    if ($useFork) {
+                        $this->executeJobInNewProcess($job);
+                    } else {
+                        $this->executeJob($job);
+                    }
                 } else {
-                    $this->executeJobInNewProcess($job);
+                    sleep($this->sleepSeconds);
                 }
             } catch (UnexpectedJobDataException $e) {
                 $this->logger && $this->logger->warning('Found unexpected job data in the queue', [
                     'message' => $e->getMessage()
                 ]);
             }
-        } while (!$once);
+
+            if (isset($handle)) {
+                pcntl_signal_dispatch();
+            }
+        } while ($running && ($limit === -1 || --$limit > 0));
     }
 
-    private function executeJobInNewProcess(Job $job)
+    /**
+     * Create a new process and run the given job in it
+     *
+     * @param Job $job
+     * @throws FailedToForkException
+     */
+    protected function executeJobInNewProcess(Job $job)
     {
         $pid = pcntl_fork();
         if ($pid === -1) {
@@ -117,30 +140,36 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         }
     }
 
-    private function executeJob(Job $job)
+    /**
+     * Executes a single job
+     *
+     * @param Job $job
+     */
+    protected function executeJob(Job $job)
     {
         try {
-            $worker = $this->container->get($job->getName());
-            if (!$worker instanceof Worker) {
-                throw new InvalidWorkerException("The worker {$job->getName()} is not an instance of " . Worker::class);
-            }
-
-            $worker->execute($job->getArguments());
+            $this->container->get('mcfedr_queue_manager.job_executor')->executeJob($job);
         } catch (ServiceNotFoundException $e) {
             $this->logger && $this->logger->warning('Missing worker', [
                 'name' => $job->getName()
             ]);
+            $this->failedJob($job, $e);
+            return;
         } catch (InvalidWorkerException $e) {
             $this->logger && $this->logger->warning('Invalid worker', [
                 'name' => $job->getName(),
                 'message' => $e->getMessage()
             ]);
+            $this->failedJob($job, $e);
+            return;
         } catch (UnrecoverableJobException $e) {
             $this->logger && $this->logger->warning('Job is unrecoverable', [
                 'name' => $job->getName(),
                 'arguments' => $job->getArguments(),
                 'message' => $e->getMessage()
             ]);
+            $this->failedJob($job, $e);
+            return;
         } catch (\Exception $e) {
             if (!$job instanceof RetryableJob) {
                 $this->logger && $this->logger->info('Job failed and is not retryable', [
@@ -148,6 +177,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
                     'arguments' => $job->getArguments(),
                     'message' => $e->getMessage()
                 ]);
+                $this->failedJob($job, $e);
                 return;
             }
 
@@ -157,6 +187,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
                     'arguments' => $job->getArguments(),
                     'message' => $e->getMessage()
                 ]);
+                $this->failedJob($job, $e);
                 return;
             }
 
@@ -167,10 +198,22 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
                     'message' => $e->getMessage(),
                     'retry_limit' => $this->retryLimit
                 ]);
+                $this->failedJob($job, $e);
                 return;
             }
 
             $this->queueManager->retry($job, $e);
+            $this->failedJob($job, $e);
+            return;
+        }
+        $this->finishJob($job);
+    }
+
+    public function setContainer(ContainerInterface $container = null)
+    {
+        $this->setContainerInner($container);
+        if ($container) {
+            $this->logger = $container->get('logger', Container::NULL_ON_INVALID_REFERENCE);
         }
     }
 
@@ -180,7 +223,27 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
      */
     abstract protected function getJob();
 
-    protected function setInput(InputInterface $input)
+    /**
+     * Called when a job is finished
+     *
+     * @param Job $job
+     */
+    protected function finishJob(Job $job)
+    {
+        // Allows overriding
+    }
+
+    /**
+     * Called when a job failed
+     *
+     * @param Job $job
+     */
+    protected function failedJob(Job $job, \Exception $exception)
+    {
+        // Allows overriding
+    }
+
+    protected function handleInput(InputInterface $input)
     {
         // Allows overriding
     }

@@ -9,9 +9,13 @@ use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
 use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Manager\QueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Job;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
-class TestQueueManager implements QueueManager
+class TestQueueManager implements QueueManager, ContainerAwareInterface
 {
+    use ContainerAwareTrait;
+
     private $options;
 
     /**
@@ -40,7 +44,9 @@ class TestQueueManager implements QueueManager
      */
     public function put($name, array $arguments = [], array $options = [])
     {
-        // TODO: Implement put() method.
+        $this->info('Putting new job', [
+            'name' => $name
+        ]);
     }
 
     /**
@@ -52,6 +58,18 @@ class TestQueueManager implements QueueManager
      */
     public function delete(Job $job)
     {
-        // TODO: Implement delete() method.
+        $this->info('Deleting job', [
+            'name' => $job->getName()
+        ]);
+    }
+
+    protected function info($message, $context)
+    {
+        $this->container->get('logger')->info("{$this->getLogName()}: $message", $context);
+    }
+
+    protected function getLogName()
+    {
+        return "QueueManager";
     }
 }

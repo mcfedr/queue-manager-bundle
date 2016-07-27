@@ -1,0 +1,5 @@
+services:
+    mcfedr_queue_manager.job_executor:
+        class: Mcfedr\QueueManagerBundle\Runner\JobExecutor
+        calls:
+            - ['setContainer', ['@service_container']]
