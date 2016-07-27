@@ -4,11 +4,11 @@
     "description": "A bundle for managing job queues",
     "keywords": ["queue", "job", "schedule", "task", "beanstalkd"],
     "autoload": {
-        "psr-4": { "Mcfedr\\QueueManagerBundle\\": "src/Mcfedr/QueueManagerBundle/" },
-        "classmap": ["tests/TestKernel.php"]
+        "psr-4": { "Mcfedr\\QueueManagerBundle\\": "src/Mcfedr/QueueManagerBundle/" }
     },
     "autoload-dev": {
-        "psr-4": { "Mcfedr\\QueueManagerBundle\\" : "tests/Mcfedr/QueueManagerBundle/" }
+        "psr-4": { "Mcfedr\\QueueManagerBundle\\" : "tests/Mcfedr/QueueManagerBundle/" },
+        "classmap": ["tests/TestKernel.php"]
     },
     "require": {
         "php": ">=5.5",
