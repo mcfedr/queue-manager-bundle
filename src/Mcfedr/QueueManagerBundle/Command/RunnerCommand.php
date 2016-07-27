@@ -77,7 +77,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
 
         if ($running && function_exists('pcntl_signal')) {
             $handle = function($sig) use (&$running) {
-                $this->logger && $this->logger->info("Received sigle ($sig), stopping...");
+                $this->logger && $this->logger->debug("Received signal ($sig), stopping...");
                 $running = false;
             };
             pcntl_signal(SIGTERM, $handle);
@@ -100,6 +100,9 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
                         $this->executeJob($job);
                     }
                 } else {
+                    $this->logger && $this->logger->debug('No job, sleeping...', [
+                        'sleepSeconds' => $this->sleepSeconds
+                    ]);
                     sleep($this->sleepSeconds);
                 }
             } catch (UnexpectedJobDataException $e) {
@@ -128,7 +131,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         } else if ($pid) {
             pcntl_wait($status);
             $code = pcntl_wexitstatus($status);
-            $this->logger->info('Sub proccess exited with status', [
+            $this->logger && $this->logger->debug('Sub process exited with status', [
                 'code' => $code
             ]);
         } else {
@@ -150,13 +153,13 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         try {
             $this->container->get('mcfedr_queue_manager.job_executor')->executeJob($job);
         } catch (ServiceNotFoundException $e) {
-            $this->logger && $this->logger->warning('Missing worker', [
+            $this->logger && $this->logger->error('Missing worker', [
                 'name' => $job->getName()
             ]);
             $this->failedJob($job, $e);
             return;
         } catch (InvalidWorkerException $e) {
-            $this->logger && $this->logger->warning('Invalid worker', [
+            $this->logger && $this->logger->error('Invalid worker', [
                 'name' => $job->getName(),
                 'message' => $e->getMessage()
             ]);
@@ -172,7 +175,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
             return;
         } catch (\Exception $e) {
             if (!$job instanceof RetryableJob) {
-                $this->logger && $this->logger->info('Job failed and is not retryable', [
+                $this->logger && $this->logger->error('Job failed and is not retryable', [
                     'name' => $job->getName(),
                     'arguments' => $job->getArguments(),
                     'message' => $e->getMessage()
@@ -182,7 +185,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
             }
 
             if (!$this->queueManager instanceof RetryingQueueManager) {
-                $this->logger && $this->logger->info('Job failed and the manager does not support retries', [
+                $this->logger && $this->logger->error('Job failed and the manager does not support retries', [
                     'name' => $job->getName(),
                     'arguments' => $job->getArguments(),
                     'message' => $e->getMessage()
@@ -192,7 +195,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
             }
 
             if ($job->getRetryCount() >= $this->retryLimit) {
-                $this->logger && $this->logger->info('Job reached retry limit and won\'t be retried again', [
+                $this->logger && $this->logger->error('Job reached retry limit and won\'t be retried again', [
                     'name' => $job->getName(),
                     'arguments' => $job->getArguments(),
                     'message' => $e->getMessage(),
@@ -201,6 +204,12 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
                 $this->failedJob($job, $e);
                 return;
             }
+
+            $this->logger && $this->logger->info('Job failed and will be retried', [
+                'name' => $job->getName(),
+                'arguments' => $job->getArguments(),
+                'message' => $e->getMessage()
+            ]);
 
             $this->queueManager->retry($job, $e);
             $this->failedJob($job, $e);
