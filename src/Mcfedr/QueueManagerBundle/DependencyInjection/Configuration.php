@@ -21,6 +21,8 @@ class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->root('mcfedr_queue_manager')
             ->children()
                 ->booleanNode('debug')->defaultFalse()->end()
+                ->integerNode('retry_limit')->defaultValue(3)->end()
+                ->integerNode('sleep_seconds')->defaultValue(5)->end()
                 ->arrayNode('drivers')
                     ->prototype('array')
                         ->children()

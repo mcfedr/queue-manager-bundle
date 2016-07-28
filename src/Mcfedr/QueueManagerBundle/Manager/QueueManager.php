@@ -27,7 +27,7 @@ interface QueueManager
     public function put($name, array $arguments = [], array $options = []);
 
     /**
-     * Remove a job, you should call this to cancel a job
+     * Remove a job from the queue
      *
      * @param $job
      * @throws WrongJobException

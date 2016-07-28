@@ -12,14 +12,30 @@ mcfedr_queue_manager:
             options:
                 host: 127.0.0.1
                 default_queue: mcfedr_queue
+        test_retry:
+            class: Mcfedr\QueueManagerBundle\Driver\TestRetryingQueueManager
+            command_class: Mcfedr\QueueManagerBundle\Command\TestRetryRunnerCommand
+            options:
+                host: 127.0.0.1
+                default_queue: mcfedr_queue
     managers:
         default:
             driver: test
             options:
                 host: 127.0.0.2
                 port: 1234
+        retry:
+            driver: test_retry
 
 monolog:
     handlers:
         main:
             type: console
+            verbosity_levels:
+                VERBOSITY_NORMAL: DEBUG
+
+services:
+    test_worker:
+        class: Mcfedr\QueueManagerBundle\Queue\TestWorker
+        arguments:
+            - "@logger"
