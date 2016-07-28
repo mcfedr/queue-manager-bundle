@@ -155,14 +155,14 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
             $this->logger && $this->logger->error('Missing worker', [
                 'name' => $job->getName()
             ]);
-            $this->failedJob($job, $e);
+            $this->failedJob($job, new UnrecoverableJobException('Missing worker', 0, $e));
             return;
         } catch (InvalidWorkerException $e) {
             $this->logger && $this->logger->error('Invalid worker', [
                 'name' => $job->getName(),
                 'message' => $e->getMessage()
             ]);
-            $this->failedJob($job, $e);
+            $this->failedJob($job, new UnrecoverableJobException('Invalid worker', 0, $e));
             return;
         } catch (UnrecoverableJobException $e) {
             $this->logger && $this->logger->warning('Job is unrecoverable', [
