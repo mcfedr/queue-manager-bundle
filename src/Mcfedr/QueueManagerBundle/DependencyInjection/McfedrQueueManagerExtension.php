@@ -2,6 +2,7 @@
 
 namespace Mcfedr\QueueManagerBundle\DependencyInjection;
 
+use Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -28,6 +29,8 @@ class McfedrQueueManagerExtension extends Extension
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yml');
+
+        $queueManagers = [];
 
         foreach ($config['managers'] as $name => $manager) {
             if (!isset($config['drivers'][$manager['driver']])) {
@@ -57,6 +60,8 @@ class McfedrQueueManagerExtension extends Extension
 
             $container->setDefinition($managerServiceName, $managerDefinition);
 
+            $queueManagers[$name] = new Reference($managerServiceName);
+
             if (isset($config['drivers'][$manager['driver']]['command_class'])) {
                 $commandClass = $config['drivers'][$manager['driver']]['command_class'];
                 $commandDefinition = new Definition($commandClass, [
@@ -70,5 +75,14 @@ class McfedrQueueManagerExtension extends Extension
                 $container->setDefinition("mcfedr_queue_manager.runner.$name", $commandDefinition);
             }
         }
+
+        if (array_key_exists('default', $queueManagers)) {
+            $defaultManager = 'default';
+        } else {
+            reset($queueManagers);
+            $defaultManager = key($queueManagers);
+        }
+
+        $container->setDefinition('mcfedr_queue_manager.registry', new Definition(QueueManagerRegistry::class, [$queueManagers, $defaultManager]));
     }
 }

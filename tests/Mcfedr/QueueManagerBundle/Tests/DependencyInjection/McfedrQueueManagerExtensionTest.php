@@ -49,5 +49,7 @@ class McfedrQueueManagerExtensionTest extends WebTestCase
         $this->assertFalse($commandOptions['debug']);
         $this->assertEquals(3, $commandOptions['retry_limit']);
         $this->assertEquals(5, $commandOptions['sleep_seconds']);
+
+        $this->assertTrue($client->getContainer()->has('mcfedr_queue_manager.registry'));
     }
 }
