@@ -13,7 +13,6 @@ use Mcfedr\QueueManagerBundle\Manager\QueueManager;
 use Mcfedr\QueueManagerBundle\Manager\RetryingQueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
-use Mcfedr\QueueManagerBundle\Queue\Worker;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -246,6 +245,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
      * Called when a job failed
      *
      * @param Job $job
+     * @param \Exception $exception
      */
     protected function failedJob(Job $job, \Exception $exception)
     {
