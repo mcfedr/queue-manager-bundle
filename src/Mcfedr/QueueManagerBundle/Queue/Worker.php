@@ -14,7 +14,7 @@ interface Worker
      *
      * @param array $arguments
      * @throws \Exception
-     * @throws UnrecoverableJobException
+     * @throws UnrecoverableJobException This job should not be retried
      */
     public function execute(array $arguments);
 }

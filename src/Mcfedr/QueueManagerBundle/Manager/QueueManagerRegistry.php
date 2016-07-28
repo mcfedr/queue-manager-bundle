@@ -4,6 +4,7 @@
  */
 namespace Mcfedr\QueueManagerBundle\Manager;
 
+use Mcfedr\QueueManagerBundle\Exception\JobNotDeletableException;
 use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
 use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Queue\Job;
@@ -45,8 +46,7 @@ class QueueManagerRegistry
     /**
      * @param Job $job
      * @param string $manager
-     * @throws WrongJobException
-     * @throws NoSuchJobException
+     * @throws JobNotDeletableException
      */
     public function delete(Job $job, $manager = null)
     {
