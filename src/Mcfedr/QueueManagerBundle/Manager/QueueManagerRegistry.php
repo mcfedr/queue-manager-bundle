@@ -4,6 +4,8 @@
  */
 namespace Mcfedr\QueueManagerBundle\Manager;
 
+use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
+use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 
 class QueueManagerRegistry
@@ -43,9 +45,25 @@ class QueueManagerRegistry
     /**
      * @param Job $job
      * @param string $manager
+     * @throws WrongJobException
+     * @throws NoSuchJobException
      */
     public function delete(Job $job, $manager = null)
     {
-        $this->queueManagers[$manager ?: $this->default]->delete($job);
+        if ($manager) {
+            $this->queueManagers[$manager]->delete($job);
+            return;
+        }
+
+        foreach ($this->queueManagers as $queueManager) {
+            try {
+                $queueManager->delete($job);
+                return;
+            } catch (WrongJobException $e) {
+
+            }
+        }
+
+        throw new WrongJobException('Cannot find a manager able to delete this job');
     }
 }
