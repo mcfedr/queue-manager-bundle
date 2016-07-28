@@ -43,7 +43,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     /**
      * @var LoggerInterface
      */
-    private $logger;
+    protected $logger;
 
     public function __construct($name, array $options, QueueManager $queueManager)
     {
