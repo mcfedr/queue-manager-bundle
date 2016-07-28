@@ -5,6 +5,7 @@
 
 namespace Mcfedr\QueueManagerBundle\Manager;
 
+use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
 
 interface RetryingQueueManager extends QueueManager
@@ -16,6 +17,7 @@ interface RetryingQueueManager extends QueueManager
      * @param RetryableJob $job
      * @param \Exception $exception The exception that caused the job to fail
      * @return mixed
+     * @throws WrongJobException
      */
     public function retry(RetryableJob $job, \Exception $exception = null);
 }
