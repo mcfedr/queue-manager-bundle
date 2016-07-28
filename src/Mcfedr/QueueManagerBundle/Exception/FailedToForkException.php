@@ -5,6 +5,6 @@
 
 namespace Mcfedr\QueueManagerBundle\Exception;
 
-class FailedToForkException extends \Exception
+class FailedToForkException extends QueueManagerException
 {
 }

@@ -4,6 +4,6 @@
  */
 namespace Mcfedr\QueueManagerBundle\Exception;
 
-class InvalidWorkerException extends \Exception
+class InvalidWorkerException extends QueueManagerException
 {
 }

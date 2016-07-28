@@ -11,6 +11,6 @@ namespace Mcfedr\QueueManagerBundle\Exception;
  *
  * Indicates that a job should not be rescheduled
  */
-class UnrecoverableJobException extends \Exception
+class UnrecoverableJobException extends QueueManagerException
 {
 }

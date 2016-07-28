@@ -5,6 +5,6 @@
 
 namespace Mcfedr\QueueManagerBundle\Exception;
 
-class UnexpectedJobDataException extends \Exception
+class UnexpectedJobDataException extends QueueManagerException
 {
 }

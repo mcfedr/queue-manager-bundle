@@ -5,6 +5,6 @@
 
 namespace Mcfedr\QueueManagerBundle\Exception;
 
-class WrongJobException extends \Exception
+class WrongJobException extends JobNotDeletableException
 {
 }
