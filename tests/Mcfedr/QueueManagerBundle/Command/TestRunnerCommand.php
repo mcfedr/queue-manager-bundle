@@ -6,10 +6,8 @@
 namespace Mcfedr\QueueManagerBundle\Command;
 
 use Mcfedr\QueueManagerBundle\Manager\QueueManager;
-use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\TestJob;
 use Mcfedr\QueueManagerBundle\Queue\TestRetryableJob;
-use Psr\Log\LoggerInterface;
 
 class TestRunnerCommand extends RunnerCommand
 {

@@ -5,14 +5,8 @@
 
 namespace Mcfedr\QueueManagerBundle\Driver;
 
-use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
-use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
-use Mcfedr\QueueManagerBundle\Manager\QueueManager;
 use Mcfedr\QueueManagerBundle\Manager\RetryingQueueManager;
-use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
 class TestRetryingQueueManager extends TestQueueManager implements RetryingQueueManager
 {
