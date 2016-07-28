@@ -16,7 +16,6 @@ interface RetryingQueueManager extends QueueManager
      *
      * @param RetryableJob $job
      * @param \Exception $exception The exception that caused the job to fail
-     * @return mixed
      * @throws WrongJobException
      */
     public function retry(RetryableJob $job, \Exception $exception = null);
