@@ -21,7 +21,8 @@
     "suggest": {
         "mcfedr/beanstalk-queue-driver-bundle": "A driver for beanstalkd",
         "mcfedr/resque-queue-driver-bundle": "A driver for resque",
-        "mcfedr/sqs-queue-driver-bundle": "A driver for SQS"
+        "mcfedr/sqs-queue-driver-bundle": "A driver for SQS",
+        "mcfedr/doctrine-delay-queue-driver-bundle": "A driver to delay tasks and send to other drivers"
     },
     "license": "MIT",
     "authors": [
