@@ -27,6 +27,10 @@ use Symfony\Component\HttpKernel\Kernel;
 
 abstract class RunnerCommand extends Command implements ContainerAwareInterface
 {
+    const OK = 0;
+    const FAIL = 1;
+    const RETRY = 2;
+
     use ContainerAwareTrait {
         setContainer as setContainerInner;
     }
@@ -91,15 +95,33 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
 
         do {
             try {
-                $job = $this->getJob();
-                if ($job) {
-                    if ($useFork) {
-                        $this->executeJobInNewProcess($job);
-                    } else {
-                        $this->executeJob($job);
+                $jobs = $this->getJobs();
+                if (count($jobs)) {
+                    $oks = [];
+                    $fails = [];
+                    $retries = [];
+                    foreach ($jobs as $job) {
+                        if ($useFork) {
+                            $result = $this->executeJobInNewProcess($job);
+                        } else {
+                            $result = $this->executeJob($job);
+                        }
+
+                        switch ($result) {
+                            case self::OK:
+                                $oks[] = $job;
+                                break;
+                            case self::FAIL:
+                                $fails[] = $job;
+                                break;
+                            case self::RETRY:
+                                $retries[] = $job;
+                                break;
+                        }
                     }
+                    $this->finishJobs($oks, $retries, $fails);
                 } else {
-                    $this->logger && $this->logger->debug('No job, sleeping...', [
+                    $this->logger && $this->logger->debug('No jobs, sleeping...', [
                         'sleepSeconds' => $this->sleepSeconds
                     ]);
                     sleep($this->sleepSeconds);
@@ -120,6 +142,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
      * Create a new process and run the given job in it
      *
      * @param Job $job
+     * @return int
      * @throws FailedToForkException
      */
     protected function executeJobInNewProcess(Job $job)
@@ -133,12 +156,14 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
             $this->logger && $this->logger->debug('Sub process exited with status', [
                 'code' => $code
             ]);
+            return $code;
         } else {
             /** @var Kernel $kernel */
             $kernel = $this->container->get('kernel');
             $kernel->boot();
-            $this->executeJob($job);
+            $result = $this->executeJob($job);
             $kernel->shutdown();
+            exit($result);
         }
     }
 
@@ -146,75 +171,37 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
      * Executes a single job
      *
      * @param Job $job
+     * @return int
      */
     protected function executeJob(Job $job)
     {
         try {
             $this->container->get('mcfedr_queue_manager.job_executor')->executeJob($job);
         } catch (ServiceNotFoundException $e) {
-            $this->logger && $this->logger->error('Missing worker', [
-                'name' => $job->getName()
-            ]);
-            $this->failedJob($job, new UnrecoverableJobException('Missing worker', 0, $e));
-            return;
+            $this->failedJob($job, new UnrecoverableJobException("Missing worker {$job->getName()}", 0, $e));
+            return self::FAIL;
         } catch (InvalidWorkerException $e) {
-            $this->logger && $this->logger->error('Invalid worker', [
-                'name' => $job->getName(),
-                'message' => $e->getMessage()
-            ]);
-            $this->failedJob($job, new UnrecoverableJobException('Invalid worker', 0, $e));
-            return;
+            $this->failedJob($job, new UnrecoverableJobException("Invalid worker {$job->getName()}", 0, $e));
+            return self::FAIL;
         } catch (UnrecoverableJobException $e) {
-            $this->logger && $this->logger->warning('Job is unrecoverable', [
-                'name' => $job->getName(),
-                'arguments' => $job->getArguments(),
-                'message' => $e->getMessage()
-            ]);
             $this->failedJob($job, $e);
-            return;
+            return self::FAIL;
         } catch (\Exception $e) {
             if (!$job instanceof RetryableJob) {
-                $this->logger && $this->logger->error('Job failed and is not retryable', [
-                    'name' => $job->getName(),
-                    'arguments' => $job->getArguments(),
-                    'message' => $e->getMessage()
-                ]);
-                $this->failedJob($job, $e);
-                return;
-            }
-
-            if (!$this->queueManager instanceof RetryingQueueManager) {
-                $this->logger && $this->logger->error('Job failed and the manager does not support retries', [
-                    'name' => $job->getName(),
-                    'arguments' => $job->getArguments(),
-                    'message' => $e->getMessage()
-                ]);
-                $this->failedJob($job, $e);
-                return;
+                $this->failedJob($job, new UnrecoverableJobException('Job failed and is not retryable', 0, $e));
+                return self::FAIL;
             }
 
             if ($job->getRetryCount() >= $this->retryLimit) {
-                $this->logger && $this->logger->error('Job reached retry limit and won\'t be retried again', [
-                    'name' => $job->getName(),
-                    'arguments' => $job->getArguments(),
-                    'message' => $e->getMessage(),
-                    'retry_limit' => $this->retryLimit
-                ]);
-                $this->failedJob($job, $e);
-                return;
+                $this->failedJob($job, new UnrecoverableJobException('Job reached retry limit and won\'t be retried again', 0, $e));
+                return self::FAIL;
             }
 
-            $this->logger && $this->logger->info('Job failed and will be retried', [
-                'name' => $job->getName(),
-                'arguments' => $job->getArguments(),
-                'message' => $e->getMessage()
-            ]);
-
-            $this->queueManager->retry($job, $e);
             $this->failedJob($job, $e);
-            return;
+            return self::RETRY;
         }
         $this->finishJob($job);
+        return self::OK;
     }
 
     public function setContainer(ContainerInterface $container = null)
@@ -227,9 +214,9 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
 
     /**
      * @throws UnexpectedJobDataException
-     * @return Job
+     * @return Job[]
      */
-    abstract protected function getJob();
+    abstract protected function getJobs();
 
     /**
      * Called when a job is finished
@@ -238,7 +225,10 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
      */
     protected function finishJob(Job $job)
     {
-        // Allows overriding
+        $this->logger && $this->logger->debug('Finished a job', [
+            'name' => $job->getName(),
+            'arguments' => $job->getArguments()
+        ]);
     }
 
     /**
@@ -249,8 +239,27 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
      */
     protected function failedJob(Job $job, \Exception $exception)
     {
-        // Allows overriding
+        if ($this->logger) {
+            $context = [
+                'name' => $job->getName(),
+                'arguments' => $job->getArguments(),
+                'message' => $exception->getMessage()
+            ];
+            if (($p = $exception->getPrevious())) {
+                $context['cause'] = $p->getMessage();
+            }
+            $this->logger->error('Job failed', $context);
+        }
     }
+
+    /**
+     * Called after a batch of jobs finishes
+     *
+     * @param Job[] $okJobs
+     * @param Job[] $retryJobs
+     * @param Job[] $failedJobs
+     */
+    abstract protected function finishJobs(array $okJobs, array $retryJobs, array $failedJobs);
 
     protected function handleInput(InputInterface $input)
     {

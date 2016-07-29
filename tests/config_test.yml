@@ -13,7 +13,7 @@ mcfedr_queue_manager:
                 host: 127.0.0.1
                 default_queue: mcfedr_queue
         test_retry:
-            class: Mcfedr\QueueManagerBundle\Driver\TestRetryingQueueManager
+            class: Mcfedr\QueueManagerBundle\Driver\TestQueueManager
             command_class: Mcfedr\QueueManagerBundle\Command\TestRetryRunnerCommand
             options:
                 host: 127.0.0.1

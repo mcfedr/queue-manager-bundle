@@ -29,12 +29,16 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
         $worker = $this->getMockWorker();
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJob', 'finishJob'];
-        $command = $this->getMockCommand($methods, $manager, $job);
+        $methods = ['getJobs', 'finishJobs', 'finishJob'];
+        $command = $this->getMockCommand($methods, $manager, [$job]);
 
         $command->expects($this->once())
             ->method('finishJob')
             ->with($job);
+
+        $command->expects($this->once())
+            ->method('finishJobs')
+            ->with([$job], [], []);
 
         $this->executeCommand($command, $worker);
     }
@@ -48,12 +52,16 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
         $worker = $this->getMockWorker($exce);
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJob', 'failedJob'];
-        $command = $this->getMockCommand($methods, $manager, $job);
+        $methods = ['getJobs', 'finishJobs', 'failedJob'];
+        $command = $this->getMockCommand($methods, $manager, [$job]);
 
         $command->expects($this->once())
             ->method('failedJob')
             ->with($job, $exce);
+
+        $command->expects($this->once())
+            ->method('finishJobs')
+            ->with([], [], [$job]);
 
         $this->executeCommand($command, $worker);
     }
@@ -63,12 +71,16 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
         $job = $this->getMockJob(Job::class);
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJob', 'failedJob'];
-        $command = $this->getMockCommand($methods, $manager, $job);
+        $methods = ['getJobs', 'finishJobs', 'failedJob'];
+        $command = $this->getMockCommand($methods, $manager, [$job]);
 
         $command->expects($this->once())
             ->method('failedJob')
-            ->with($job, new \PHPUnit_Framework_Constraint_IsInstanceOf(InvalidWorkerException::class));
+            ->with($job, new \PHPUnit_Framework_Constraint_IsInstanceOf(UnrecoverableJobException::class));
+
+        $command->expects($this->once())
+            ->method('finishJobs')
+            ->with([], [], [$job]);
 
         $worker = new \stdClass();
 
@@ -84,12 +96,16 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
         $worker = $this->getMockWorker($exce);
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJob', 'failedJob'];
-        $command = $this->getMockCommand($methods, $manager, $job);
+        $methods = ['getJobs', 'finishJobs', 'failedJob'];
+        $command = $this->getMockCommand($methods, $manager, [$job]);
 
         $command->expects($this->once())
             ->method('failedJob')
-            ->with($job, $exce);
+            ->with($job, new \PHPUnit_Framework_Constraint_IsInstanceOf(UnrecoverableJobException::class));
+
+        $command->expects($this->once())
+            ->method('finishJobs')
+            ->with([], [], [$job]);
 
         $this->executeCommand($command, $worker);
     }
@@ -103,12 +119,16 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
         $worker = $this->getMockWorker($exce);
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJob', 'failedJob'];
-        $command = $this->getMockCommand($methods, $manager, $job);
+        $methods = ['getJobs', 'finishJobs', 'failedJob'];
+        $command = $this->getMockCommand($methods, $manager, [$job]);
 
         $command->expects($this->once())
             ->method('failedJob')
             ->with($job, $exce);
+
+        $command->expects($this->once())
+            ->method('finishJobs')
+            ->with([], [$job], []);
 
         $this->executeCommand($command, $worker);
     }
@@ -122,57 +142,60 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
         $worker = $this->getMockWorker($exce);
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJob', 'failedJob'];
-        $command = $this->getMockCommand($methods, $manager, $job);
+        $methods = ['getJobs', 'finishJobs', 'failedJob'];
+        $command = $this->getMockCommand($methods, $manager, [$job]);
 
         $command->expects($this->once())
             ->method('failedJob')
-            ->with($job, $exce);
+            ->with($job, new \PHPUnit_Framework_Constraint_IsInstanceOf(UnrecoverableJobException::class));
+
+        $command->expects($this->once())
+            ->method('finishJobs')
+            ->with([], [], [$job]);
 
         $this->executeCommand($command, $worker);
     }
 
-    public function testExecuteFailingRetryableJobWithRetryingManager()
+    public function testExecuteManyJob()
     {
-        $job = $this->getMockJob(RetryableJob::class);
+        $jobs = [$this->getMockJob(Job::class), $this->getMockJob(Job::class)];
 
-        $exce = new \Exception();
+        $worker = $this->getMockWorker(null, 2);
 
-        $worker = $this->getMockWorker($exce);
+        $manager = $this->getMockBuilder(QueueManager::class)->getMock();
+        $methods = ['getJobs', 'finishJobs', 'finishJob'];
+        $command = $this->getMockCommand($methods, $manager, $jobs);
 
-        $manager = $this->getMockBuilder(RetryingQueueManager::class)->getMock();
-        $manager->expects($this->once())
-            ->method('retry')
-            ->with($job, $exce);
-
-        $methods = ['getJob', 'failedJob'];
-        $command = $this->getMockCommand($methods, $manager, $job);
+        $command->expects($this->exactly(2))
+            ->method('finishJob')
+            ->withConsecutive($jobs[0], $jobs[1]);
 
         $command->expects($this->once())
-            ->method('failedJob')
-            ->with($job, $exce);
+            ->method('finishJobs')
+            ->with($jobs, [], []);
 
         $this->executeCommand($command, $worker);
     }
 
-    public function testExecutePermanentlyFailingRetryableJobWithRetryingManager()
+    public function testExecuteManyFailingJob()
     {
-        $job = $this->getMockJob(RetryableJob::class);
+        $jobs = [$this->getMockJob(Job::class), $this->getMockJob(Job::class)];
 
         $exce = new UnrecoverableJobException();
 
-        $worker = $this->getMockWorker($exce);
+        $worker = $this->getMockWorker($exce, 2);
 
-        $manager = $this->getMockBuilder(RetryingQueueManager::class)->getMock();
-        $manager->expects($this->exactly(0))
-            ->method('retry');
+        $manager = $this->getMockBuilder(QueueManager::class)->getMock();
+        $methods = ['getJobs', 'finishJobs', 'failedJob'];
+        $command = $this->getMockCommand($methods, $manager, $jobs);
 
-        $methods = ['getJob', 'failedJob'];
-        $command = $this->getMockCommand($methods, $manager, $job);
+        $command->expects($this->exactly(2))
+            ->method('failedJob')
+            ->withConsecutive([$jobs[0], $exce], [$jobs[1], $exce]);
 
         $command->expects($this->once())
-            ->method('failedJob')
-            ->with($job, $exce);
+            ->method('finishJobs')
+            ->with([], [], $jobs);
 
         $this->executeCommand($command, $worker);
     }
@@ -196,11 +219,11 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
      * @param $exce
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function getMockWorker(\Exception $exce = null)
+    private function getMockWorker(\Exception $exce = null, $count = 1)
     {
         $worker = $this->getMockBuilder(Worker::class)
             ->getMock();
-        $execute = $worker->expects($this->once())
+        $execute = $worker->expects($this->exactly($count))
             ->method('execute')
             ->with([]);
         if ($exce) {
@@ -211,12 +234,12 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @param $methods
-     * @param $manager
-     * @param $job
+     * @param string[] $methods
+     * @param QueueManager $manager
+     * @param Job[] $jobs
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function getMockCommand(array $methods, QueueManager $manager, Job $job)
+    private function getMockCommand(array $methods, QueueManager $manager, array $jobs)
     {
         $command = $this
             ->getMockBuilder(RunnerCommand::class)
@@ -225,8 +248,8 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $command->expects($this->once())
-            ->method('getJob')
-            ->willReturn($job);
+            ->method('getJobs')
+            ->willReturn($jobs);
         return $command;
     }
 
