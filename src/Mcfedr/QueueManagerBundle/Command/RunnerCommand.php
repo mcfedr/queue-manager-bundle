@@ -243,7 +243,8 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
             $context = [
                 'name' => $job->getName(),
                 'arguments' => $job->getArguments(),
-                'message' => $exception->getMessage()
+                'message' => $exception->getMessage(),
+                'retryable' => !$exception instanceof UnrecoverableJobException
             ];
             if (($p = $exception->getPrevious())) {
                 $context['cause'] = $p->getMessage();
