@@ -78,7 +78,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
 
         $running = true;
 
-        if ($running && function_exists('pcntl_signal')) {
+        if (function_exists('pcntl_signal')) {
             $handle = function($sig) use (&$running) {
                 $this->logger && $this->logger->debug("Received signal ($sig), stopping...");
                 $running = false;
