@@ -5,6 +5,8 @@
 
 namespace Mcfedr\QueueManagerBundle\Command;
 
+use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
+use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
 use Mcfedr\QueueManagerBundle\Exception\FailedToForkException;
 use Mcfedr\QueueManagerBundle\Exception\InvalidWorkerException;
 use Mcfedr\QueueManagerBundle\Exception\UnexpectedJobDataException;
@@ -23,6 +25,7 @@ use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpKernel\Kernel;
 
 abstract class RunnerCommand extends Command implements ContainerAwareInterface
@@ -30,6 +33,9 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     const OK = 0;
     const FAIL = 1;
     const RETRY = 2;
+
+    const JOB_FINISHED_EVENT = 'mcfedr_queue_manager.job_finished';
+    const JOB_FAILED_EVENT = 'mcfedr_queue_manager.job_failed';
 
     use ContainerAwareTrait {
         setContainer as setContainerInner;
@@ -48,6 +54,11 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
      * @var LoggerInterface
      */
     protected $logger;
+
+    /**
+     * @var EventDispatcher
+     */
+    private $eventDispatcher;
 
     public function __construct($name, array $options, QueueManager $queueManager)
     {
@@ -209,6 +220,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         $this->setContainerInner($container);
         if ($container) {
             $this->logger = $container->get('logger', Container::NULL_ON_INVALID_REFERENCE);
+            $this->eventDispatcher = $container->get('event_dispatcher', Container::NULL_ON_INVALID_REFERENCE);
         }
     }
 
@@ -229,6 +241,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
             'name' => $job->getName(),
             'arguments' => $job->getArguments()
         ]);
+        $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_FINISHED_EVENT, new FinishedJobEvent($job));
     }
 
     /**
@@ -251,6 +264,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
             }
             $this->logger->error('Job failed', $context);
         }
+        $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_FAILED_EVENT, new FailedJobEvent($job, $exception));
     }
 
     /**
