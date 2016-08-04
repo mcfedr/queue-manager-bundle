@@ -27,4 +27,9 @@ abstract class AbstractRetryableJob extends AbstractJob implements RetryableJob
     {
         return $this->retryCount;
     }
+
+    public function incrementRetryCount()
+    {
+        $this->retryCount++;
+    }
 }
