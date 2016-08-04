@@ -18,20 +18,13 @@ abstract class AbstractJob implements Job
     private $arguments;
 
     /**
-     * @var array
-     */
-    private $options;
-
-    /**
      * @param string $name
      * @param array $arguments
-     * @param array $options
      */
-    public function __construct($name, array $arguments, array $options)
+    public function __construct($name, array $arguments)
     {
         $this->name = $name;
         $this->arguments = $arguments;
-        $this->options = $options;
     }
 
     /**
@@ -48,13 +41,5 @@ abstract class AbstractJob implements Job
     public function getArguments()
     {
         return $this->arguments;
-    }
-
-    /**
-     * @return array
-     */
-    public function getOptions()
-    {
-        return $this->options;
     }
 }

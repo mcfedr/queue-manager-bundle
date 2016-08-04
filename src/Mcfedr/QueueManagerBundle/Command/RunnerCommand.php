@@ -12,7 +12,6 @@ use Mcfedr\QueueManagerBundle\Exception\InvalidWorkerException;
 use Mcfedr\QueueManagerBundle\Exception\UnexpectedJobDataException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
 use Mcfedr\QueueManagerBundle\Manager\QueueManager;
-use Mcfedr\QueueManagerBundle\Manager\RetryingQueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
 use Psr\Log\LoggerInterface;

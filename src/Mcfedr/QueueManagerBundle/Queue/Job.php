@@ -20,11 +20,4 @@ interface Job
      * @return array
      */
     public function getArguments();
-
-    /**
-     * Gets the options you passed to setup this Job
-     *
-     * @return array
-     */
-    public function getOptions();
 }
