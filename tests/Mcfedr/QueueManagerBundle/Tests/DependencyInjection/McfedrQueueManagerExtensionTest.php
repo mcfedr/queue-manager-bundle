@@ -51,5 +51,7 @@ class McfedrQueueManagerExtensionTest extends WebTestCase
         $this->assertEquals(5, $commandOptions['sleep_seconds']);
 
         $this->assertTrue($client->getContainer()->has('mcfedr_queue_manager.registry'));
+
+        $this->assertTrue($client->getContainer()->has('mcfedr_queue_manager.doctrine_reset_subscriber'));
     }
 }

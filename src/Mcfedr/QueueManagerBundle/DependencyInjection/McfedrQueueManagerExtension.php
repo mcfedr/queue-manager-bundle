@@ -3,9 +3,12 @@
 namespace Mcfedr\QueueManagerBundle\DependencyInjection;
 
 use Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry;
+use Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber;
+use Mcfedr\QueueManagerBundle\Subscriber\MemoryReportSubscriber;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Reference;
@@ -84,5 +87,21 @@ class McfedrQueueManagerExtension extends Extension
         }
 
         $container->setDefinition('mcfedr_queue_manager.registry', new Definition(QueueManagerRegistry::class, [$queueManagers, $defaultManager]));
+
+        if ($config['report_memory']) {
+            $mem = new Definition(MemoryReportSubscriber::class, [new Reference('logger')]);
+            $mem->setTags([
+                'kernel.event_subscriber' => []
+            ]);
+            $container->setDefinition('mcfedr_queue_manager.memory_report_subscriber', $mem);
+        }
+
+        if ($config['doctrine_reset']) {
+            $mem = new Definition(DoctrineResetSubscriber::class, [new Reference('doctrine', ContainerInterface::NULL_ON_INVALID_REFERENCE)]);
+            $mem->setTags([
+                'kernel.event_subscriber' => []
+            ]);
+            $container->setDefinition('mcfedr_queue_manager.doctrine_reset_subscriber', $mem);
+        }
     }
 }

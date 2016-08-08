@@ -3,10 +3,3 @@ services:
         class: Mcfedr\QueueManagerBundle\Runner\JobExecutor
         calls:
             - ['setContainer', ['@service_container']]
-
-    mcfedr_queue_manager.doctrine_reset_listener:
-        class: Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber
-        arguments:
-            - "@?doctrine"
-        tags:
-            - { name: kernel.event_subscriber }

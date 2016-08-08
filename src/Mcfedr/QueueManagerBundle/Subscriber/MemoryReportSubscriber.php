@@ -1,45 +1,46 @@
 <?php
 /**
- * Created by mcfedr on 8/4/16 12:12
+ * Created by mcfedr on 8/8/16 13:49
  */
 namespace Mcfedr\QueueManagerBundle\Subscriber;
 
 use Mcfedr\QueueManagerBundle\Command\RunnerCommand;
 use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
-use Doctrine\Bundle\DoctrineBundle\Registry;
 use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class DoctrineResetSubscriber implements EventSubscriberInterface
+class MemoryReportSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var Registry
+     * @var LoggerInterface
      */
-    private $doctrine;
+    private $logger;
 
     /**
-     * @param Registry $doctrine
+     * @param LoggerInterface $logger
      */
-    public function __construct(Registry $doctrine = null)
+    public function __construct(LoggerInterface $logger)
     {
-        $this->doctrine = $doctrine;
+        $this->logger = $logger;
     }
 
     public function onJobFailed(FailedJobEvent $e)
     {
-        $this->reset();
+        $this->report();
     }
 
     public function onJobFinished(FinishedJobEvent $e)
     {
-        $this->reset();
+        $this->report();
     }
 
-    private function reset()
+    private function report()
     {
-        if ($this->doctrine) {
-            $this->doctrine->resetManager();
-        }
+        $this->logger->info('Memory after job', [
+            'usage KB:' => round(memory_get_usage(true) / 1024),
+            'peak KB:' => round(memory_get_peak_usage(true) / 1024)
+        ]);
     }
 
     public static function getSubscribedEvents()

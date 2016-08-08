@@ -23,6 +23,8 @@ class Configuration implements ConfigurationInterface
                 ->booleanNode('debug')->defaultFalse()->end()
                 ->integerNode('retry_limit')->defaultValue(3)->end()
                 ->integerNode('sleep_seconds')->defaultValue(5)->end()
+                ->booleanNode('report_memory')->defaultFalse()->end()
+                ->booleanNode('doctrine_reset')->defaultTrue()->end()
                 ->arrayNode('drivers')
                     ->requiresAtLeastOneElement()
                     ->useAttributeAsKey('name')
