@@ -75,7 +75,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     {
         $this
             ->setDescription('Run a queue runner')
-            ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Only run [limit] jobs', -1)
+            ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Only run [limit] jobs', 0)
             ->addOption('fork', null, InputOption::VALUE_NONE, 'Fork for each job');
     }
 
@@ -83,7 +83,8 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     {
         $this->handleInput($input);
 
-        $limit = $input->getOption('limit');
+        $limit = (int) $input->getOption('limit');
+        $ignoreLimit = $limit === 0;
         $useFork = $input->getOption('fork');
 
         $running = true;
@@ -128,6 +129,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
                                 $retries[] = $job;
                                 break;
                         }
+                        $limit--;
                     }
                     $this->finishJobs($oks, $retries, $fails);
                 } else {
@@ -145,7 +147,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
             if (isset($handle)) {
                 pcntl_signal_dispatch();
             }
-        } while ($running && ($limit === -1 || --$limit > 0));
+        } while ($running && ($ignoreLimit || $limit > 0));
     }
 
     /**
