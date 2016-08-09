@@ -129,7 +129,10 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
                                 $retries[] = $job;
                                 break;
                         }
-                        $limit--;
+
+                        if (!$ignoreLimit) {
+                            $limit--;
+                        }
                     }
                     $this->finishJobs($oks, $retries, $fails);
                 } else {
