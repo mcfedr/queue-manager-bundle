@@ -150,6 +150,8 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
             if (isset($handle)) {
                 pcntl_signal_dispatch();
             }
+
+            gc_collect_cycles();
         } while ($running && ($ignoreLimit || $limit > 0));
     }
 
