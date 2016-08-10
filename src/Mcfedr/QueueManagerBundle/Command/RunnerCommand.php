@@ -26,6 +26,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\Process\PhpExecutableFinder;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\ProcessBuilder;
 
 abstract class RunnerCommand extends Command implements ContainerAwareInterface
 {
@@ -40,8 +43,14 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         setContainer as setContainerInner;
     }
 
+    /**
+     * @var int
+     */
     private $retryLimit = 3;
 
+    /**
+     * @var int
+     */
     private $sleepSeconds = 5;
 
     /**
@@ -59,6 +68,11 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
      */
     private $eventDispatcher;
 
+    /**
+     * @var ProcessBuilder
+     */
+    private $processBuilder;
+
     public function __construct($name, array $options, QueueManager $queueManager)
     {
         parent::__construct($name);
@@ -75,20 +89,12 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     {
         $this
             ->setDescription('Run a queue runner')
-            ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Only run [limit] jobs', 0)
-            ->addOption('fork', null, InputOption::VALUE_NONE, 'Fork for each job');
+            ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Only run [limit] batches of jobs', 0)
+            ->addOption('process-isolation', null, InputOption::VALUE_NONE, 'New processes for each job');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->handleInput($input);
-
-        $limit = (int) $input->getOption('limit');
-        $ignoreLimit = $limit === 0;
-        $useFork = $input->getOption('fork');
-
-        $running = true;
-
         if (function_exists('pcntl_signal')) {
             $handle = function($sig) use (&$running) {
                 $this->logger && $this->logger->debug("Received signal ($sig), stopping...");
@@ -98,53 +104,18 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
             pcntl_signal(SIGINT, $handle);
         }
 
-        if ($useFork) {
-            /** @var Kernel $kernel */
-            $kernel = $this->container->get('kernel');
-            $kernel->shutdown();
-        }
+        $this->handleInput($input);
+
+        $limit = (int) $input->getOption('limit');
+        $ignoreLimit = $limit === 0;
+
+        $running = true;
 
         do {
-            try {
-                $jobs = $this->getJobs();
-                if (count($jobs)) {
-                    $oks = [];
-                    $fails = [];
-                    $retries = [];
-                    foreach ($jobs as $job) {
-                        if ($useFork) {
-                            $result = $this->executeJobInNewProcess($job);
-                        } else {
-                            $result = $this->executeJob($job);
-                        }
-
-                        switch ($result) {
-                            case self::OK:
-                                $oks[] = $job;
-                                break;
-                            case self::FAIL:
-                                $fails[] = $job;
-                                break;
-                            case self::RETRY:
-                                $retries[] = $job;
-                                break;
-                        }
-
-                        if (!$ignoreLimit) {
-                            $limit--;
-                        }
-                    }
-                    $this->finishJobs($oks, $retries, $fails);
-                } else {
-                    $this->logger && $this->logger->debug('No jobs, sleeping...', [
-                        'sleepSeconds' => $this->sleepSeconds
-                    ]);
-                    sleep($this->sleepSeconds);
-                }
-            } catch (UnexpectedJobDataException $e) {
-                $this->logger && $this->logger->warning('Found unexpected job data in the queue', [
-                    'message' => $e->getMessage()
-                ]);
+            if ($input->getOption('process-isolation')) {
+                $this->executeBatchWithProcess($input, $output);
+            } else {
+                $this->executeBatch();
             }
 
             if (isset($handle)) {
@@ -152,36 +123,56 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
             }
 
             gc_collect_cycles();
-        } while ($running && ($ignoreLimit || $limit > 0));
+        } while ($running && ($ignoreLimit || --$limit > 0));
     }
 
-    /**
-     * Create a new process and run the given job in it
-     *
-     * @param Job $job
-     * @return int
-     * @throws FailedToForkException
-     */
-    protected function executeJobInNewProcess(Job $job)
+    protected function executeBatch()
     {
-        $pid = pcntl_fork();
-        if ($pid === -1) {
-            throw new FailedToForkException("Failed to fork");
-        } else if ($pid) {
-            pcntl_wait($status);
-            $code = pcntl_wexitstatus($status);
-            $this->logger && $this->logger->debug('Sub process exited with status', [
-                'code' => $code
+        try {
+            $jobs = $this->getJobs();
+            if (count($jobs)) {
+                $oks = [];
+                $fails = [];
+                $retries = [];
+                foreach ($jobs as $job) {
+                    $result = $this->executeJob($job);
+
+                    switch ($result) {
+                        case self::OK:
+                            $oks[] = $job;
+                            break;
+                        case self::FAIL:
+                            $fails[] = $job;
+                            break;
+                        default:
+                            $retries[] = $job;
+                            break;
+                    }
+                }
+                $this->finishJobs($oks, $retries, $fails);
+            } else {
+                $this->logger && $this->logger->debug('No jobs, sleeping...', [
+                    'sleepSeconds' => $this->sleepSeconds
+                ]);
+                sleep($this->sleepSeconds);
+            }
+        } catch (UnexpectedJobDataException $e) {
+            $this->logger && $this->logger->warning('Found unexpected job data in the queue', [
+                'message' => $e->getMessage()
             ]);
-            return $code;
-        } else {
-            /** @var Kernel $kernel */
-            $kernel = $this->container->get('kernel');
-            $kernel->boot();
-            $result = $this->executeJob($job);
-            $kernel->shutdown();
-            exit($result);
         }
+    }
+
+    protected function executeBatchWithProcess(InputInterface $input, OutputInterface $output)
+    {
+        $pb = $this->getProcessBuilder($input, $output);
+
+        /** @var Process $process */
+        $process = $pb->getProcess();
+
+        $process->mustRun(function ($type, $data) use ($output) {
+            $output->write($data);
+        });
     }
 
     /**
@@ -285,5 +276,76 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     protected function handleInput(InputInterface $input)
     {
         // Allows overriding
+    }
+
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return ProcessBuilder
+     */
+    private function getProcessBuilder(InputInterface $input, OutputInterface $output)
+    {
+        if (!$this->processBuilder) {
+            $finder = new PhpExecutableFinder();
+            $php = $finder->find();
+
+            $pb = new ProcessBuilder();
+
+            $pb
+                ->add($php)
+                ->add($_SERVER['argv'][0])
+                ->add($this->getName())
+                ->inheritEnvironmentVariables(true)
+                ->add('--limit=1')
+                ->add('--no-interaction')
+                ->add('--no-ansi');
+
+            $skip = [
+                'limit',
+                'process-isolation',
+                'verbose',
+                'quiet',
+                'ansi',
+                'no-ansi',
+                'no-interaction'
+            ];
+
+            foreach ($input->getOptions() as $key => $option) {
+                if (in_array($key, $skip)) {
+                    continue;
+                }
+                if ($option === true) {
+                    $pb->add("--$key");
+                    continue;
+                }
+                if ($option !== false && $option !== null) {
+                    $pb->add("--$key=$option");
+                }
+            }
+
+            switch ($output->getVerbosity()) {
+                case OutputInterface::VERBOSITY_QUIET:
+                    $pb->add('-q');
+                    break;
+                case OutputInterface::VERBOSITY_VERBOSE:
+                    $pb->add('-v');
+                    break;
+                case OutputInterface::VERBOSITY_VERY_VERBOSE:
+                    $pb->add('-vv');
+                    break;
+                case OutputInterface::VERBOSITY_DEBUG:
+                    $pb->add('-vvv');
+                    break;
+            }
+
+            foreach ($input->getArguments() as $key => $argument) {
+                if ($key == 'command') {
+                    continue;
+                }
+                $pb->add($argument);
+            }
+            $this->processBuilder = $pb;
+        }
+        return $this->processBuilder;
     }
 }
