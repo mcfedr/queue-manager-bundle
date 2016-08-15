@@ -348,4 +348,15 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         }
         return $this->processBuilder;
     }
+
+    /**
+     * Get the number of seconds to delay a try
+     * 
+     * @param int $count
+     * @return int
+     */
+    protected function getRetryDelaySeconds($count)
+    {
+        return $count * $count * 30;
+    }
 }
