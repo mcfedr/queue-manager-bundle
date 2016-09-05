@@ -38,6 +38,9 @@ class DoctrineResetSubscriber implements EventSubscriberInterface
     private function reset()
     {
         if ($this->doctrine) {
+            /** @var Connection $c */
+            $c = $this->doctrine->getConnection();
+            $c->close();
             $this->doctrine->resetManager();
         }
     }
