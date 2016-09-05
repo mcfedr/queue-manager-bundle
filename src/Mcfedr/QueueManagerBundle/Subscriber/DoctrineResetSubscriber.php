@@ -4,9 +4,10 @@
  */
 namespace Mcfedr\QueueManagerBundle\Subscriber;
 
+use Doctrine\Bundle\DoctrineBundle\Registry;
+use Doctrine\DBAL\Connection;
 use Mcfedr\QueueManagerBundle\Command\RunnerCommand;
 use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
-use Doctrine\Bundle\DoctrineBundle\Registry;
 use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 

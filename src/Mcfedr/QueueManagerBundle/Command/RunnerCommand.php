@@ -7,7 +7,6 @@ namespace Mcfedr\QueueManagerBundle\Command;
 
 use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
 use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
-use Mcfedr\QueueManagerBundle\Exception\FailedToForkException;
 use Mcfedr\QueueManagerBundle\Exception\InvalidWorkerException;
 use Mcfedr\QueueManagerBundle\Exception\UnexpectedJobDataException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
@@ -25,7 +24,6 @@ use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessBuilder;
@@ -96,7 +94,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if (function_exists('pcntl_signal')) {
-            $handle = function($sig) use (&$running) {
+            $handle = function ($sig) use (&$running) {
                 $this->logger && $this->logger->debug("Received signal ($sig), stopping...");
                 $running = false;
             };
@@ -106,7 +104,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
 
         $this->handleInput($input);
 
-        $limit = (int) $input->getOption('limit');
+        $limit = (int)$input->getOption('limit');
         $ignoreLimit = $limit === 0;
 
         $running = true;
@@ -187,28 +185,36 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
             $this->container->get('mcfedr_queue_manager.job_executor')->executeJob($job);
         } catch (ServiceNotFoundException $e) {
             $this->failedJob($job, new UnrecoverableJobException("Missing worker {$job->getName()}", 0, $e));
+
             return self::FAIL;
         } catch (InvalidWorkerException $e) {
             $this->failedJob($job, new UnrecoverableJobException("Invalid worker {$job->getName()}", 0, $e));
+
             return self::FAIL;
         } catch (UnrecoverableJobException $e) {
             $this->failedJob($job, $e);
+
             return self::FAIL;
         } catch (\Exception $e) {
             if (!$job instanceof RetryableJob) {
                 $this->failedJob($job, new UnrecoverableJobException('Job failed and is not retryable', 0, $e));
+
                 return self::FAIL;
             }
 
             if ($job->getRetryCount() >= $this->retryLimit) {
-                $this->failedJob($job, new UnrecoverableJobException('Job reached retry limit and won\'t be retried again', 0, $e));
+                $this->failedJob($job,
+                    new UnrecoverableJobException('Job reached retry limit and won\'t be retried again', 0, $e));
+
                 return self::FAIL;
             }
 
             $this->failedJob($job, $e);
+
             return self::RETRY;
         }
         $this->finishJob($job);
+
         return self::OK;
     }
 
@@ -346,12 +352,13 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
             }
             $this->processBuilder = $pb;
         }
+
         return $this->processBuilder;
     }
 
     /**
      * Get the number of seconds to delay a try
-     * 
+     *
      * @param int $count
      * @return int
      */

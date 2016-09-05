@@ -5,7 +5,6 @@
 namespace Mcfedr\QueueManagerBundle\Manager;
 
 use Mcfedr\QueueManagerBundle\Exception\JobNotDeletableException;
-use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
 use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 
@@ -52,12 +51,14 @@ class QueueManagerRegistry
     {
         if ($manager) {
             $this->queueManagers[$manager]->delete($job);
+
             return;
         }
 
         foreach ($this->queueManagers as $queueManager) {
             try {
                 $queueManager->delete($job);
+
                 return;
             } catch (WrongJobException $e) {
 
