@@ -23,7 +23,7 @@ Include the bundle in your AppKernel
 
 ## Config
 
-This is an example config if you have installed [`mcfedr/queue-driver-resque-bundle`](https://github.com/mcfedr/queue-driver-resque-bundle)
+This is an example config if you have installed [`mcfedr/queue-driver-resque-bundle`](https://github.com/mcfedr/resque-queue-driver-bundle)
 
     mcfedr_queue_manager:
         managers:
