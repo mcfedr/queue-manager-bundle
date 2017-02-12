@@ -8,6 +8,7 @@ namespace Mcfedr\QueueManagerBundle\Tests\Command;
 
 use Mcfedr\QueueManagerBundle\Command\RunnerCommand;
 use Mcfedr\QueueManagerBundle\Exception\InvalidWorkerException;
+use Mcfedr\QueueManagerBundle\Exception\TestException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
 use Mcfedr\QueueManagerBundle\Manager\QueueManager;
 use Mcfedr\QueueManagerBundle\Manager\RetryingQueueManager;
@@ -48,6 +49,29 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
         $job = $this->getMockJob(Job::class);
 
         $exce = new UnrecoverableJobException();
+
+        $worker = $this->getMockWorker($exce);
+
+        $manager = $this->getMockBuilder(QueueManager::class)->getMock();
+        $methods = ['getJobs', 'finishJobs', 'failedJob'];
+        $command = $this->getMockCommand($methods, $manager, [$job]);
+
+        $command->expects($this->once())
+            ->method('failedJob')
+            ->with($job, $exce);
+
+        $command->expects($this->once())
+            ->method('finishJobs')
+            ->with([], [], [$job]);
+
+        $this->executeCommand($command, $worker);
+    }
+
+    public function testExecutePermanentlyFailingJobUsingInterface()
+    {
+        $job = $this->getMockJob(Job::class);
+
+        $exce = new TestException();
 
         $worker = $this->getMockWorker($exce);
 
