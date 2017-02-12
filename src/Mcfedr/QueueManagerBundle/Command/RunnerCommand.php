@@ -10,6 +10,7 @@ use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
 use Mcfedr\QueueManagerBundle\Exception\InvalidWorkerException;
 use Mcfedr\QueueManagerBundle\Exception\UnexpectedJobDataException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
+use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobExceptionInterface;
 use Mcfedr\QueueManagerBundle\Manager\QueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
@@ -191,7 +192,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
             $this->failedJob($job, new UnrecoverableJobException("Invalid worker {$job->getName()}", 0, $e));
 
             return self::FAIL;
-        } catch (UnrecoverableJobException $e) {
+        } catch (UnrecoverableJobExceptionInterface $e) {
             $this->failedJob($job, $e);
 
             return self::FAIL;
@@ -260,7 +261,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
                 'name' => $job->getName(),
                 'arguments' => $job->getArguments(),
                 'message' => $exception->getMessage(),
-                'retryable' => !$exception instanceof UnrecoverableJobException
+                'retryable' => !$exception instanceof UnrecoverableJobExceptionInterface
             ];
             if (($p = $exception->getPrevious())) {
                 $context['cause'] = $p->getMessage();

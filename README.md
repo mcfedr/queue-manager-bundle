@@ -75,6 +75,9 @@ There is one method, that is called with the arguments you passed to `QueueManag
      */
     public function execute(array $arguments);
 
+If your job throws an exception it will be retried (assuming the driver supports retrying),
+unless the exception thrown is an instance of `UnrecoverableJobExceptionInterface`.
+
 ## Creating a driver
 
 Firstly a driver needs to implement a `QueueManager`. This should put tasks into queues.

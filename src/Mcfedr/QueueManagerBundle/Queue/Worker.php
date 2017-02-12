@@ -5,7 +5,7 @@
 
 namespace Mcfedr\QueueManagerBundle\Queue;
 
-use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
+use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobExceptionInterface;
 
 interface Worker
 {
@@ -14,7 +14,7 @@ interface Worker
      *
      * @param array $arguments
      * @throws \Exception
-     * @throws UnrecoverableJobException This job should not be retried
+     * @throws UnrecoverableJobExceptionInterface This job should not be retried
      */
     public function execute(array $arguments);
 }
