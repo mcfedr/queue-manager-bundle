@@ -1,7 +1,4 @@
 <?php
-/**
- * Created by mcfedr on 05/03/2016 15:43
- */
 
 namespace Mcfedr\QueueManagerBundle\Command;
 
@@ -105,7 +102,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
 
         $this->handleInput($input);
 
-        $limit = (int)$input->getOption('limit');
+        $limit = (int) $input->getOption('limit');
         $ignoreLimit = $limit === 0;
 
         $running = true;
@@ -175,9 +172,10 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     }
 
     /**
-     * Executes a single job
+     * Executes a single job.
      *
      * @param Job $job
+     *
      * @return int
      */
     protected function executeJob(Job $job)
@@ -230,12 +228,13 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
 
     /**
      * @throws UnexpectedJobDataException
+     *
      * @return Job[]
      */
     abstract protected function getJobs();
 
     /**
-     * Called when a job is finished
+     * Called when a job is finished.
      *
      * @param Job $job
      */
@@ -249,9 +248,9 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     }
 
     /**
-     * Called when a job failed
+     * Called when a job failed.
      *
-     * @param Job $job
+     * @param Job        $job
      * @param \Exception $exception
      */
     protected function failedJob(Job $job, \Exception $exception)
@@ -272,7 +271,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     }
 
     /**
-     * Called after a batch of jobs finishes
+     * Called after a batch of jobs finishes.
      *
      * @param Job[] $okJobs
      * @param Job[] $retryJobs
@@ -286,8 +285,9 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     }
 
     /**
-     * @param InputInterface $input
+     * @param InputInterface  $input
      * @param OutputInterface $output
+     *
      * @return ProcessBuilder
      */
     private function getProcessBuilder(InputInterface $input, OutputInterface $output)
@@ -358,9 +358,10 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     }
 
     /**
-     * Get the number of seconds to delay a try
+     * Get the number of seconds to delay a try.
      *
      * @param int $count
+     *
      * @return int
      */
     protected function getRetryDelaySeconds($count)

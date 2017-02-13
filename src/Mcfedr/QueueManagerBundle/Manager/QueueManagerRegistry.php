@@ -1,7 +1,5 @@
 <?php
-/**
- * Created by mcfedr on 7/28/16 14:24
- */
+
 namespace Mcfedr\QueueManagerBundle\Manager;
 
 use Mcfedr\QueueManagerBundle\Exception\JobNotDeletableException;
@@ -21,7 +19,7 @@ class QueueManagerRegistry
     private $default;
 
     /**
-     * @param array $queueManagers
+     * @param array  $queueManagers
      * @param string $default
      */
     public function __construct(array $queueManagers, $default)
@@ -32,9 +30,10 @@ class QueueManagerRegistry
 
     /**
      * @param string $name
-     * @param array $arguments
-     * @param array $options
+     * @param array  $arguments
+     * @param array  $options
      * @param string $manager
+     *
      * @return Job
      */
     public function put($name, array $arguments = [], array $options = [], $manager = null)
@@ -43,8 +42,9 @@ class QueueManagerRegistry
     }
 
     /**
-     * @param Job $job
+     * @param Job    $job
      * @param string $manager
+     *
      * @throws JobNotDeletableException
      */
     public function delete(Job $job, $manager = null)
@@ -61,7 +61,6 @@ class QueueManagerRegistry
 
                 return;
             } catch (WrongJobException $e) {
-
             }
         }
 

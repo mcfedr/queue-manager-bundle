@@ -1,7 +1,4 @@
 <?php
-/**
- * Created by mcfedr on 07/03/2016 10:36
- */
 
 namespace Mcfedr\QueueManagerBundle\Command;
 
@@ -33,11 +30,12 @@ class TestRunnerCommand extends RunnerCommand
         if (rand(1, 2) == 1) {
             return [new TestRetryableJob('test_worker', [], [])];
         }
+
         return [new TestJob('test_worker', [], [])];
     }
 
     /**
-     * Called after a batch of jobs finishes
+     * Called after a batch of jobs finishes.
      *
      * @param Job[] $okJobs
      * @param Job[] $failedJobs
@@ -45,6 +43,5 @@ class TestRunnerCommand extends RunnerCommand
      */
     protected function finishJobs(array $okJobs, array $failedJobs, array $retryJobs)
     {
-
     }
 }

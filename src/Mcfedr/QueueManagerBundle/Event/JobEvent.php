@@ -1,7 +1,5 @@
 <?php
-/**
- * Created by mcfedr on 8/4/16 12:03
- */
+
 namespace Mcfedr\QueueManagerBundle\Event;
 
 use Mcfedr\QueueManagerBundle\Queue\Job;

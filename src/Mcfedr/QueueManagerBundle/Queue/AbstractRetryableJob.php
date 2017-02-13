@@ -1,7 +1,4 @@
 <?php
-/**
- * Created by mcfedr on 11/06/2016 11:12
- */
 
 namespace Mcfedr\QueueManagerBundle\Queue;
 
@@ -19,7 +16,7 @@ abstract class AbstractRetryableJob extends AbstractJob implements RetryableJob
     }
 
     /**
-     * Used to count retries
+     * Used to count retries.
      *
      * @return int
      */
@@ -30,6 +27,6 @@ abstract class AbstractRetryableJob extends AbstractJob implements RetryableJob
 
     public function incrementRetryCount()
     {
-        $this->retryCount++;
+        ++$this->retryCount;
     }
 }

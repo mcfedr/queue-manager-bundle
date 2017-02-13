@@ -1,7 +1,5 @@
 <?php
-/**
- * Created by mcfedr on 7/27/16 16:08
- */
+
 namespace Mcfedr\QueueManagerBundle\Runner;
 
 use Mcfedr\QueueManagerBundle\Exception\InvalidWorkerException;

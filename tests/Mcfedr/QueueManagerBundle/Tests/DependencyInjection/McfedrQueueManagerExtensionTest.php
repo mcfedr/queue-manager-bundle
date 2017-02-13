@@ -1,8 +1,4 @@
 <?php
-/**
- * Created by mcfedr on 04/02/2016 10:42
- */
-
 
 namespace Mcfedr\QueueManagerBundle\Tests\DependencyInjection;
 

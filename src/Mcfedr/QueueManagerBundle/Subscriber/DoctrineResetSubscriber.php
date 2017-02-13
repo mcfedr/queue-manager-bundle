@@ -1,7 +1,5 @@
 <?php
-/**
- * Created by mcfedr on 8/4/16 12:12
- */
+
 namespace Mcfedr\QueueManagerBundle\Subscriber;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;

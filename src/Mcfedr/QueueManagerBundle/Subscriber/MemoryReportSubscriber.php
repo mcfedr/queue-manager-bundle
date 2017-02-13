@@ -1,7 +1,5 @@
 <?php
-/**
- * Created by mcfedr on 8/8/16 13:49
- */
+
 namespace Mcfedr\QueueManagerBundle\Subscriber;
 
 use Mcfedr\QueueManagerBundle\Command\RunnerCommand;
@@ -17,9 +15,6 @@ class MemoryReportSubscriber implements EventSubscriberInterface
      */
     private $logger;
 
-    /**
-     * @param LoggerInterface $logger
-     */
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;

@@ -1,7 +1,4 @@
 <?php
-/**
- * Created by mcfedr on 04/02/2016 00:39
- */
 
 namespace Mcfedr\QueueManagerBundle\Queue;
 
@@ -19,7 +16,7 @@ abstract class AbstractJob implements Job
 
     /**
      * @param string $name
-     * @param array $arguments
+     * @param array  $arguments
      */
     public function __construct($name, array $arguments)
     {

@@ -1,7 +1,5 @@
 <?php
-/**
- * Created by mcfedr on 7/26/16 17:42
- */
+
 namespace Mcfedr\QueueManagerBundle\Queue;
 
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
@@ -23,9 +21,10 @@ class TestWorker implements Worker
     }
 
     /**
-     * Called to start the queued task
+     * Called to start the queued task.
      *
      * @param array $arguments
+     *
      * @throws \Exception
      * @throws UnrecoverableJobException
      */

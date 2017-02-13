@@ -5,9 +5,16 @@ php:
     - 5.5
     - hhvm
     - 7.0
+    - 7.1
+
+matrix:
+    allow_failures:
+        - php: hhvm
 
 before_script:
     - composer selfupdate
     - composer install --prefer-source
 
-script: ./vendor/bin/phpunit
+script:
+    - ./vendor/bin/php-cs-fixer fix --dry-run --diff
+    - ./vendor/bin/phpunit

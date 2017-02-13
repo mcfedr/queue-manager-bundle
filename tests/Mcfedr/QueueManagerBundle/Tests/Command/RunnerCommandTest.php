@@ -1,17 +1,11 @@
 <?php
-/**
- * Created by mcfedr on 17/03/2016 21:39
- */
-
 
 namespace Mcfedr\QueueManagerBundle\Tests\Command;
 
 use Mcfedr\QueueManagerBundle\Command\RunnerCommand;
-use Mcfedr\QueueManagerBundle\Exception\InvalidWorkerException;
 use Mcfedr\QueueManagerBundle\Exception\TestException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
 use Mcfedr\QueueManagerBundle\Manager\QueueManager;
-use Mcfedr\QueueManagerBundle\Manager\RetryingQueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
 use Mcfedr\QueueManagerBundle\Queue\Worker;
@@ -226,6 +220,7 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @param $class
+     *
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
     private function getMockJob($class)
@@ -236,11 +231,13 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
             ->willReturn('worker');
         $job->method('getArguments')
             ->willReturn([]);
+
         return $job;
     }
 
     /**
      * @param $exce
+     *
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
     private function getMockWorker(\Exception $exce = null, $count = 1)
@@ -258,9 +255,10 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @param string[] $methods
+     * @param string[]     $methods
      * @param QueueManager $manager
-     * @param Job[] $jobs
+     * @param Job[]        $jobs
+     *
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
     private function getMockCommand(array $methods, QueueManager $manager, array $jobs)
@@ -274,6 +272,7 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
         $command->expects($this->once())
             ->method('getJobs')
             ->willReturn($jobs);
+
         return $command;
     }
 
