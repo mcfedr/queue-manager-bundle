@@ -4,6 +4,7 @@ A bundle for accessing job queues
 
 [![Latest Stable Version](https://poser.pugx.org/mcfedr/queue-manager-bundle/v/stable.png)](https://packagist.org/packages/mcfedr/queue-manager-bundle)
 [![License](https://poser.pugx.org/mcfedr/queue-manager-bundle/license.png)](https://packagist.org/packages/mcfedr/queue-manager-bundle)
+[![Build Status](https://travis-ci.org/mcfedr/queue-manager-bundle.svg?branch=master)](https://travis-ci.org/mcfedr/queue-manager-bundle)
 
 ## Install
 
