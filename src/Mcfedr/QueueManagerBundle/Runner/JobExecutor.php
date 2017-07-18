@@ -16,7 +16,7 @@ class JobExecutor implements ContainerAwareInterface
     {
         $worker = $this->container->get($job->getName());
         if (!$worker instanceof Worker) {
-            throw new InvalidWorkerException("The worker {$job->getName()} is not an instance of " . Worker::class);
+            throw new InvalidWorkerException("The worker {$job->getName()} is not an instance of ".Worker::class);
         }
 
         $worker->execute($job->getArguments());

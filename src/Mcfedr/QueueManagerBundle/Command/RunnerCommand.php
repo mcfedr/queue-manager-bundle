@@ -148,13 +148,13 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
                 $this->finishJobs($oks, $retries, $fails);
             } else {
                 $this->logger && $this->logger->debug('No jobs, sleeping...', [
-                    'sleepSeconds' => $this->sleepSeconds
+                    'sleepSeconds' => $this->sleepSeconds,
                 ]);
                 sleep($this->sleepSeconds);
             }
         } catch (UnexpectedJobDataException $e) {
             $this->logger && $this->logger->warning('Found unexpected job data in the queue', [
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ]);
         }
     }
@@ -242,7 +242,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     {
         $this->logger && $this->logger->debug('Finished a job', [
             'name' => $job->getName(),
-            'arguments' => $job->getArguments()
+            'arguments' => $job->getArguments(),
         ]);
         $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_FINISHED_EVENT, new FinishedJobEvent($job));
     }
@@ -260,7 +260,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
                 'name' => $job->getName(),
                 'arguments' => $job->getArguments(),
                 'message' => $exception->getMessage(),
-                'retryable' => !$exception instanceof UnrecoverableJobExceptionInterface
+                'retryable' => !$exception instanceof UnrecoverableJobExceptionInterface,
             ];
             if (($p = $exception->getPrevious())) {
                 $context['cause'] = $p->getMessage();
@@ -314,7 +314,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
                 'quiet',
                 'ansi',
                 'no-ansi',
-                'no-interaction'
+                'no-interaction',
             ];
 
             foreach ($input->getOptions() as $key => $option) {

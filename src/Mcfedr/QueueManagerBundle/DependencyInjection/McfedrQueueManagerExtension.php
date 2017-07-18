@@ -30,7 +30,7 @@ class McfedrQueueManagerExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
         $queueManagers = [];
@@ -47,14 +47,14 @@ class McfedrQueueManagerExtension extends Extension
             $merged = array_merge([
                 'debug' => $config['debug'],
                 'retry_limit' => $config['retry_limit'],
-                'sleep_seconds' => $config['sleep_seconds']
+                'sleep_seconds' => $config['sleep_seconds'],
             ], $defaultOptions, $options);
 
             $container->setParameter("mcfedr_queue_manager.$name.options", $merged);
 
             $managerServiceName = "mcfedr_queue_manager.$name";
             $managerDefinition = new Definition($managerClass, [
-                $merged
+                $merged,
             ]);
 
             if ((new \ReflectionClass($managerClass))->implementsInterface(ContainerAwareInterface::class)) {
@@ -70,7 +70,7 @@ class McfedrQueueManagerExtension extends Extension
                 $commandDefinition = new Definition($commandClass, [
                     "mcfedr:queue:$name-runner",
                     $merged,
-                    new Reference($managerServiceName)
+                    new Reference($managerServiceName),
                 ]);
                 $commandDefinition->setTags(
                     ['console.command' => []]
@@ -91,7 +91,7 @@ class McfedrQueueManagerExtension extends Extension
         if ($config['report_memory']) {
             $mem = new Definition(MemoryReportSubscriber::class, [new Reference('logger')]);
             $mem->setTags([
-                'kernel.event_subscriber' => []
+                'kernel.event_subscriber' => [],
             ]);
             $container->setDefinition('mcfedr_queue_manager.memory_report_subscriber', $mem);
         }
@@ -99,7 +99,7 @@ class McfedrQueueManagerExtension extends Extension
         if ($config['doctrine_reset']) {
             $mem = new Definition(DoctrineResetSubscriber::class, [new Reference('doctrine', ContainerInterface::NULL_ON_INVALID_REFERENCE)]);
             $mem->setTags([
-                'kernel.event_subscriber' => []
+                'kernel.event_subscriber' => [],
             ]);
             $container->setDefinition('mcfedr_queue_manager.doctrine_reset_subscriber', $mem);
         }

@@ -48,7 +48,7 @@ class DoctrineResetSubscriber implements EventSubscriberInterface
     {
         return [
             RunnerCommand::JOB_FINISHED_EVENT => 'onJobFinished',
-            RunnerCommand::JOB_FAILED_EVENT => 'onJobFailed'
+            RunnerCommand::JOB_FAILED_EVENT => 'onJobFailed',
         ];
     }
 }

@@ -298,7 +298,7 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
         $commandTester = new CommandTester($command);
         $commandTester->execute([
             'command' => $command->getName(),
-            '--limit' => 1
+            '--limit' => 1,
         ]);
     }
 }

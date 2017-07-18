@@ -31,7 +31,7 @@ class TestWorker implements Worker
     public function execute(array $arguments)
     {
         $this->logger->info('Test worker is executing', [
-            'arguments' => $arguments
+            'arguments' => $arguments,
         ]);
         sleep(1);
         switch (rand(1, 3)) {

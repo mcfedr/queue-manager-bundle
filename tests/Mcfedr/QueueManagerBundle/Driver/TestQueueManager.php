@@ -43,7 +43,7 @@ class TestQueueManager implements QueueManager, ContainerAwareInterface
     public function put($name, array $arguments = [], array $options = [])
     {
         $this->info('Putting new job', [
-            'name' => $name
+            'name' => $name,
         ]);
     }
 
@@ -58,7 +58,7 @@ class TestQueueManager implements QueueManager, ContainerAwareInterface
     public function delete(Job $job)
     {
         $this->info('Deleting job', [
-            'name' => $job->getName()
+            'name' => $job->getName(),
         ]);
     }
 

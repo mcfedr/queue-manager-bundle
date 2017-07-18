@@ -34,7 +34,7 @@ class MemoryReportSubscriber implements EventSubscriberInterface
     {
         $this->logger->info('Memory after job', [
             'usage KB:' => round(memory_get_usage(true) / 1024),
-            'peak KB:' => round(memory_get_peak_usage(true) / 1024)
+            'peak KB:' => round(memory_get_peak_usage(true) / 1024),
         ]);
     }
 
@@ -42,7 +42,7 @@ class MemoryReportSubscriber implements EventSubscriberInterface
     {
         return [
             RunnerCommand::JOB_FINISHED_EVENT => 'onJobFinished',
-            RunnerCommand::JOB_FAILED_EVENT => 'onJobFailed'
+            RunnerCommand::JOB_FAILED_EVENT => 'onJobFailed',
         ];
     }
 }
