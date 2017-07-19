@@ -98,7 +98,7 @@ class McfedrQueueManagerExtension extends Extension
         }
 
         if ($config['doctrine_reset'] && class_exists('Doctrine\Bundle\DoctrineBundle\Registry')) {
-            $doctrineListener = new Definition(DoctrineResetSubscriber::class, [
+            $doctrineListener = new Definition('Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber', [
                 new Reference('doctrine', ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ]);
             $doctrineListener->setTags([
@@ -108,7 +108,7 @@ class McfedrQueueManagerExtension extends Extension
         }
 
         if ($config['swift_mailer_batch_size'] >= 0 && class_exists('Symfony\Bundle\SwiftmailerBundle\EventListener\EmailSenderListener')) {
-            $swiftListener = new Definition(SwiftMailerSubscriber::class, [
+            $swiftListener = new Definition('Mcfedr\QueueManagerBundle\Subscriber\SwiftMailerSubscriber', [
                 new Reference('service_container'),
                 new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE),
                 $config['swift_mailer_batch_size'],
