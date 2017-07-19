@@ -25,6 +25,7 @@ class Configuration implements ConfigurationInterface
                 ->integerNode('sleep_seconds')->defaultValue(5)->end()
                 ->booleanNode('report_memory')->defaultFalse()->end()
                 ->booleanNode('doctrine_reset')->defaultTrue()->end()
+                ->integerNode('swift_mailer_batch_size')->defaultValue(10)->end()
                 ->arrayNode('drivers')
                     ->requiresAtLeastOneElement()
                     ->useAttributeAsKey('name')

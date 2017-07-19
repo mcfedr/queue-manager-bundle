@@ -49,5 +49,7 @@ class McfedrQueueManagerExtensionTest extends WebTestCase
         $this->assertTrue($client->getContainer()->has('mcfedr_queue_manager.registry'));
 
         $this->assertTrue($client->getContainer()->has('mcfedr_queue_manager.doctrine_reset_subscriber'));
+
+        $this->assertTrue($client->getContainer()->has('mcfedr_queue_manager.swift_mailer_subscriber'));
     }
 }

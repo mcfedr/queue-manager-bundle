@@ -18,7 +18,8 @@
         "phpunit/phpunit": "^4.1",
         "symfony/monolog-bundle": "^2.8|^3.0",
         "friendsofphp/php-cs-fixer": "^2.1",
-        "doctrine/doctrine-bundle": "^1.6"
+        "doctrine/doctrine-bundle": "^1.6",
+        "symfony/swiftmailer-bundle": "^2.3|^3.0"
     },
     "suggest": {
         "mcfedr/beanstalk-queue-driver-bundle": "A driver for beanstalkd",

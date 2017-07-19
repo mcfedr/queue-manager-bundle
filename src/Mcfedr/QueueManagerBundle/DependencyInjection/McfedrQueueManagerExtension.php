@@ -5,6 +5,7 @@ namespace Mcfedr\QueueManagerBundle\DependencyInjection;
 use Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry;
 use Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber;
 use Mcfedr\QueueManagerBundle\Subscriber\MemoryReportSubscriber;
+use Mcfedr\QueueManagerBundle\Subscriber\SwiftMailerSubscriber;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -89,19 +90,33 @@ class McfedrQueueManagerExtension extends Extension
         $container->setDefinition('mcfedr_queue_manager.registry', new Definition(QueueManagerRegistry::class, [$queueManagers, $defaultManager]));
 
         if ($config['report_memory']) {
-            $mem = new Definition(MemoryReportSubscriber::class, [new Reference('logger')]);
-            $mem->setTags([
+            $memoryListener = new Definition(MemoryReportSubscriber::class, [new Reference('logger')]);
+            $memoryListener->setTags([
                 'kernel.event_subscriber' => [],
             ]);
-            $container->setDefinition('mcfedr_queue_manager.memory_report_subscriber', $mem);
+            $container->setDefinition('mcfedr_queue_manager.memory_report_subscriber', $memoryListener);
         }
 
         if ($config['doctrine_reset']) {
-            $mem = new Definition(DoctrineResetSubscriber::class, [new Reference('doctrine', ContainerInterface::NULL_ON_INVALID_REFERENCE)]);
-            $mem->setTags([
+            $doctrineListener = new Definition(DoctrineResetSubscriber::class, [
+                new Reference('doctrine', ContainerInterface::NULL_ON_INVALID_REFERENCE),
+            ]);
+            $doctrineListener->setTags([
                 'kernel.event_subscriber' => [],
             ]);
-            $container->setDefinition('mcfedr_queue_manager.doctrine_reset_subscriber', $mem);
+            $container->setDefinition('mcfedr_queue_manager.doctrine_reset_subscriber', $doctrineListener);
+        }
+
+        if ($config['swift_mailer_batch_size'] >= 0) {
+            $swiftListener = new Definition(SwiftMailerSubscriber::class, [
+                new Reference('service_container'),
+                new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE),
+                $config['swift_mailer_batch_size'],
+            ]);
+            $swiftListener->setTags([
+                'kernel.event_subscriber' => [],
+            ]);
+            $container->setDefinition('mcfedr_queue_manager.swift_mailer_subscriber', $swiftListener);
         }
     }
 }
