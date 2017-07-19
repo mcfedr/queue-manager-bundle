@@ -107,9 +107,9 @@ class McfedrQueueManagerExtension extends Extension
 
         if ($config['swift_mailer_batch_size'] >= 0 && class_exists('Symfony\Bundle\SwiftmailerBundle\EventListener\EmailSenderListener')) {
             $swiftListener = new Definition('Mcfedr\QueueManagerBundle\Subscriber\SwiftMailerSubscriber', [
+                $config['swift_mailer_batch_size'],
                 new Reference('service_container'),
                 new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE),
-                $config['swift_mailer_batch_size'],
             ]);
             $swiftListener->setTags([
                 'kernel.event_subscriber' => [],
