@@ -3,9 +3,7 @@
 namespace Mcfedr\QueueManagerBundle\DependencyInjection;
 
 use Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry;
-use Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber;
 use Mcfedr\QueueManagerBundle\Subscriber\MemoryReportSubscriber;
-use Mcfedr\QueueManagerBundle\Subscriber\SwiftMailerSubscriber;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
