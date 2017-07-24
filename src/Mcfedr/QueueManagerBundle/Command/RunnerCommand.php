@@ -4,6 +4,7 @@ namespace Mcfedr\QueueManagerBundle\Command;
 
 use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
 use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
+use Mcfedr\QueueManagerBundle\Event\StartJobEvent;
 use Mcfedr\QueueManagerBundle\Exception\InvalidWorkerException;
 use Mcfedr\QueueManagerBundle\Exception\UnexpectedJobDataException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
@@ -32,6 +33,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     const FAIL = 1;
     const RETRY = 2;
 
+    const JOB_START_EVENT = 'mcfedr_queue_manager.job_start';
     const JOB_FINISHED_EVENT = 'mcfedr_queue_manager.job_finished';
     const JOB_FAILED_EVENT = 'mcfedr_queue_manager.job_failed';
 
@@ -181,6 +183,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     protected function executeJob(Job $job)
     {
         try {
+            $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_START_EVENT, new StartJobEvent($job));
             $this->container->get('mcfedr_queue_manager.job_executor')->executeJob($job);
         } catch (ServiceNotFoundException $e) {
             $this->failedJob($job, new UnrecoverableJobException("Missing worker {$job->getName()}", 0, $e));

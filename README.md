@@ -133,6 +133,16 @@ There is one method, that is called with the arguments you passed to `QueueManag
 If your job throws an exception it will be retried (assuming the driver supports retrying),
 unless the exception thrown is an instance of `UnrecoverableJobExceptionInterface`.
 
+## Events
+
+A number of events are triggered during the running of jobs
+
+| Name | Event Object |
+|------|--------------|
+| mcfedr_queue_manager.job_start | `StartJobEvent` |
+| mcfedr_queue_manager.job_finished | `FinishedJobEvent` | 
+| mcfedr_queue_manager.job_failed | `FailedJobEvent` |
+
 ## Creating your own driver
 
 Firstly a driver needs to implement a `QueueManager`. This should put tasks into queues.
