@@ -27,6 +27,9 @@ class MemoryReportSubscriber implements EventSubscriberInterface
 
     public function onJobFinished(FinishedJobEvent $e)
     {
+        if ($e->isInternal()) {
+            return;
+        }
         $this->report();
     }
 

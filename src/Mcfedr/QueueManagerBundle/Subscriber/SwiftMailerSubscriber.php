@@ -29,6 +29,9 @@ class SwiftMailerSubscriber extends EmailSenderListener
 
     public function onJobFailed(FailedJobEvent $e)
     {
+        if ($e->isInternal()) {
+            return;
+        }
         if (++$this->i >= $this->batchSize) {
             $this->onTerminate();
             $this->i = 0;
@@ -37,6 +40,9 @@ class SwiftMailerSubscriber extends EmailSenderListener
 
     public function onJobFinished(FinishedJobEvent $e)
     {
+        if ($e->isInternal()) {
+            return;
+        }
         if (++$this->i >= $this->batchSize) {
             $this->onTerminate();
             $this->i = 0;

@@ -13,11 +13,18 @@ abstract class JobEvent extends Event
     private $job;
 
     /**
-     * @param Job $job
+     * @var bool
      */
-    public function __construct(Job $job)
+    private $internal;
+
+    /**
+     * @param Job  $job
+     * @param bool $internal
+     */
+    public function __construct(Job $job, $internal)
     {
         $this->job = $job;
+        $this->internal = $internal;
     }
 
     /**
@@ -26,5 +33,13 @@ abstract class JobEvent extends Event
     public function getJob()
     {
         return $this->job;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInternal()
+    {
+        return $this->internal;
     }
 }
