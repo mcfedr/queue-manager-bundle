@@ -2,9 +2,9 @@
 
 namespace Mcfedr\QueueManagerBundle\Subscriber;
 
-use Mcfedr\QueueManagerBundle\Command\RunnerCommand;
 use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
 use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
+use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -41,8 +41,8 @@ class MemoryReportSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            RunnerCommand::JOB_FINISHED_EVENT => 'onJobFinished',
-            RunnerCommand::JOB_FAILED_EVENT => 'onJobFailed',
+            JobExecutor::JOB_FINISHED_EVENT => 'onJobFinished',
+            JobExecutor::JOB_FAILED_EVENT => 'onJobFailed',
         ];
     }
 }

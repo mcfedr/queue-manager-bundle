@@ -2,16 +2,11 @@
 
 namespace Mcfedr\QueueManagerBundle\Command;
 
-use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
-use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
-use Mcfedr\QueueManagerBundle\Event\StartJobEvent;
-use Mcfedr\QueueManagerBundle\Exception\InvalidWorkerException;
 use Mcfedr\QueueManagerBundle\Exception\UnexpectedJobDataException;
-use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobExceptionInterface;
 use Mcfedr\QueueManagerBundle\Manager\QueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Job;
-use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
+use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,8 +16,6 @@ use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessBuilder;
@@ -33,8 +26,22 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     const FAIL = 1;
     const RETRY = 2;
 
+    /**
+     * @deprecated
+     * @see JobExecutor::JOB_START_EVENT
+     */
     const JOB_START_EVENT = 'mcfedr_queue_manager.job_start';
+
+    /**
+     * @deprecated
+     * @see JobExecutor::JOB_FINISHED_EVENT
+     */
     const JOB_FINISHED_EVENT = 'mcfedr_queue_manager.job_finished';
+
+    /**
+     * @deprecated
+     * @see JobExecutor::JOB_FAILED_EVENT
+     */
     const JOB_FAILED_EVENT = 'mcfedr_queue_manager.job_failed';
 
     use ContainerAwareTrait {
@@ -60,11 +67,6 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
      * @var LoggerInterface
      */
     protected $logger;
-
-    /**
-     * @var EventDispatcher
-     */
-    private $eventDispatcher;
 
     /**
      * @var ProcessBuilder
@@ -183,34 +185,12 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     protected function executeJob(Job $job)
     {
         try {
-            $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_START_EVENT, new StartJobEvent($job));
-            $this->container->get('mcfedr_queue_manager.job_executor')->executeJob($job);
-        } catch (ServiceNotFoundException $e) {
-            $this->failedJob($job, new UnrecoverableJobException("Missing worker {$job->getName()}", 0, $e));
-
-            return self::FAIL;
-        } catch (InvalidWorkerException $e) {
-            $this->failedJob($job, new UnrecoverableJobException("Invalid worker {$job->getName()}", 0, $e));
-
-            return self::FAIL;
+            $this->container->get('mcfedr_queue_manager.job_executor')->executeJob($job, $this->retryLimit);
         } catch (UnrecoverableJobExceptionInterface $e) {
             $this->failedJob($job, $e);
 
             return self::FAIL;
         } catch (\Exception $e) {
-            if (!$job instanceof RetryableJob) {
-                $this->failedJob($job, new UnrecoverableJobException('Job failed and is not retryable', 0, $e));
-
-                return self::FAIL;
-            }
-
-            if ($job->getRetryCount() >= $this->retryLimit) {
-                $this->failedJob($job,
-                    new UnrecoverableJobException('Job reached retry limit and won\'t be retried again', 0, $e));
-
-                return self::FAIL;
-            }
-
             $this->failedJob($job, $e);
 
             return self::RETRY;
@@ -225,7 +205,6 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         $this->setContainerInner($container);
         if ($container) {
             $this->logger = $container->get('logger', Container::NULL_ON_INVALID_REFERENCE);
-            $this->eventDispatcher = $container->get('event_dispatcher', Container::NULL_ON_INVALID_REFERENCE);
         }
     }
 
@@ -240,14 +219,11 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
      * Called when a job is finished.
      *
      * @param Job $job
+     *
+     * @deprecated
      */
     protected function finishJob(Job $job)
     {
-        $this->logger && $this->logger->debug('Finished a job', [
-            'name' => $job->getName(),
-            'arguments' => $job->getArguments(),
-        ]);
-        $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_FINISHED_EVENT, new FinishedJobEvent($job));
     }
 
     /**
@@ -255,22 +231,11 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
      *
      * @param Job        $job
      * @param \Exception $exception
+     *
+     * @deprecated
      */
     protected function failedJob(Job $job, \Exception $exception)
     {
-        if ($this->logger) {
-            $context = [
-                'name' => $job->getName(),
-                'arguments' => $job->getArguments(),
-                'message' => $exception->getMessage(),
-                'retryable' => !$exception instanceof UnrecoverableJobExceptionInterface,
-            ];
-            if (($p = $exception->getPrevious())) {
-                $context['cause'] = $p->getMessage();
-            }
-            $this->logger->error('Job failed', $context);
-        }
-        $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_FAILED_EVENT, new FailedJobEvent($job, $exception));
     }
 
     /**
