@@ -52,6 +52,7 @@ class JobExecutor implements ContainerAwareInterface
     /**
      * @param Job $job
      * @param int $retryLimit Turn \Exception into UnrecoverableJobException when the retry limit is reached on RetryableJob
+     *
      * @throws UnrecoverableJobException
      * @throws \Exception
      */
