@@ -5,6 +5,6 @@ namespace Mcfedr\QueueManagerBundle\Queue;
 /**
  * This worker is internal and probably uninteresting for logging purposes.
  */
-interface InternalWorker
+interface InternalWorker extends Worker
 {
 }
