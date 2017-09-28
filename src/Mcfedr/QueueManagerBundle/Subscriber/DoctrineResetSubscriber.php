@@ -4,9 +4,9 @@ namespace Mcfedr\QueueManagerBundle\Subscriber;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\DBAL\Connection;
-use Mcfedr\QueueManagerBundle\Command\RunnerCommand;
 use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
 use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
+use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class DoctrineResetSubscriber implements EventSubscriberInterface
@@ -47,8 +47,8 @@ class DoctrineResetSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            RunnerCommand::JOB_FINISHED_EVENT => 'onJobFinished',
-            RunnerCommand::JOB_FAILED_EVENT => 'onJobFailed',
+            JobExecutor::JOB_FINISHED_EVENT => 'onJobFinished',
+            JobExecutor::JOB_FAILED_EVENT => 'onJobFailed',
         ];
     }
 }

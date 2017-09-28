@@ -12,11 +12,13 @@ class FailedJobEvent extends JobEvent
     private $exception;
 
     /**
+     * @param Job        $job
      * @param \Exception $exception
+     * @param bool       $internal
      */
-    public function __construct(Job $job, \Exception $exception)
+    public function __construct(Job $job, \Exception $exception, $internal)
     {
-        parent::__construct($job);
+        parent::__construct($job, $internal);
         $this->exception = $exception;
     }
 

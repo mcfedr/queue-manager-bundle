@@ -5,6 +5,7 @@ namespace Mcfedr\QueueManagerBundle\Tests\Command;
 use Mcfedr\QueueManagerBundle\Command\RunnerCommand;
 use Mcfedr\QueueManagerBundle\Exception\TestException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
+use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobExceptionInterface;
 use Mcfedr\QueueManagerBundle\Manager\QueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
@@ -94,7 +95,7 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
 
         $command->expects($this->once())
             ->method('failedJob')
-            ->with($job, new \PHPUnit_Framework_Constraint_IsInstanceOf(UnrecoverableJobException::class));
+            ->with($job, new \PHPUnit_Framework_Constraint_IsInstanceOf(UnrecoverableJobExceptionInterface::class));
 
         $command->expects($this->once())
             ->method('finishJobs')

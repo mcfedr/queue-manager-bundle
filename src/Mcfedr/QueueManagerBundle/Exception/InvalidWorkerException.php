@@ -2,6 +2,6 @@
 
 namespace Mcfedr\QueueManagerBundle\Exception;
 
-class InvalidWorkerException extends QueueManagerException
+class InvalidWorkerException extends QueueManagerException implements UnrecoverableJobExceptionInterface
 {
 }
