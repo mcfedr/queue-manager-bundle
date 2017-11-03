@@ -62,7 +62,7 @@ class McfedrQueueManagerExtension extends Extension
 
             $container->setDefinition($managerClass, $managerDefinition);
             $container->addAliases([
-                $managerServiceName => $managerClass
+                $managerServiceName => $managerClass,
             ]);
 
             $queueManagers[$name] = new Reference($managerServiceName);
@@ -90,7 +90,7 @@ class McfedrQueueManagerExtension extends Extension
 
         $container->setDefinition(QueueManagerRegistry::class, new Definition(QueueManagerRegistry::class, [$queueManagers, $defaultManager]));
         $container->addAliases([
-            'mcfedr_queue_manager.registry' => QueueManagerRegistry::class
+            'mcfedr_queue_manager.registry' => QueueManagerRegistry::class,
         ]);
 
         if ($config['report_memory']) {
