@@ -60,7 +60,10 @@ class McfedrQueueManagerExtension extends Extension
                 $managerDefinition->addMethodCall('setContainer', [new Reference('service_container')]);
             }
 
-            $container->setDefinition($managerServiceName, $managerDefinition);
+            $container->setDefinition($managerClass, $managerDefinition);
+            $container->addAliases([
+                $managerServiceName => $managerClass
+            ]);
 
             $queueManagers[$name] = new Reference($managerServiceName);
 
@@ -74,7 +77,7 @@ class McfedrQueueManagerExtension extends Extension
                 $commandDefinition->setTags(
                     ['console.command' => []]
                 );
-                $container->setDefinition("mcfedr_queue_manager.runner.$name", $commandDefinition);
+                $container->setDefinition($commandClass, $commandDefinition);
             }
         }
 
@@ -85,14 +88,17 @@ class McfedrQueueManagerExtension extends Extension
             $defaultManager = key($queueManagers);
         }
 
-        $container->setDefinition('mcfedr_queue_manager.registry', new Definition(QueueManagerRegistry::class, [$queueManagers, $defaultManager]));
+        $container->setDefinition(QueueManagerRegistry::class, new Definition(QueueManagerRegistry::class, [$queueManagers, $defaultManager]));
+        $container->addAliases([
+            'mcfedr_queue_manager.registry' => QueueManagerRegistry::class
+        ]);
 
         if ($config['report_memory']) {
             $memoryListener = new Definition(MemoryReportSubscriber::class, [new Reference('logger')]);
             $memoryListener->setTags([
                 'kernel.event_subscriber' => [],
             ]);
-            $container->setDefinition('mcfedr_queue_manager.memory_report_subscriber', $memoryListener);
+            $container->setDefinition(MemoryReportSubscriber::class, $memoryListener);
         }
 
         if ($config['doctrine_reset'] && class_exists('Doctrine\Bundle\DoctrineBundle\Registry')) {
@@ -102,7 +108,7 @@ class McfedrQueueManagerExtension extends Extension
             $doctrineListener->setTags([
                 'kernel.event_subscriber' => [],
             ]);
-            $container->setDefinition('mcfedr_queue_manager.doctrine_reset_subscriber', $doctrineListener);
+            $container->setDefinition('Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber', $doctrineListener);
         }
 
         if ($config['swift_mailer_batch_size'] >= 0 && class_exists('Symfony\Bundle\SwiftmailerBundle\EventListener\EmailSenderListener')) {
@@ -114,7 +120,7 @@ class McfedrQueueManagerExtension extends Extension
             $swiftListener->setTags([
                 'kernel.event_subscriber' => [],
             ]);
-            $container->setDefinition('mcfedr_queue_manager.swift_mailer_subscriber', $swiftListener);
+            $container->setDefinition('Mcfedr\QueueManagerBundle\Subscriber\SwiftMailerSubscriber', $swiftListener);
         }
     }
 }
