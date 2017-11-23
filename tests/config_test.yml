@@ -26,6 +26,11 @@ mcfedr_queue_manager:
                 port: 1234
         retry:
             driver: test_retry
+        secondary:
+            driver: test
+            options:
+                host: 127.0.0.3
+                port: 12345
 
 monolog:
     handlers:

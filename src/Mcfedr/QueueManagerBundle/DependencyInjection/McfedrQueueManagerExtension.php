@@ -60,10 +60,12 @@ class McfedrQueueManagerExtension extends Extension
                 $managerDefinition->addMethodCall('setContainer', [new Reference('service_container')]);
             }
 
-            $container->setDefinition($managerClass, $managerDefinition);
-            $container->addAliases([
-                $managerServiceName => $managerClass,
-            ]);
+            $container->setDefinition($managerServiceName, $managerDefinition);
+            if (!$container->has($managerClass)) {
+                $container->addAliases([
+                    $managerClass => $managerServiceName,
+                ]);
+            }
 
             $queueManagers[$name] = new Reference($managerServiceName);
 
@@ -77,7 +79,13 @@ class McfedrQueueManagerExtension extends Extension
                 $commandDefinition->setTags(
                     ['console.command' => []]
                 );
-                $container->setDefinition($commandClass, $commandDefinition);
+                $commandServiceName = "mcfedr_queue_manager.runner.$name";
+                $container->setDefinition($commandServiceName, $commandDefinition);
+                if (!$container->has($commandClass)) {
+                    $container->addAliases([
+                        $commandClass => $commandServiceName,
+                    ]);
+                }
             }
         }
 
