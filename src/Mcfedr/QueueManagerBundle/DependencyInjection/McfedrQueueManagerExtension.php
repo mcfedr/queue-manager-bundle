@@ -14,16 +14,8 @@ use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
-/**
- * This is the class that loads and manages your bundle configuration.
- *
- * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/extension.html}
- */
 class McfedrQueueManagerExtension extends Extension
 {
-    /**
-     * {@inheritdoc}
-     */
     public function load(array $configs, ContainerBuilder $container)
     {
         $configuration = new Configuration();
@@ -109,6 +101,8 @@ class McfedrQueueManagerExtension extends Extension
             $container->setDefinition(MemoryReportSubscriber::class, $memoryListener);
         }
 
+        // Only referring to the classes as strings so as not to load them when not needed
+        // This means there is no hard dependancy on Doctrine or SwiftMailer
         if ($config['doctrine_reset'] && class_exists('Doctrine\Bundle\DoctrineBundle\Registry')) {
             $doctrineListener = new Definition('Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber', [
                 new Reference('doctrine', ContainerInterface::NULL_ON_INVALID_REFERENCE),
