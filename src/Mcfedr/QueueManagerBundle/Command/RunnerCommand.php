@@ -106,7 +106,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         $this->handleInput($input);
 
         $limit = (int) $input->getOption('limit');
-        $ignoreLimit = 0 === $limit;
+        $ignoreLimit = $limit === 0;
 
         $running = true;
 
