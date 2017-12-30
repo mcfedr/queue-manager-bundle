@@ -27,7 +27,7 @@ class TestRunnerCommand extends RunnerCommand
 
     protected function getJobs()
     {
-        if (rand(1, 2) == 1) {
+        if (1 == rand(1, 2)) {
             return [new TestRetryableJob('test_worker', [], [])];
         }
 
