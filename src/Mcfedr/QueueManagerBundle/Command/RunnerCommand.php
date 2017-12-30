@@ -18,7 +18,6 @@ use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\ProcessBuilder;
 
 abstract class RunnerCommand extends Command implements ContainerAwareInterface
 {
@@ -69,9 +68,9 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     protected $logger;
 
     /**
-     * @var ProcessBuilder
+     * @var Process
      */
-    private $processBuilder;
+    private $process;
 
     public function __construct($name, array $options, QueueManager $queueManager)
     {
@@ -107,7 +106,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         $this->handleInput($input);
 
         $limit = (int) $input->getOption('limit');
-        $ignoreLimit = $limit === 0;
+        $ignoreLimit = 0 === $limit;
 
         $running = true;
 
@@ -165,12 +164,10 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
 
     protected function executeBatchWithProcess(InputInterface $input, OutputInterface $output)
     {
-        $pb = $this->getProcessBuilder($input, $output);
-
         /** @var Process $process */
-        $process = $pb->getProcess();
+        $process = $this->getProcess($input);
 
-        $process->mustRun(function ($type, $data) use ($output) {
+        $process->run(function ($type, $data) use ($output) {
             $output->write($data);
         });
     }
@@ -254,75 +251,34 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
 
     /**
      * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
-     * @return ProcessBuilder
+     * @return Process
      */
-    private function getProcessBuilder(InputInterface $input, OutputInterface $output)
+    private function getProcess(InputInterface $input)
     {
-        if (!$this->processBuilder) {
+        if (!$this->process) {
             $finder = new PhpExecutableFinder();
             $php = $finder->find();
 
-            $pb = new ProcessBuilder();
-
-            $pb
-                ->add($php)
-                ->add($_SERVER['argv'][0])
-                ->add($this->getName())
-                ->inheritEnvironmentVariables(true)
-                ->add('--limit=1')
-                ->add('--no-interaction')
-                ->add('--no-ansi');
-
-            $skip = [
-                'limit',
-                'process-isolation',
-                'verbose',
-                'quiet',
-                'ansi',
-                'no-ansi',
-                'no-interaction',
-            ];
+            $commandLine = "$php {$_SERVER['argv'][0]}  {$this->getName()}";
+            $input->setOption('limit', 1);
+            $input->setOption('no-interaction', true);
+            $input->setOption('no-ansi', true);
 
             foreach ($input->getOptions() as $key => $option) {
-                if (in_array($key, $skip)) {
+                if (true === $option) {
+                    $commandLine .= " --$key";
                     continue;
                 }
-                if ($option === true) {
-                    $pb->add("--$key");
-                    continue;
-                }
-                if ($option !== false && $option !== null) {
-                    $pb->add("--$key=$option");
+                if (false !== $option && null !== $option) {
+                    $commandLine .= " --$key=$option";
                 }
             }
+            $process = new Process($commandLine);
 
-            switch ($output->getVerbosity()) {
-                case OutputInterface::VERBOSITY_QUIET:
-                    $pb->add('-q');
-                    break;
-                case OutputInterface::VERBOSITY_VERBOSE:
-                    $pb->add('-v');
-                    break;
-                case OutputInterface::VERBOSITY_VERY_VERBOSE:
-                    $pb->add('-vv');
-                    break;
-                case OutputInterface::VERBOSITY_DEBUG:
-                    $pb->add('-vvv');
-                    break;
-            }
-
-            foreach ($input->getArguments() as $key => $argument) {
-                if ($key == 'command') {
-                    continue;
-                }
-                $pb->add($argument);
-            }
-            $this->processBuilder = $pb;
+            $this->process = $process;
         }
 
-        return $this->processBuilder;
+        return $this->process;
     }
 
     /**
