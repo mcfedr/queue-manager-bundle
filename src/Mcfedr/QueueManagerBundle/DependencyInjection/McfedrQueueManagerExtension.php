@@ -13,6 +13,7 @@ use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\HttpKernel\Kernel;
 
 class McfedrQueueManagerExtension extends Extension
 {
@@ -56,9 +57,10 @@ class McfedrQueueManagerExtension extends Extension
 
             $container->setDefinition($managerServiceName, $managerDefinition);
             if (!$container->has($managerClass)) {
-                $container
-                    ->setAlias($managerClass, $managerServiceName)
-                    ->setPublic(true);
+                $managerServiceAlias = $container->setAlias($managerClass, $managerServiceName);
+                if ($managerServiceAlias) {
+                    $managerServiceAlias->setPublic(true);
+                }
             }
 
             $queueManagers[$name] = new Reference($managerServiceName);
@@ -77,9 +79,10 @@ class McfedrQueueManagerExtension extends Extension
                 $commandServiceName = "mcfedr_queue_manager.runner.$name";
                 $container->setDefinition($commandServiceName, $commandDefinition);
                 if (!$container->has($commandClass)) {
-                    $container
-                        ->setAlias($commandClass, $commandServiceName)
-                        ->setPublic(true);
+                    $commandServiceAlias = $container->setAlias($commandClass, $commandServiceName);
+                    if ($commandServiceAlias) {
+                        $commandServiceAlias->setPublic(true);
+                    }
                 }
             }
         }
@@ -94,9 +97,10 @@ class McfedrQueueManagerExtension extends Extension
         $queueManagerDefinition = new Definition(QueueManagerRegistry::class, [$queueManagers, $defaultManager]);
         $queueManagerDefinition->setPublic(true);
         $container->setDefinition(QueueManagerRegistry::class, $queueManagerDefinition);
-        $container
-            ->setAlias('mcfedr_queue_manager.registry', QueueManagerRegistry::class)
-            ->setPublic(true);
+        $queueManagerAlias = $container->setAlias('mcfedr_queue_manager.registry', QueueManagerRegistry::class);
+        if ($queueManagerAlias) {
+            $queueManagerAlias->setPublic(true);
+        }
 
         if ($config['report_memory']) {
             $memoryListener = new Definition(MemoryReportSubscriber::class, [new Reference('logger')]);

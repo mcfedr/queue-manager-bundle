@@ -167,7 +167,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         /** @var Process $process */
         $process = $this->getProcess($input);
 
-        $process->run(function ($type, $data) use ($output) {
+        $process->mustRun(function ($type, $data) use ($output) {
             $output->write($data);
         });
     }
