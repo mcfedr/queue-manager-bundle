@@ -73,6 +73,7 @@ class McfedrQueueManagerExtension extends Extension
                     new Reference($managerServiceName),
                 ]);
                 $commandDefinition->setPublic(true);
+                $commandDefinition->addMethodCall('setLogger', [new Reference('logger')]);
                 $commandDefinition->setTags(
                     ['console.command' => []]
                 );

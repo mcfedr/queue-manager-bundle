@@ -9,10 +9,3 @@ services:
     mcfedr_queue_manager.job_executor:
         public: true
         alias: Mcfedr\QueueManagerBundle\Runner\JobExecutor
-
-
-    Mcfedr\QueueManagerBundle\Command\RunnerCommand:
-        public: true
-        calls:
-            - ['setContainer', ['@service_container']]
-            - ['setLogger', ['@logger']]
