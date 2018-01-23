@@ -13,6 +13,7 @@ use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\HttpKernel\Kernel;
 
 class McfedrQueueManagerExtension extends Extension
 {
@@ -48,15 +49,18 @@ class McfedrQueueManagerExtension extends Extension
                 $merged,
             ]);
 
+            $managerDefinition->setPublic(true);
+
             if ((new \ReflectionClass($managerClass))->implementsInterface(ContainerAwareInterface::class)) {
                 $managerDefinition->addMethodCall('setContainer', [new Reference('service_container')]);
             }
 
             $container->setDefinition($managerServiceName, $managerDefinition);
             if (!$container->has($managerClass)) {
-                $container->addAliases([
-                    $managerClass => $managerServiceName,
-                ]);
+                $managerServiceAlias = $container->setAlias($managerClass, $managerServiceName);
+                if ($managerServiceAlias) {
+                    $managerServiceAlias->setPublic(true);
+                }
             }
 
             $queueManagers[$name] = new Reference($managerServiceName);
@@ -68,15 +72,17 @@ class McfedrQueueManagerExtension extends Extension
                     $merged,
                     new Reference($managerServiceName),
                 ]);
+                $commandDefinition->setPublic(true);
                 $commandDefinition->setTags(
                     ['console.command' => []]
                 );
                 $commandServiceName = "mcfedr_queue_manager.runner.$name";
                 $container->setDefinition($commandServiceName, $commandDefinition);
                 if (!$container->has($commandClass)) {
-                    $container->addAliases([
-                        $commandClass => $commandServiceName,
-                    ]);
+                    $commandServiceAlias = $container->setAlias($commandClass, $commandServiceName);
+                    if ($commandServiceAlias) {
+                        $commandServiceAlias->setPublic(true);
+                    }
                 }
             }
         }
@@ -88,10 +94,13 @@ class McfedrQueueManagerExtension extends Extension
             $defaultManager = key($queueManagers);
         }
 
-        $container->setDefinition(QueueManagerRegistry::class, new Definition(QueueManagerRegistry::class, [$queueManagers, $defaultManager]));
-        $container->addAliases([
-            'mcfedr_queue_manager.registry' => QueueManagerRegistry::class,
-        ]);
+        $queueManagerDefinition = new Definition(QueueManagerRegistry::class, [$queueManagers, $defaultManager]);
+        $queueManagerDefinition->setPublic(true);
+        $container->setDefinition(QueueManagerRegistry::class, $queueManagerDefinition);
+        $queueManagerAlias = $container->setAlias('mcfedr_queue_manager.registry', QueueManagerRegistry::class);
+        if ($queueManagerAlias) {
+            $queueManagerAlias->setPublic(true);
+        }
 
         if ($config['report_memory']) {
             $memoryListener = new Definition(MemoryReportSubscriber::class, [new Reference('logger')]);
@@ -107,6 +116,7 @@ class McfedrQueueManagerExtension extends Extension
             $doctrineListener = new Definition('Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber', [
                 new Reference('doctrine', ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ]);
+            $doctrineListener->setPublic(true);
             $doctrineListener->setTags([
                 'kernel.event_subscriber' => [],
             ]);
@@ -119,6 +129,7 @@ class McfedrQueueManagerExtension extends Extension
                 new Reference('service_container'),
                 new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ]);
+            $swiftListener->setPublic(true);
             $swiftListener->setTags([
                 'kernel.event_subscriber' => [],
             ]);

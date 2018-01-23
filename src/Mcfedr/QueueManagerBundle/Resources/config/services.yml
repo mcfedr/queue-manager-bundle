@@ -5,4 +5,5 @@ services:
             - ['setContainer', ['@service_container']]
 
     mcfedr_queue_manager.job_executor:
+        public: true
         alias: Mcfedr\QueueManagerBundle\Runner\JobExecutor
