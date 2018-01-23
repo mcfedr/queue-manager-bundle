@@ -19,6 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class JobExecutor implements ContainerAwareInterface
 {
@@ -43,10 +44,16 @@ class JobExecutor implements ContainerAwareInterface
     public function setContainer(ContainerInterface $container = null)
     {
         $this->setContainerInner($container);
-        if ($container) {
-            $this->logger = $container->get('logger', Container::NULL_ON_INVALID_REFERENCE);
-            $this->eventDispatcher = $container->get('event_dispatcher', Container::NULL_ON_INVALID_REFERENCE);
-        }
+    }
+
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
+    public function setEventDispatcher(EventDispatcherInterface $eventDispatcher)
+    {
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
