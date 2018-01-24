@@ -12,7 +12,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -200,9 +199,11 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     public function setContainer(ContainerInterface $container = null)
     {
         $this->setContainerInner($container);
-        if ($container) {
-            $this->logger = $container->get('logger', Container::NULL_ON_INVALID_REFERENCE);
-        }
+    }
+
+    public function setLogger(LoggerInterface $logger = null)
+    {
+        $this->logger = $logger;
     }
 
     /**
