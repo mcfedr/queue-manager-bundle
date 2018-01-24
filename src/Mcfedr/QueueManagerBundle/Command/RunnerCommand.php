@@ -201,7 +201,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         $this->setContainerInner($container);
     }
 
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger = null)
     {
         $this->logger = $logger;
     }
