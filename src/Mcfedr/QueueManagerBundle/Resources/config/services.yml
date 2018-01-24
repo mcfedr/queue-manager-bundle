@@ -4,7 +4,7 @@ services:
         calls:
             - ['setContainer', ['@service_container']]
             - ['setLogger', ['@?logger']]
-            - ['setEventDispatcher', ['@event_dispatcher']]
+            - ['setEventDispatcher', ['@?event_dispatcher']]
 
     mcfedr_queue_manager.job_executor:
         public: true

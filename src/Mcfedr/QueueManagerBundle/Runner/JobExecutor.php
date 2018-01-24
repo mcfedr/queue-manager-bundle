@@ -50,7 +50,7 @@ class JobExecutor implements ContainerAwareInterface
         $this->logger = $logger;
     }
 
-    public function setEventDispatcher(EventDispatcherInterface $eventDispatcher)
+    public function setEventDispatcher(EventDispatcherInterface $eventDispatcher = null)
     {
         $this->eventDispatcher = $eventDispatcher;
     }
