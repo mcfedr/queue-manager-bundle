@@ -3,7 +3,9 @@
 namespace Mcfedr\QueueManagerBundle\Runner;
 
 use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
+use Mcfedr\QueueManagerBundle\Event\FinishedJobBatchEvent;
 use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
+use Mcfedr\QueueManagerBundle\Event\StartJobBatchEvent;
 use Mcfedr\QueueManagerBundle\Event\StartJobEvent;
 use Mcfedr\QueueManagerBundle\Exception\InvalidWorkerException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
@@ -26,6 +28,9 @@ class JobExecutor implements ContainerAwareInterface
     const JOB_FINISHED_EVENT = 'mcfedr_queue_manager.job_finished';
     const JOB_FAILED_EVENT = 'mcfedr_queue_manager.job_failed';
 
+    const JOB_BATCH_START_EVENT = 'mcfedr_queue_manager.job_batch_start';
+    const JOB_BATCH_FINISHED_EVENT = 'mcfedr_queue_manager.job_batch_finished';
+
     use ContainerAwareTrait {
         setContainer as setContainerInner;
     }
@@ -39,6 +44,9 @@ class JobExecutor implements ContainerAwareInterface
      * @var LoggerInterface
      */
     protected $logger;
+
+    private $batchStarted = false;
+    private $triggerBatchEvents = false;
 
     public function setContainer(ContainerInterface $container = null)
     {
@@ -55,6 +63,18 @@ class JobExecutor implements ContainerAwareInterface
         $this->eventDispatcher = $eventDispatcher;
     }
 
+    public function startBatch(array $jobs)
+    {
+        $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_BATCH_START_EVENT, new StartJobBatchEvent($jobs));
+        $this->batchStarted = true;
+    }
+
+    public function finishBatch(array $oks, array $retries, array $fails)
+    {
+        $this->batchStarted = false;
+        $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_BATCH_FINISHED_EVENT, new FinishedJobBatchEvent($oks, $fails, $retries));
+    }
+
     /**
      * @param Job $job
      * @param int $retryLimit Turn \Exception into UnrecoverableJobException when the retry limit is reached on RetryableJob
@@ -64,6 +84,12 @@ class JobExecutor implements ContainerAwareInterface
      */
     public function executeJob(Job $job, $retryLimit = 0)
     {
+        // This is here so that if executeJob is called with out startBatch the events will still be called
+        $this->triggerBatchEvents = !$this->batchStarted;
+        if ($this->triggerBatchEvents) {
+            $this->startBatch([$job]);
+        }
+
         $internal = false;
         try {
             $worker = $this->container->get($job->getName());
@@ -117,6 +143,9 @@ class JobExecutor implements ContainerAwareInterface
             'arguments' => $job->getArguments(),
         ]);
         $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_FINISHED_EVENT, new FinishedJobEvent($job, $internal));
+        if ($this->triggerBatchEvents) {
+            $this->finishBatch([$job], [], []);
+        }
     }
 
     /**
@@ -142,5 +171,8 @@ class JobExecutor implements ContainerAwareInterface
             $this->logger->error('Job failed', $context);
         }
         $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_FAILED_EVENT, new FailedJobEvent($job, $exception, $internal));
+        if ($this->triggerBatchEvents) {
+            $this->finishBatch([], [], [$job]);
+        }
     }
 }

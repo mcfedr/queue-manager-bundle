@@ -15,6 +15,7 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class RunnerCommandTest extends \PHPUnit_Framework_TestCase
 {
@@ -219,6 +220,42 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
         $this->executeCommand($command, $worker);
     }
 
+    public function testExecuteEvents()
+    {
+        $jobs = [$this->getMockJob(Job::class), $this->getMockJob(Job::class)];
+
+        $worker = $this->getMockWorker(null, 2);
+
+        $manager = $this->getMockBuilder(QueueManager::class)->getMock();
+        $methods = ['getJobs', 'finishJobs', 'finishJob'];
+        $command = $this->getMockCommand($methods, $manager, $jobs);
+
+        $command->expects($this->exactly(2))
+            ->method('finishJob')
+            ->withConsecutive($jobs[0], $jobs[1]);
+
+        $command->expects($this->once())
+            ->method('finishJobs')
+            ->with($jobs, [], []);
+
+        $eventDispatcher = $this->getMockBuilder(EventDispatcher::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $eventDispatcher->expects($this->exactly(6))
+            ->method('dispatch')
+            ->withConsecutive(
+                [JobExecutor::JOB_BATCH_START_EVENT],
+                [JobExecutor::JOB_START_EVENT],
+                [JobExecutor::JOB_FINISHED_EVENT],
+                [JobExecutor::JOB_START_EVENT],
+                [JobExecutor::JOB_FINISHED_EVENT],
+                [JobExecutor::JOB_BATCH_FINISHED_EVENT]
+            );
+
+        $this->executeCommand($command, $worker, $eventDispatcher);
+    }
+
     /**
      * @param $class
      *
@@ -281,13 +318,17 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
      * @param $command
      * @param $worker
      */
-    private function executeCommand(Command $command, $worker)
+    private function executeCommand(Command $command, $worker, EventDispatcher $eventDispatcher = null)
     {
         $executor = new JobExecutor();
 
         $container = new Container();
         $container->set('worker', $worker);
         $container->set('mcfedr_queue_manager.job_executor', $executor);
+        if ($eventDispatcher) {
+            $container->set('event_dispatcher', $eventDispatcher);
+            $executor->setEventDispatcher($eventDispatcher);
+        }
 
         $command->setContainer($container);
         $executor->setContainer($container);

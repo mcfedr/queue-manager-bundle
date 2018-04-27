@@ -142,6 +142,8 @@ A number of events are triggered during the running of jobs
 | mcfedr_queue_manager.job_start | `StartJobEvent` |
 | mcfedr_queue_manager.job_finished | `FinishedJobEvent` | 
 | mcfedr_queue_manager.job_failed | `FailedJobEvent` |
+| mcfedr_queue_manager.job_batch_start | `StartJobBatchEvent` |
+| mcfedr_queue_manager.job_batch_finished | `FinishedJobBatchEvent` |
 
 ## Creating your own driver
 
