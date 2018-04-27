@@ -129,6 +129,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         try {
             $jobs = $this->getJobs();
             if (count($jobs)) {
+                $this->container->get('mcfedr_queue_manager.job_executor')->startBatch($jobs);
                 $oks = [];
                 $fails = [];
                 $retries = [];
@@ -148,6 +149,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
                     }
                 }
                 $this->finishJobs($oks, $retries, $fails);
+                $this->container->get('mcfedr_queue_manager.job_executor')->finishBatch($oks, $retries, $fails);
             } else {
                 $this->logger && $this->logger->debug('No jobs, sleeping...', [
                     'sleepSeconds' => $this->sleepSeconds,
