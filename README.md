@@ -90,6 +90,15 @@ mcfedr_queue_manager:
 | `doctrine_reset` | This listener will reset doctrine connect between jobs. Be careful with your memory usage if disabled. | 
 | `swift_mailer_batch_size` | Listener to clear the swift mailer queue every X jobs. Set to -1 to disable. |
 
+### Doctrine
+
+To avoid memory leaks entity manager is being reset after job execution.
+
+Resetting a non-lazy manager service is deprecated since Symfony 3.2 and will throw an exception in version 4.0.
+So if you use Symfony 3.2 or greater you need to install symfony/proxy-manager-bridge to support [Lazy Services](https://symfony.com/doc/current/service_container/lazy_services.html)
+
+    composer require proxy-manager-bridge
+
 ## Usage
 
 You can access the `QueueManagerRegistry` for simple access to your queue.
