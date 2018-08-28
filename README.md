@@ -40,6 +40,14 @@ Check the documentation of the driver you are using as to how to run the daemon 
 
     composer require mcfedr/queue-manager-bundle
 
+### Doctrine
+
+To avoid memory leaks entity manager is being reset after job execution.
+Resetting a non-lazy manager service is deprecated since Symfony 3.2 and will throw an exception in version 4.0.
+So if you use symfony 4.0 or greater you need to install symfony/proxy-manager-bridge to support [Lazy Services](https://symfony.com/doc/current/service_container/lazy_services.html)
+
+    composer require proxy-manager-bridge
+
 ### AppKernel
 
 Include the bundle in your AppKernel
