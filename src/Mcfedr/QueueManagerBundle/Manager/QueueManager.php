@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Manager;
 
 use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;

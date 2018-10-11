@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Tests\Command;
 
 use Mcfedr\QueueManagerBundle\Command\RunnerCommand;
@@ -11,13 +13,15 @@ use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
 use Mcfedr\QueueManagerBundle\Queue\Worker;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
+use PHPUnit\Framework\Constraint\IsInstanceOf;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
-class RunnerCommandTest extends \PHPUnit_Framework_TestCase
+class RunnerCommandTest extends TestCase
 {
     public function testExecuteJob()
     {
@@ -96,7 +100,7 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
 
         $command->expects($this->once())
             ->method('failedJob')
-            ->with($job, new \PHPUnit_Framework_Constraint_IsInstanceOf(UnrecoverableJobExceptionInterface::class));
+            ->with($job, new IsInstanceOf(UnrecoverableJobExceptionInterface::class));
 
         $command->expects($this->once())
             ->method('finishJobs')
@@ -121,7 +125,7 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
 
         $command->expects($this->once())
             ->method('failedJob')
-            ->with($job, new \PHPUnit_Framework_Constraint_IsInstanceOf(UnrecoverableJobException::class));
+            ->with($job, new IsInstanceOf(UnrecoverableJobException::class));
 
         $command->expects($this->once())
             ->method('finishJobs')
@@ -167,7 +171,7 @@ class RunnerCommandTest extends \PHPUnit_Framework_TestCase
 
         $command->expects($this->once())
             ->method('failedJob')
-            ->with($job, new \PHPUnit_Framework_Constraint_IsInstanceOf(UnrecoverableJobException::class));
+            ->with($job, new IsInstanceOf(UnrecoverableJobException::class));
 
         $command->expects($this->once())
             ->method('finishJobs')

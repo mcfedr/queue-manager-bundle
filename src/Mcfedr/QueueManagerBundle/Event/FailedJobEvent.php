@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Event;
 
 use Mcfedr\QueueManagerBundle\Queue\Job;
@@ -16,7 +18,7 @@ class FailedJobEvent extends JobEvent
      * @param \Exception $exception
      * @param bool       $internal
      */
-    public function __construct(Job $job, \Exception $exception, $internal)
+    public function __construct(Job $job, \Exception $exception, bool $internal)
     {
         parent::__construct($job, $internal);
         $this->exception = $exception;
@@ -25,7 +27,7 @@ class FailedJobEvent extends JobEvent
     /**
      * @return \Exception
      */
-    public function getException()
+    public function getException(): \Exception
     {
         return $this->exception;
     }

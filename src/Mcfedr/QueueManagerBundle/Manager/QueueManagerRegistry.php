@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Manager;
 
 use Mcfedr\QueueManagerBundle\Exception\JobNotDeletableException;
@@ -18,11 +20,7 @@ class QueueManagerRegistry
      */
     private $default;
 
-    /**
-     * @param array  $queueManagers
-     * @param string $default
-     */
-    public function __construct(array $queueManagers, $default)
+    public function __construct(array $queueManagers, string $default)
     {
         $this->queueManagers = $queueManagers;
         $this->default = $default;
@@ -36,7 +34,7 @@ class QueueManagerRegistry
      *
      * @return Job
      */
-    public function put($name, array $arguments = [], array $options = [], $manager = null)
+    public function put(string $name, array $arguments = [], array $options = [], ?string $manager = null): Job
     {
         return $this->queueManagers[$manager ?: $this->default]->put($name, $arguments, $options);
     }
@@ -47,7 +45,7 @@ class QueueManagerRegistry
      *
      * @throws JobNotDeletableException
      */
-    public function delete(Job $job, $manager = null)
+    public function delete(Job $job, ?string $manager = null)
     {
         if ($manager) {
             $this->queueManagers[$manager]->delete($job);

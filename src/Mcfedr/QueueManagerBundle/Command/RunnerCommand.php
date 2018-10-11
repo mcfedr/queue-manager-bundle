@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Command;
 
 use Mcfedr\QueueManagerBundle\Exception\UnexpectedJobDataException;
@@ -175,12 +177,8 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
 
     /**
      * Executes a single job.
-     *
-     * @param Job $job
-     *
-     * @return int
      */
-    protected function executeJob(Job $job)
+    protected function executeJob(Job $job): int
     {
         try {
             $this->container->get('mcfedr_queue_manager.job_executor')->executeJob($job, $this->retryLimit);
@@ -203,7 +201,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         $this->setContainerInner($container);
     }
 
-    public function setLogger(LoggerInterface $logger = null)
+    public function setLogger(?LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
@@ -257,7 +255,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
      *
      * @return Process
      */
-    private function getProcess(InputInterface $input)
+    private function getProcess(InputInterface $input): Process
     {
         if (!$this->process) {
             $finder = new PhpExecutableFinder();
@@ -292,7 +290,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
      *
      * @return int
      */
-    protected function getRetryDelaySeconds($count)
+    protected function getRetryDelaySeconds(int $count): int
     {
         return $count * $count * 30;
     }

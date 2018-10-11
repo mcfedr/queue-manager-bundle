@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Event;
 
 use Mcfedr\QueueManagerBundle\Queue\Job;
@@ -25,7 +27,7 @@ class StartJobBatchEvent extends Event
     /**
      * @return Job[]
      */
-    public function getJobs()
+    public function getJobs(): array
     {
         return $this->jobs;
     }

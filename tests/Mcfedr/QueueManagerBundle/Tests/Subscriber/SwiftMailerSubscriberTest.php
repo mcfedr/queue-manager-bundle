@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Tests\Subscriber;
 
 use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
 use Mcfedr\QueueManagerBundle\Subscriber\SwiftMailerSubscriber;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
 
-class SwiftMailerSubscriberTest extends \PHPUnit_Framework_TestCase
+class SwiftMailerSubscriberTest extends TestCase
 {
     public function testOnJobFailed()
     {

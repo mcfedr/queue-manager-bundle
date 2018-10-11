@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Runner;
 
 use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
@@ -53,12 +55,12 @@ class JobExecutor implements ContainerAwareInterface
         $this->setContainerInner($container);
     }
 
-    public function setLogger(LoggerInterface $logger = null)
+    public function setLogger(?LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
 
-    public function setEventDispatcher(EventDispatcherInterface $eventDispatcher = null)
+    public function setEventDispatcher(?EventDispatcherInterface $eventDispatcher)
     {
         $this->eventDispatcher = $eventDispatcher;
     }
@@ -82,7 +84,7 @@ class JobExecutor implements ContainerAwareInterface
      * @throws UnrecoverableJobException
      * @throws \Exception
      */
-    public function executeJob(Job $job, $retryLimit = 0)
+    public function executeJob(Job $job, int $retryLimit = 0)
     {
         // This is here so that if executeJob is called with out startBatch the events will still be called
         $this->triggerBatchEvents = !$this->batchStarted;
@@ -132,11 +134,8 @@ class JobExecutor implements ContainerAwareInterface
 
     /**
      * Called when a job is finished.
-     *
-     * @param Job  $job
-     * @param bool $internal
      */
-    protected function finishJob(Job $job, $internal)
+    protected function finishJob(Job $job, bool $internal)
     {
         $this->logger && $this->logger->debug('Finished a job', [
             'name' => $job->getName(),
@@ -150,12 +149,8 @@ class JobExecutor implements ContainerAwareInterface
 
     /**
      * Called when a job failed.
-     *
-     * @param Job        $job
-     * @param \Exception $exception
-     * @param bool       $internal
      */
-    protected function failedJob(Job $job, \Exception $exception, $internal)
+    protected function failedJob(Job $job, \Exception $exception, bool $internal)
     {
         if ($this->logger) {
             $context = [

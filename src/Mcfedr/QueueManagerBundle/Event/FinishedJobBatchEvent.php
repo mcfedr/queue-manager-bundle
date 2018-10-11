@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Event;
 
 use Mcfedr\QueueManagerBundle\Queue\Job;
@@ -39,7 +41,7 @@ class FinishedJobBatchEvent extends Event
     /**
      * @return Job[]
      */
-    public function getOks()
+    public function getOks(): array
     {
         return $this->oks;
     }
@@ -47,7 +49,7 @@ class FinishedJobBatchEvent extends Event
     /**
      * @return Job[]
      */
-    public function getRetries()
+    public function getRetries(): array
     {
         return $this->retries;
     }
@@ -55,7 +57,7 @@ class FinishedJobBatchEvent extends Event
     /**
      * @return Job[]
      */
-    public function getFails()
+    public function getFails(): array
     {
         return $this->fails;
     }

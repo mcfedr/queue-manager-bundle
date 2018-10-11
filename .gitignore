@@ -1,4 +1,3 @@
-/tests/cache/*
-/tests/logs/*
+/var/
 /vendor/
 /.php_cs.cache

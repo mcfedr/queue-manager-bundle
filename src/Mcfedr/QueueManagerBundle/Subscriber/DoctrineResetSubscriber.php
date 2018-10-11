@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Subscriber;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
@@ -19,7 +21,7 @@ class DoctrineResetSubscriber implements EventSubscriberInterface
     /**
      * @param Registry $doctrine
      */
-    public function __construct(Registry $doctrine = null)
+    public function __construct(?Registry $doctrine = null)
     {
         $this->doctrine = $doctrine;
     }

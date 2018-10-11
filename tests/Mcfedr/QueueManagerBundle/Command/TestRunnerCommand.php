@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Command;
 
 use Mcfedr\QueueManagerBundle\Manager\QueueManager;
@@ -31,7 +33,7 @@ class TestRunnerCommand extends RunnerCommand
             return [new TestRetryableJob('test_worker', [], [])];
         }
 
-        return [new TestJob('test_worker', [], [])];
+        return [new TestJob('test_worker', [])];
     }
 
     /**

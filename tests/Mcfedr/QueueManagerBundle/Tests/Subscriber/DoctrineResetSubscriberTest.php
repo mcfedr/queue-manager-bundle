@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Tests\Subscriber;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\DBAL\Connection;
 use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
 use Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber;
+use PHPUnit\Framework\TestCase;
 
-class DoctrineResetSubscriberTest extends \PHPUnit_Framework_TestCase
+class DoctrineResetSubscriberTest extends TestCase
 {
     public function testOnJobFailed()
     {
@@ -30,5 +33,6 @@ class DoctrineResetSubscriberTest extends \PHPUnit_Framework_TestCase
     {
         $subscriber = new DoctrineResetSubscriber();
         $subscriber->onJobFailed($this->getMockBuilder(FailedJobEvent::class)->disableOriginalConstructor()->getMock());
+        $this->assertTrue(true);
     }
 }

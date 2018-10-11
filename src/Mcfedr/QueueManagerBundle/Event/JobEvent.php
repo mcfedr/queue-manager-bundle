@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Event;
 
 use Mcfedr\QueueManagerBundle\Queue\Job;
@@ -21,7 +23,7 @@ abstract class JobEvent extends Event
      * @param Job  $job
      * @param bool $internal
      */
-    public function __construct(Job $job, $internal)
+    public function __construct(Job $job, bool $internal)
     {
         $this->job = $job;
         $this->internal = $internal;
@@ -30,7 +32,7 @@ abstract class JobEvent extends Event
     /**
      * @return Job
      */
-    public function getJob()
+    public function getJob(): Job
     {
         return $this->job;
     }
@@ -38,7 +40,7 @@ abstract class JobEvent extends Event
     /**
      * @return bool
      */
-    public function isInternal()
+    public function isInternal(): bool
     {
         return $this->internal;
     }

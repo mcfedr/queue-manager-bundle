@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Tests\DependencyInjection;
 
 use Mcfedr\QueueManagerBundle\Command\TestRunnerCommand;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Queue;
 
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;

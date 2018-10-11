@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mcfedr\QueueManagerBundle\Subscriber;
 
 use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
@@ -21,7 +23,7 @@ class SwiftMailerSubscriber extends EmailSenderListener
      */
     private $i = 0;
 
-    public function __construct($batchSize, ContainerInterface $container, LoggerInterface $logger = null)
+    public function __construct(int $batchSize, ContainerInterface $container, ?LoggerInterface $logger = null)
     {
         parent::__construct($container, $logger);
         $this->batchSize = $batchSize;
