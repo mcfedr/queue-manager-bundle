@@ -30,7 +30,7 @@ There are also a number of 'helper' plugins
 A job is a Symfony service that implements the `Worker` interface. This has a single method `execute(array $arguments)`.
 The name of the job is the service name.
 
-You add jobs to the queue by calling `$container->get("mcfedr_queue_manager.registry")->put($name, $arguments)`.
+You add jobs to the queue by calling `$container->get(QueueManagerRegistry::class)->put($name, $arguments)`.
 
 Check the documentation of the driver you are using as to how to run the daemon process(es).
 
@@ -102,7 +102,7 @@ So if you use Symfony 3.2 or greater you need to install symfony/proxy-manager-b
 ## Usage
 
 You can access the `QueueManagerRegistry` for simple access to your queue.
-Just inject `"mcfedr_queue_manager.registry"` and call `put` to add new jobs to the queue.
+Just inject `QueueManagerRegistry::class` and call `put` to add new jobs to the queue.
 
 Also, each manager will be a service you can access with the name `"mcfedr_queue_manager.$name"`.
 It implements the `QueueManager` interface, where you can call just 2 simple methods.
@@ -141,6 +141,24 @@ There is one method, that is called with the arguments you passed to `QueueManag
 
 If your job throws an exception it will be retried (assuming the driver supports retrying),
 unless the exception thrown is an instance of `UnrecoverableJobExceptionInterface`.
+
+Workers should be tagged with `mcfedr_queue_manager.worker`, if you are using autowiring this will
+happen automatically.
+
+By default the job name is the class, but you can also add tags with specific ids, e.g.
+
+```yaml
+Worker:
+  tags:
+  - { name: 'mcfedr_queue_manager.worker', id: 'test_worker' }
+```
+
+Now you can schedule this job with both
+
+```php
+$queueManager->put(Worker::class, ...)
+$queueManager->put('test_worker', ...)
+```
 
 ## Events
 

@@ -16,15 +16,13 @@ use Mcfedr\QueueManagerBundle\Queue\InternalWorker;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
 use Mcfedr\QueueManagerBundle\Queue\Worker;
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-class JobExecutor implements ContainerAwareInterface
+class JobExecutor
 {
     const JOB_START_EVENT = 'mcfedr_queue_manager.job_start';
     const JOB_FINISHED_EVENT = 'mcfedr_queue_manager.job_finished';
@@ -33,9 +31,10 @@ class JobExecutor implements ContainerAwareInterface
     const JOB_BATCH_START_EVENT = 'mcfedr_queue_manager.job_batch_start';
     const JOB_BATCH_FINISHED_EVENT = 'mcfedr_queue_manager.job_batch_finished';
 
-    use ContainerAwareTrait {
-        setContainer as setContainerInner;
-    }
+    /**
+     * @var ContainerInterface
+     */
+    private $workersMap;
 
     /**
      * @var EventDispatcher
@@ -50,18 +49,10 @@ class JobExecutor implements ContainerAwareInterface
     private $batchStarted = false;
     private $triggerBatchEvents = false;
 
-    public function setContainer(ContainerInterface $container = null)
+    public function __construct(ContainerInterface $workersMap, ?EventDispatcherInterface $eventDispatcher = null, ?LoggerInterface $logger = null)
     {
-        $this->setContainerInner($container);
-    }
-
-    public function setLogger(?LoggerInterface $logger)
-    {
+        $this->workersMap = $workersMap;
         $this->logger = $logger;
-    }
-
-    public function setEventDispatcher(?EventDispatcherInterface $eventDispatcher)
-    {
         $this->eventDispatcher = $eventDispatcher;
     }
 
@@ -94,14 +85,14 @@ class JobExecutor implements ContainerAwareInterface
 
         $internal = false;
         try {
-            $worker = $this->container->get($job->getName());
+            $worker = $this->workersMap->get($job->getName());
             if (!$worker instanceof Worker) {
                 throw new InvalidWorkerException("The worker {$job->getName()} is not an instance of ".Worker::class);
             }
             $internal = $worker instanceof InternalWorker;
             $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_START_EVENT, new StartJobEvent($job, $internal));
             $worker->execute($job->getArguments());
-        } catch (ServiceNotFoundException $e) {
+        } catch (NotFoundExceptionInterface $e) {
             $unrecoverable = new UnrecoverableJobException("Missing worker {$job->getName()}", 0, $e);
             $this->failedJob($job, $unrecoverable, $internal);
 

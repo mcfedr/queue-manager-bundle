@@ -1,11 +1,6 @@
 services:
     Mcfedr\QueueManagerBundle\Runner\JobExecutor:
         class: Mcfedr\QueueManagerBundle\Runner\JobExecutor
-        calls:
-            - ['setContainer', ['@service_container']]
-            - ['setLogger', ['@?logger']]
-            - ['setEventDispatcher', ['@?event_dispatcher']]
-
-    mcfedr_queue_manager.job_executor:
         public: true
-        alias: Mcfedr\QueueManagerBundle\Runner\JobExecutor
+        autowire: true
+        autoconfigure: true

@@ -8,14 +8,16 @@ use Mcfedr\QueueManagerBundle\Manager\QueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\TestJob;
 use Mcfedr\QueueManagerBundle\Queue\TestRetryableJob;
+use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
+use Psr\Log\LoggerInterface;
 
 class TestRunnerCommand extends RunnerCommand
 {
     private $options;
 
-    public function __construct($name, array $options, QueueManager $queueManager)
+    public function __construct($name, array $options, QueueManager $queueManager, JobExecutor $jobExecutor, ?LoggerInterface $logger = null)
     {
-        parent::__construct($name, $options, $queueManager);
+        parent::__construct($name, $options, $queueManager, $jobExecutor, $logger);
         $this->options = $options;
     }
 

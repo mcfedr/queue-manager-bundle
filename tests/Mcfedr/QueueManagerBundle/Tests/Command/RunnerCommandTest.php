@@ -31,7 +31,7 @@ class RunnerCommandTest extends TestCase
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
         $methods = ['getJobs', 'finishJobs', 'finishJob'];
-        $command = $this->getMockCommand($methods, $manager, [$job]);
+        $command = $this->getMockCommand($methods, $manager, [$job], $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('finishJob')
@@ -41,7 +41,7 @@ class RunnerCommandTest extends TestCase
             ->method('finishJobs')
             ->with([$job], [], []);
 
-        $this->executeCommand($command, $worker);
+        $this->executeCommand($command);
     }
 
     public function testExecutePermanentlyFailingJob()
@@ -54,7 +54,7 @@ class RunnerCommandTest extends TestCase
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
         $methods = ['getJobs', 'finishJobs', 'failedJob'];
-        $command = $this->getMockCommand($methods, $manager, [$job]);
+        $command = $this->getMockCommand($methods, $manager, [$job], $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('failedJob')
@@ -64,7 +64,7 @@ class RunnerCommandTest extends TestCase
             ->method('finishJobs')
             ->with([], [], [$job]);
 
-        $this->executeCommand($command, $worker);
+        $this->executeCommand($command);
     }
 
     public function testExecutePermanentlyFailingJobUsingInterface()
@@ -77,7 +77,7 @@ class RunnerCommandTest extends TestCase
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
         $methods = ['getJobs', 'finishJobs', 'failedJob'];
-        $command = $this->getMockCommand($methods, $manager, [$job]);
+        $command = $this->getMockCommand($methods, $manager, [$job], $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('failedJob')
@@ -87,7 +87,7 @@ class RunnerCommandTest extends TestCase
             ->method('finishJobs')
             ->with([], [], [$job]);
 
-        $this->executeCommand($command, $worker);
+        $this->executeCommand($command);
     }
 
     public function testExecuteInvalidWorkerJob()
@@ -96,7 +96,9 @@ class RunnerCommandTest extends TestCase
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
         $methods = ['getJobs', 'finishJobs', 'failedJob'];
-        $command = $this->getMockCommand($methods, $manager, [$job]);
+        $worker = new \stdClass();
+
+        $command = $this->getMockCommand($methods, $manager, [$job], $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('failedJob')
@@ -106,9 +108,7 @@ class RunnerCommandTest extends TestCase
             ->method('finishJobs')
             ->with([], [], [$job]);
 
-        $worker = new \stdClass();
-
-        $this->executeCommand($command, $worker);
+        $this->executeCommand($command);
     }
 
     public function testExecuteFailingJob()
@@ -121,7 +121,7 @@ class RunnerCommandTest extends TestCase
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
         $methods = ['getJobs', 'finishJobs', 'failedJob'];
-        $command = $this->getMockCommand($methods, $manager, [$job]);
+        $command = $this->getMockCommand($methods, $manager, [$job], $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('failedJob')
@@ -131,7 +131,7 @@ class RunnerCommandTest extends TestCase
             ->method('finishJobs')
             ->with([], [], [$job]);
 
-        $this->executeCommand($command, $worker);
+        $this->executeCommand($command);
     }
 
     public function testExecuteFailingRetryableJob()
@@ -144,7 +144,7 @@ class RunnerCommandTest extends TestCase
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
         $methods = ['getJobs', 'finishJobs', 'failedJob'];
-        $command = $this->getMockCommand($methods, $manager, [$job]);
+        $command = $this->getMockCommand($methods, $manager, [$job], $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('failedJob')
@@ -154,7 +154,7 @@ class RunnerCommandTest extends TestCase
             ->method('finishJobs')
             ->with([], [$job], []);
 
-        $this->executeCommand($command, $worker);
+        $this->executeCommand($command);
     }
 
     public function testExecutePermanentlyFailingRetryableJob()
@@ -167,7 +167,7 @@ class RunnerCommandTest extends TestCase
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
         $methods = ['getJobs', 'finishJobs', 'failedJob'];
-        $command = $this->getMockCommand($methods, $manager, [$job]);
+        $command = $this->getMockCommand($methods, $manager, [$job], $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('failedJob')
@@ -177,7 +177,7 @@ class RunnerCommandTest extends TestCase
             ->method('finishJobs')
             ->with([], [], [$job]);
 
-        $this->executeCommand($command, $worker);
+        $this->executeCommand($command);
     }
 
     public function testExecuteManyJob()
@@ -188,7 +188,7 @@ class RunnerCommandTest extends TestCase
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
         $methods = ['getJobs', 'finishJobs', 'finishJob'];
-        $command = $this->getMockCommand($methods, $manager, $jobs);
+        $command = $this->getMockCommand($methods, $manager, $jobs, $this->getJobExecutor($worker));
 
         $command->expects($this->exactly(2))
             ->method('finishJob')
@@ -198,7 +198,7 @@ class RunnerCommandTest extends TestCase
             ->method('finishJobs')
             ->with($jobs, [], []);
 
-        $this->executeCommand($command, $worker);
+        $this->executeCommand($command);
     }
 
     public function testExecuteManyFailingJob()
@@ -211,7 +211,7 @@ class RunnerCommandTest extends TestCase
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
         $methods = ['getJobs', 'finishJobs', 'failedJob'];
-        $command = $this->getMockCommand($methods, $manager, $jobs);
+        $command = $this->getMockCommand($methods, $manager, $jobs, $this->getJobExecutor($worker));
 
         $command->expects($this->exactly(2))
             ->method('failedJob')
@@ -221,7 +221,7 @@ class RunnerCommandTest extends TestCase
             ->method('finishJobs')
             ->with([], [], $jobs);
 
-        $this->executeCommand($command, $worker);
+        $this->executeCommand($command);
     }
 
     public function testExecuteEvents()
@@ -229,18 +229,6 @@ class RunnerCommandTest extends TestCase
         $jobs = [$this->getMockJob(Job::class), $this->getMockJob(Job::class)];
 
         $worker = $this->getMockWorker(null, 2);
-
-        $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJobs', 'finishJobs', 'finishJob'];
-        $command = $this->getMockCommand($methods, $manager, $jobs);
-
-        $command->expects($this->exactly(2))
-            ->method('finishJob')
-            ->withConsecutive($jobs[0], $jobs[1]);
-
-        $command->expects($this->once())
-            ->method('finishJobs')
-            ->with($jobs, [], []);
 
         $eventDispatcher = $this->getMockBuilder(EventDispatcher::class)
             ->disableOriginalConstructor()
@@ -257,7 +245,19 @@ class RunnerCommandTest extends TestCase
                 [JobExecutor::JOB_BATCH_FINISHED_EVENT]
             );
 
-        $this->executeCommand($command, $worker, $eventDispatcher);
+        $manager = $this->getMockBuilder(QueueManager::class)->getMock();
+        $methods = ['getJobs', 'finishJobs', 'finishJob'];
+        $command = $this->getMockCommand($methods, $manager, $jobs, $this->getJobExecutor($worker, $eventDispatcher));
+
+        $command->expects($this->exactly(2))
+            ->method('finishJob')
+            ->withConsecutive($jobs[0], $jobs[1]);
+
+        $command->expects($this->once())
+            ->method('finishJobs')
+            ->with($jobs, [], []);
+
+        $this->executeCommand($command);
     }
 
     /**
@@ -303,11 +303,11 @@ class RunnerCommandTest extends TestCase
      *
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    private function getMockCommand(array $methods, QueueManager $manager, array $jobs)
+    private function getMockCommand(array $methods, QueueManager $manager, array $jobs, $executor)
     {
         $command = $this
             ->getMockBuilder(RunnerCommand::class)
-            ->setConstructorArgs(['mcfedr:queue:default-runner', [], $manager])
+            ->setConstructorArgs(['mcfedr:queue:default-runner', [], $manager, $executor])
             ->setMethods($methods)
             ->getMock();
 
@@ -318,25 +318,20 @@ class RunnerCommandTest extends TestCase
         return $command;
     }
 
+    private function getJobExecutor($worker, EventDispatcher $eventDispatcher = null)
+    {
+        $container = new Container();
+        $container->set('worker', $worker);
+
+        return new JobExecutor($container, $eventDispatcher);
+    }
+
     /**
      * @param $command
      * @param $worker
      */
-    private function executeCommand(Command $command, $worker, EventDispatcher $eventDispatcher = null)
+    private function executeCommand(Command $command)
     {
-        $executor = new JobExecutor();
-
-        $container = new Container();
-        $container->set('worker', $worker);
-        $container->set('mcfedr_queue_manager.job_executor', $executor);
-        if ($eventDispatcher) {
-            $container->set('event_dispatcher', $eventDispatcher);
-            $executor->setEventDispatcher($eventDispatcher);
-        }
-
-        $command->setContainer($container);
-        $executor->setContainer($container);
-
         $application = new Application();
         $application->add($command);
 

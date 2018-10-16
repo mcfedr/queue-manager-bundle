@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Mcfedr\QueueManagerBundle\DependencyInjection;
 
 use Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry;
+use Mcfedr\QueueManagerBundle\Queue\Worker;
+use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
 use Mcfedr\QueueManagerBundle\Subscriber\MemoryReportSubscriber;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
@@ -20,6 +22,10 @@ class McfedrQueueManagerExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container)
     {
+        $container
+            ->registerForAutoconfiguration(Worker::class)
+            ->addTag('mcfedr_queue_manager.worker');
+
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
@@ -49,6 +55,7 @@ class McfedrQueueManagerExtension extends Extension
             $managerDefinition = new Definition($managerClass, [
                 $merged,
             ]);
+            $managerDefinition->addTag('mcfedr_queue_manager.manager');
 
             $managerDefinition->setPublic(true);
 
@@ -72,9 +79,10 @@ class McfedrQueueManagerExtension extends Extension
                     "mcfedr:queue:$name-runner",
                     $merged,
                     new Reference($managerServiceName),
+                    new Reference(JobExecutor::class),
+                    new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE)
                 ]);
                 $commandDefinition->setPublic(true);
-                $commandDefinition->addMethodCall('setLogger', [new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE)]);
                 $commandDefinition->setTags(
                     ['console.command' => []]
                 );

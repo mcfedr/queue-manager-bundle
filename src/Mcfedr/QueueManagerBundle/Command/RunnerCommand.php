@@ -14,13 +14,10 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 
-abstract class RunnerCommand extends Command implements ContainerAwareInterface
+abstract class RunnerCommand extends Command
 {
     const OK = 0;
     const FAIL = 1;
@@ -44,10 +41,6 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
      */
     const JOB_FAILED_EVENT = 'mcfedr_queue_manager.job_failed';
 
-    use ContainerAwareTrait {
-        setContainer as setContainerInner;
-    }
-
     /**
      * @var int
      */
@@ -64,16 +57,21 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     protected $queueManager;
 
     /**
-     * @var LoggerInterface
+     * @var ?LoggerInterface
      */
-    protected $logger;
+    private $logger;
 
     /**
      * @var Process
      */
     private $process;
 
-    public function __construct($name, array $options, QueueManager $queueManager)
+    /**
+     * @var JobExecutor
+     */
+    private $jobExecutor;
+
+    public function __construct($name, array $options, QueueManager $queueManager, JobExecutor $jobExecutor, ?LoggerInterface $logger = null)
     {
         parent::__construct($name);
         $this->queueManager = $queueManager;
@@ -83,6 +81,8 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         if (array_key_exists('sleep_seconds', $options)) {
             $this->sleepSeconds = $options['sleep_seconds'];
         }
+        $this->jobExecutor = $jobExecutor;
+        $this->logger = $logger;
     }
 
     protected function configure()
@@ -131,7 +131,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         try {
             $jobs = $this->getJobs();
             if (count($jobs)) {
-                $this->container->get('mcfedr_queue_manager.job_executor')->startBatch($jobs);
+                $this->jobExecutor->startBatch($jobs);
                 $oks = [];
                 $fails = [];
                 $retries = [];
@@ -151,7 +151,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
                     }
                 }
                 $this->finishJobs($oks, $retries, $fails);
-                $this->container->get('mcfedr_queue_manager.job_executor')->finishBatch($oks, $retries, $fails);
+                $this->jobExecutor->finishBatch($oks, $retries, $fails);
             } else {
                 $this->logger && $this->logger->debug('No jobs, sleeping...', [
                     'sleepSeconds' => $this->sleepSeconds,
@@ -181,7 +181,7 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
     protected function executeJob(Job $job): int
     {
         try {
-            $this->container->get('mcfedr_queue_manager.job_executor')->executeJob($job, $this->retryLimit);
+            $this->jobExecutor->executeJob($job, $this->retryLimit);
         } catch (UnrecoverableJobExceptionInterface $e) {
             $this->failedJob($job, $e);
 
@@ -194,16 +194,6 @@ abstract class RunnerCommand extends Command implements ContainerAwareInterface
         $this->finishJob($job);
 
         return self::OK;
-    }
-
-    public function setContainer(ContainerInterface $container = null)
-    {
-        $this->setContainerInner($container);
-    }
-
-    public function setLogger(?LoggerInterface $logger)
-    {
-        $this->logger = $logger;
     }
 
     /**
