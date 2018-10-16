@@ -80,7 +80,7 @@ class McfedrQueueManagerExtension extends Extension
                     $merged,
                     new Reference($managerServiceName),
                     new Reference(JobExecutor::class),
-                    new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE)
+                    new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE),
                 ]);
                 $commandDefinition->setPublic(true);
                 $commandDefinition->setTags(
