@@ -41,7 +41,7 @@ abstract class RunnerCommand extends Command
     /**
      * @var ?LoggerInterface
      */
-    private $logger;
+    protected $logger;
 
     /**
      * @var ?Process
