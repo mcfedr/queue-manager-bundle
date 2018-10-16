@@ -24,24 +24,6 @@ abstract class RunnerCommand extends Command
     const RETRY = 2;
 
     /**
-     * @deprecated
-     * @see JobExecutor::JOB_START_EVENT
-     */
-    const JOB_START_EVENT = 'mcfedr_queue_manager.job_start';
-
-    /**
-     * @deprecated
-     * @see JobExecutor::JOB_FINISHED_EVENT
-     */
-    const JOB_FINISHED_EVENT = 'mcfedr_queue_manager.job_finished';
-
-    /**
-     * @deprecated
-     * @see JobExecutor::JOB_FAILED_EVENT
-     */
-    const JOB_FAILED_EVENT = 'mcfedr_queue_manager.job_failed';
-
-    /**
      * @var int
      */
     private $retryLimit = 3;
@@ -183,15 +165,10 @@ abstract class RunnerCommand extends Command
         try {
             $this->jobExecutor->executeJob($job, $this->retryLimit);
         } catch (UnrecoverableJobExceptionInterface $e) {
-            $this->failedJob($job, $e);
-
             return self::FAIL;
         } catch (\Exception $e) {
-            $this->failedJob($job, $e);
-
             return self::RETRY;
         }
-        $this->finishJob($job);
 
         return self::OK;
     }
@@ -202,29 +179,6 @@ abstract class RunnerCommand extends Command
      * @return Job[]
      */
     abstract protected function getJobs();
-
-    /**
-     * Called when a job is finished.
-     *
-     * @param Job $job
-     *
-     * @deprecated
-     */
-    protected function finishJob(Job $job)
-    {
-    }
-
-    /**
-     * Called when a job failed.
-     *
-     * @param Job        $job
-     * @param \Exception $exception
-     *
-     * @deprecated
-     */
-    protected function failedJob(Job $job, \Exception $exception)
-    {
-    }
 
     /**
      * Called after a batch of jobs finishes.

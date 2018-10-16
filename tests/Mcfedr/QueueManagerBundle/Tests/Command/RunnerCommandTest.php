@@ -30,12 +30,8 @@ class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker();
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJobs', 'finishJobs', 'finishJob'];
+        $methods = ['getJobs', 'finishJobs'];
         $command = $this->getMockCommand($methods, $manager, [$job], $this->getJobExecutor($worker));
-
-        $command->expects($this->once())
-            ->method('finishJob')
-            ->with($job);
 
         $command->expects($this->once())
             ->method('finishJobs')
@@ -53,12 +49,8 @@ class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker($exce);
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJobs', 'finishJobs', 'failedJob'];
+        $methods = ['getJobs', 'finishJobs'];
         $command = $this->getMockCommand($methods, $manager, [$job], $this->getJobExecutor($worker));
-
-        $command->expects($this->once())
-            ->method('failedJob')
-            ->with($job, $exce);
 
         $command->expects($this->once())
             ->method('finishJobs')
@@ -76,12 +68,8 @@ class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker($exce);
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJobs', 'finishJobs', 'failedJob'];
+        $methods = ['getJobs', 'finishJobs'];
         $command = $this->getMockCommand($methods, $manager, [$job], $this->getJobExecutor($worker));
-
-        $command->expects($this->once())
-            ->method('failedJob')
-            ->with($job, $exce);
 
         $command->expects($this->once())
             ->method('finishJobs')
@@ -95,14 +83,10 @@ class RunnerCommandTest extends TestCase
         $job = $this->getMockJob(Job::class);
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJobs', 'finishJobs', 'failedJob'];
+        $methods = ['getJobs', 'finishJobs'];
         $worker = new \stdClass();
 
         $command = $this->getMockCommand($methods, $manager, [$job], $this->getJobExecutor($worker));
-
-        $command->expects($this->once())
-            ->method('failedJob')
-            ->with($job, new IsInstanceOf(UnrecoverableJobExceptionInterface::class));
 
         $command->expects($this->once())
             ->method('finishJobs')
@@ -120,12 +104,8 @@ class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker($exce);
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJobs', 'finishJobs', 'failedJob'];
+        $methods = ['getJobs', 'finishJobs'];
         $command = $this->getMockCommand($methods, $manager, [$job], $this->getJobExecutor($worker));
-
-        $command->expects($this->once())
-            ->method('failedJob')
-            ->with($job, new IsInstanceOf(UnrecoverableJobException::class));
 
         $command->expects($this->once())
             ->method('finishJobs')
@@ -143,12 +123,8 @@ class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker($exce);
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJobs', 'finishJobs', 'failedJob'];
+        $methods = ['getJobs', 'finishJobs'];
         $command = $this->getMockCommand($methods, $manager, [$job], $this->getJobExecutor($worker));
-
-        $command->expects($this->once())
-            ->method('failedJob')
-            ->with($job, $exce);
 
         $command->expects($this->once())
             ->method('finishJobs')
@@ -166,12 +142,8 @@ class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker($exce);
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJobs', 'finishJobs', 'failedJob'];
+        $methods = ['getJobs', 'finishJobs'];
         $command = $this->getMockCommand($methods, $manager, [$job], $this->getJobExecutor($worker));
-
-        $command->expects($this->once())
-            ->method('failedJob')
-            ->with($job, new IsInstanceOf(UnrecoverableJobException::class));
 
         $command->expects($this->once())
             ->method('finishJobs')
@@ -187,12 +159,8 @@ class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker(null, 2);
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJobs', 'finishJobs', 'finishJob'];
+        $methods = ['getJobs', 'finishJobs'];
         $command = $this->getMockCommand($methods, $manager, $jobs, $this->getJobExecutor($worker));
-
-        $command->expects($this->exactly(2))
-            ->method('finishJob')
-            ->withConsecutive($jobs[0], $jobs[1]);
 
         $command->expects($this->once())
             ->method('finishJobs')
@@ -210,12 +178,8 @@ class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker($exce, 2);
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJobs', 'finishJobs', 'failedJob'];
+        $methods = ['getJobs', 'finishJobs'];
         $command = $this->getMockCommand($methods, $manager, $jobs, $this->getJobExecutor($worker));
-
-        $command->expects($this->exactly(2))
-            ->method('failedJob')
-            ->withConsecutive([$jobs[0], $exce], [$jobs[1], $exce]);
 
         $command->expects($this->once())
             ->method('finishJobs')
@@ -246,12 +210,8 @@ class RunnerCommandTest extends TestCase
             );
 
         $manager = $this->getMockBuilder(QueueManager::class)->getMock();
-        $methods = ['getJobs', 'finishJobs', 'finishJob'];
+        $methods = ['getJobs', 'finishJobs'];
         $command = $this->getMockCommand($methods, $manager, $jobs, $this->getJobExecutor($worker, $eventDispatcher));
-
-        $command->expects($this->exactly(2))
-            ->method('finishJob')
-            ->withConsecutive($jobs[0], $jobs[1]);
 
         $command->expects($this->once())
             ->method('finishJobs')
