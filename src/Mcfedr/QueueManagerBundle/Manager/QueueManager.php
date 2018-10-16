@@ -26,8 +26,6 @@ interface QueueManager
     /**
      * Remove a job from the queue.
      *
-     * @param $job Job
-     *
      * @throws WrongJobException  When this manager doesn't know how to delete the given job
      * @throws NoSuchJobException When this manager is unable to delete the given job
      */

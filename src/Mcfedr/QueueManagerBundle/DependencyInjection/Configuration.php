@@ -34,7 +34,7 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('managers')
                     ->requiresAtLeastOneElement()
                     ->useAttributeAsKey('name')
-                    ->prototype('array')
+                    ->arrayPrototype()
                         ->addDefaultsIfNotSet()
                         ->children()
                             ->scalarNode('driver')->cannotBeEmpty()->end()

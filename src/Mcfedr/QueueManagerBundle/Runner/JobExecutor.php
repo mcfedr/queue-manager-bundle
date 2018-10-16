@@ -16,15 +16,12 @@ use Mcfedr\QueueManagerBundle\Queue\InternalWorker;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
 use Mcfedr\QueueManagerBundle\Queue\Worker;
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-class JobExecutor implements ContainerAwareInterface
+class JobExecutor
 {
     const JOB_START_EVENT = 'mcfedr_queue_manager.job_start';
     const JOB_FINISHED_EVENT = 'mcfedr_queue_manager.job_finished';
@@ -33,48 +30,45 @@ class JobExecutor implements ContainerAwareInterface
     const JOB_BATCH_START_EVENT = 'mcfedr_queue_manager.job_batch_start';
     const JOB_BATCH_FINISHED_EVENT = 'mcfedr_queue_manager.job_batch_finished';
 
-    use ContainerAwareTrait {
-        setContainer as setContainerInner;
-    }
+    /**
+     * @var ContainerInterface
+     */
+    private $workersMap;
 
     /**
-     * @var EventDispatcher
+     * @var ?EventDispatcherInterface
      */
     private $eventDispatcher;
 
     /**
-     * @var LoggerInterface
+     * @var ?LoggerInterface
      */
     protected $logger;
 
     private $batchStarted = false;
     private $triggerBatchEvents = false;
 
-    public function setContainer(ContainerInterface $container = null)
+    public function __construct(ContainerInterface $workersMap, ?EventDispatcherInterface $eventDispatcher = null, ?LoggerInterface $logger = null)
     {
-        $this->setContainerInner($container);
-    }
-
-    public function setLogger(?LoggerInterface $logger)
-    {
+        $this->workersMap = $workersMap;
         $this->logger = $logger;
-    }
-
-    public function setEventDispatcher(?EventDispatcherInterface $eventDispatcher)
-    {
         $this->eventDispatcher = $eventDispatcher;
     }
 
     public function startBatch(array $jobs)
     {
-        $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_BATCH_START_EVENT, new StartJobBatchEvent($jobs));
+        if ($this->eventDispatcher) {
+            $this->eventDispatcher->dispatch(self::JOB_BATCH_START_EVENT, new StartJobBatchEvent($jobs));
+        }
         $this->batchStarted = true;
     }
 
     public function finishBatch(array $oks, array $retries, array $fails)
     {
         $this->batchStarted = false;
-        $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_BATCH_FINISHED_EVENT, new FinishedJobBatchEvent($oks, $fails, $retries));
+        if ($this->eventDispatcher) {
+            $this->eventDispatcher->dispatch(self::JOB_BATCH_FINISHED_EVENT, new FinishedJobBatchEvent($oks, $fails, $retries));
+        }
     }
 
     /**
@@ -94,14 +88,16 @@ class JobExecutor implements ContainerAwareInterface
 
         $internal = false;
         try {
-            $worker = $this->container->get($job->getName());
+            $worker = $this->workersMap->get($job->getName());
             if (!$worker instanceof Worker) {
                 throw new InvalidWorkerException("The worker {$job->getName()} is not an instance of ".Worker::class);
             }
             $internal = $worker instanceof InternalWorker;
-            $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_START_EVENT, new StartJobEvent($job, $internal));
+            if ($this->eventDispatcher) {
+                $this->eventDispatcher->dispatch(self::JOB_START_EVENT, new StartJobEvent($job, $internal));
+            }
             $worker->execute($job->getArguments());
-        } catch (ServiceNotFoundException $e) {
+        } catch (NotFoundExceptionInterface $e) {
             $unrecoverable = new UnrecoverableJobException("Missing worker {$job->getName()}", 0, $e);
             $this->failedJob($job, $unrecoverable, $internal);
 
@@ -137,11 +133,15 @@ class JobExecutor implements ContainerAwareInterface
      */
     protected function finishJob(Job $job, bool $internal)
     {
-        $this->logger && $this->logger->debug('Finished a job', [
-            'name' => $job->getName(),
-            'arguments' => $job->getArguments(),
-        ]);
-        $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_FINISHED_EVENT, new FinishedJobEvent($job, $internal));
+        if ($this->logger) {
+            $this->logger->debug('Finished a job', [
+                'name' => $job->getName(),
+                'arguments' => $job->getArguments(),
+            ]);
+        }
+        if ($this->eventDispatcher) {
+            $this->eventDispatcher->dispatch(self::JOB_FINISHED_EVENT, new FinishedJobEvent($job, $internal));
+        }
         if ($this->triggerBatchEvents) {
             $this->finishBatch([$job], [], []);
         }
@@ -150,7 +150,7 @@ class JobExecutor implements ContainerAwareInterface
     /**
      * Called when a job failed.
      */
-    protected function failedJob(Job $job, \Exception $exception, bool $internal)
+    protected function failedJob(Job $job, \Throwable $exception, bool $internal)
     {
         if ($this->logger) {
             $context = [
@@ -165,7 +165,9 @@ class JobExecutor implements ContainerAwareInterface
             }
             $this->logger->error('Job failed', $context);
         }
-        $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_FAILED_EVENT, new FailedJobEvent($job, $exception, $internal));
+        if ($this->eventDispatcher) {
+            $this->eventDispatcher->dispatch(self::JOB_FAILED_EVENT, new FailedJobEvent($job, $exception, $internal));
+        }
         if ($this->triggerBatchEvents) {
             $this->finishBatch([], [], [$job]);
         }

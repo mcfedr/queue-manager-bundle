@@ -42,5 +42,10 @@ monolog:
 services:
     Mcfedr\QueueManagerBundle\Queue\TestWorker:
         class: Mcfedr\QueueManagerBundle\Queue\TestWorker
-        arguments:
-            - "@logger"
+        autowire: true
+        autoconfigure: true
+        tags:
+        - { name: 'mcfedr_queue_manager.worker', id: 'test_worker' }
+
+    test_worker_old:
+        alias: Mcfedr\QueueManagerBundle\Queue\TestWorker

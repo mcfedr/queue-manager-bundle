@@ -14,7 +14,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class DoctrineResetSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var Registry
+     * @var ?Registry
      */
     private $doctrine;
 
