@@ -183,7 +183,7 @@ abstract class RunnerCommand extends Command
      *
      * @return Job[]
      */
-    abstract protected function getJobs();
+    abstract protected function getJobs(): array;
 
     /**
      * Called after a batch of jobs finishes.

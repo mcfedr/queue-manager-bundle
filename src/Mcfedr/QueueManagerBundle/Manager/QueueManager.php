@@ -21,7 +21,7 @@ interface QueueManager
      *
      * @return Job
      */
-    public function put($name, array $arguments = [], array $options = []);
+    public function put(string $name, array $arguments = [], array $options = []): Job;
 
     /**
      * Remove a job from the queue.

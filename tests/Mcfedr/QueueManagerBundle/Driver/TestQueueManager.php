@@ -25,10 +25,7 @@ class TestQueueManager implements QueueManager, ContainerAwareInterface
         $this->options = $options;
     }
 
-    /**
-     * @return array
-     */
-    public function getOptions()
+    public function getOptions(): array
     {
         return $this->options;
     }
@@ -42,7 +39,7 @@ class TestQueueManager implements QueueManager, ContainerAwareInterface
      *
      * @return Job
      */
-    public function put($name, array $arguments = [], array $options = [])
+    public function put(string $name, array $arguments = [], array $options = []): Job
     {
         $this->info('Putting new job', [
             'name' => $name,
@@ -64,7 +61,7 @@ class TestQueueManager implements QueueManager, ContainerAwareInterface
         ]);
     }
 
-    protected function info($message, $context)
+    protected function info(string $message, array $context)
     {
         $this->container->get('logger')->info("{$this->getLogName()}: $message", $context);
     }

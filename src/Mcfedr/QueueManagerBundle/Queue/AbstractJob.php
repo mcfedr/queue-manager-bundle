@@ -16,28 +16,18 @@ abstract class AbstractJob implements Job
      */
     private $arguments;
 
-    /**
-     * @param string $name
-     * @param array  $arguments
-     */
-    public function __construct($name, array $arguments)
+    public function __construct(string $name, array $arguments)
     {
         $this->name = $name;
         $this->arguments = $arguments;
     }
 
-    /**
-     * @return string
-     */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return array
-     */
-    public function getArguments()
+    public function getArguments(): array
     {
         return $this->arguments;
     }

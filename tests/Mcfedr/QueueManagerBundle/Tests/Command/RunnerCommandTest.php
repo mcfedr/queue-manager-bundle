@@ -12,6 +12,7 @@ use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
 use Mcfedr\QueueManagerBundle\Queue\Worker;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
@@ -218,12 +219,7 @@ class RunnerCommandTest extends TestCase
         $this->executeCommand($command);
     }
 
-    /**
-     * @param $class
-     *
-     * @return \PHPUnit_Framework_MockObject_MockObject
-     */
-    private function getMockJob($class)
+    private function getMockJob(string $class): MockObject
     {
         $job = $this->getMockBuilder($class)
             ->getMock();
@@ -235,12 +231,7 @@ class RunnerCommandTest extends TestCase
         return $job;
     }
 
-    /**
-     * @param $exce
-     *
-     * @return \PHPUnit_Framework_MockObject_MockObject
-     */
-    private function getMockWorker(\Exception $exce = null, $count = 1)
+    private function getMockWorker(\Exception $exce = null, int $count = 1): MockObject
     {
         $worker = $this->getMockBuilder(Worker::class)
             ->getMock();
@@ -254,14 +245,7 @@ class RunnerCommandTest extends TestCase
         return $worker;
     }
 
-    /**
-     * @param string[]     $methods
-     * @param QueueManager $manager
-     * @param Job[]        $jobs
-     *
-     * @return \PHPUnit_Framework_MockObject_MockObject
-     */
-    private function getMockCommand(array $methods, QueueManager $manager, array $jobs, $executor)
+    private function getMockCommand(array $methods, QueueManager $manager, array $jobs, JobExecutor $executor): MockObject
     {
         $command = $this
             ->getMockBuilder(RunnerCommand::class)
@@ -276,7 +260,7 @@ class RunnerCommandTest extends TestCase
         return $command;
     }
 
-    private function getJobExecutor($worker, EventDispatcher $eventDispatcher = null)
+    private function getJobExecutor($worker, EventDispatcher $eventDispatcher = null): JobExecutor
     {
         $container = new Container();
         $container->set('worker', $worker);
@@ -284,10 +268,6 @@ class RunnerCommandTest extends TestCase
         return new JobExecutor($container, $eventDispatcher);
     }
 
-    /**
-     * @param $command
-     * @param $worker
-     */
     private function executeCommand(Command $command)
     {
         $application = new Application();

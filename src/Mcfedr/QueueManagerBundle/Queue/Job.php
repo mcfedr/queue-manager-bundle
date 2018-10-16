@@ -8,15 +8,11 @@ interface Job
 {
     /**
      * Get the name of the worker to be executed.
-     *
-     * @return string
      */
-    public function getName();
+    public function getName(): string;
 
     /**
      * Gets the arguments that will be passed to the Worker.
-     *
-     * @return array
      */
-    public function getArguments();
+    public function getArguments(): array;
 }

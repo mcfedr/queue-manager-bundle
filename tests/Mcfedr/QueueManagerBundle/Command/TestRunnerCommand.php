@@ -29,7 +29,7 @@ class TestRunnerCommand extends RunnerCommand
         return $this->options;
     }
 
-    protected function getJobs()
+    protected function getJobs(): array
     {
         if (1 == rand(1, 2)) {
             return [new TestRetryableJob('test_worker', [], [])];
