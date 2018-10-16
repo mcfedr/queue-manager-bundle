@@ -66,9 +66,7 @@ class McfedrQueueManagerExtension extends Extension
             $container->setDefinition($managerServiceName, $managerDefinition);
             if (!$container->has($managerClass)) {
                 $managerServiceAlias = $container->setAlias($managerClass, $managerServiceName);
-                if ($managerServiceAlias) {
-                    $managerServiceAlias->setPublic(true);
-                }
+                $managerServiceAlias->setPublic(true);
             }
 
             $queueManagers[$name] = new Reference($managerServiceName);
@@ -90,9 +88,7 @@ class McfedrQueueManagerExtension extends Extension
                 $container->setDefinition($commandServiceName, $commandDefinition);
                 if (!$container->has($commandClass)) {
                     $commandServiceAlias = $container->setAlias($commandClass, $commandServiceName);
-                    if ($commandServiceAlias) {
-                        $commandServiceAlias->setPublic(true);
-                    }
+                    $commandServiceAlias->setPublic(true);
                 }
             }
         }
@@ -108,9 +104,7 @@ class McfedrQueueManagerExtension extends Extension
         $queueManagerDefinition->setPublic(true);
         $container->setDefinition(QueueManagerRegistry::class, $queueManagerDefinition);
         $queueManagerAlias = $container->setAlias('mcfedr_queue_manager.registry', QueueManagerRegistry::class);
-        if ($queueManagerAlias) {
-            $queueManagerAlias->setPublic(true);
-        }
+        $queueManagerAlias->setPublic(true);
 
         if ($config['report_memory']) {
             $memoryListener = new Definition(MemoryReportSubscriber::class, [new Reference('logger')]);

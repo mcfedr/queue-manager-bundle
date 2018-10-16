@@ -44,7 +44,7 @@ abstract class RunnerCommand extends Command
     private $logger;
 
     /**
-     * @var Process
+     * @var ?Process
      */
     private $process;
 
@@ -77,21 +77,22 @@ abstract class RunnerCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $this->handleInput($input);
+
+        $limit = (int) $input->getOption('limit');
+        $ignoreLimit = 0 === $limit;
+        $running = true;
+
         if (function_exists('pcntl_signal')) {
             $handle = function ($sig) use (&$running) {
-                $this->logger && $this->logger->debug("Received signal ($sig), stopping...");
+                if ($this->logger) {
+                    $this->logger->debug("Received signal ($sig), stopping...");
+                }
                 $running = false;
             };
             pcntl_signal(SIGTERM, $handle);
             pcntl_signal(SIGINT, $handle);
         }
-
-        $this->handleInput($input);
-
-        $limit = (int) $input->getOption('limit');
-        $ignoreLimit = 0 === $limit;
-
-        $running = true;
 
         do {
             if ($input->getOption('process-isolation')) {
@@ -135,15 +136,19 @@ abstract class RunnerCommand extends Command
                 $this->finishJobs($oks, $retries, $fails);
                 $this->jobExecutor->finishBatch($oks, $retries, $fails);
             } else {
-                $this->logger && $this->logger->debug('No jobs, sleeping...', [
-                    'sleepSeconds' => $this->sleepSeconds,
-                ]);
+                if ($this->logger) {
+                    $this->logger->debug('No jobs, sleeping...', [
+                        'sleepSeconds' => $this->sleepSeconds,
+                    ]);
+                }
                 sleep($this->sleepSeconds);
             }
         } catch (UnexpectedJobDataException $e) {
-            $this->logger && $this->logger->warning('Found unexpected job data in the queue', [
-                'message' => $e->getMessage(),
-            ]);
+            if ($this->logger) {
+                $this->logger->warning('Found unexpected job data in the queue', [
+                    'message' => $e->getMessage(),
+                ]);
+            }
         }
     }
 
@@ -206,7 +211,7 @@ abstract class RunnerCommand extends Command
             $php = $finder->find();
 
             $commandLine = "$php {$_SERVER['argv'][0]}  {$this->getName()}";
-            $input->setOption('limit', 1);
+            $input->setOption('limit', '1');
             $input->setOption('no-interaction', true);
             $input->setOption('no-ansi', true);
 

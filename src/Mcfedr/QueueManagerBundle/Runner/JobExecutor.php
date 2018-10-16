@@ -19,7 +19,6 @@ use Mcfedr\QueueManagerBundle\Queue\Worker;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class JobExecutor
@@ -37,12 +36,12 @@ class JobExecutor
     private $workersMap;
 
     /**
-     * @var EventDispatcher
+     * @var ?EventDispatcherInterface
      */
     private $eventDispatcher;
 
     /**
-     * @var LoggerInterface
+     * @var ?LoggerInterface
      */
     protected $logger;
 
@@ -58,14 +57,18 @@ class JobExecutor
 
     public function startBatch(array $jobs)
     {
-        $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_BATCH_START_EVENT, new StartJobBatchEvent($jobs));
+        if ($this->eventDispatcher) {
+            $this->eventDispatcher->dispatch(self::JOB_BATCH_START_EVENT, new StartJobBatchEvent($jobs));
+        }
         $this->batchStarted = true;
     }
 
     public function finishBatch(array $oks, array $retries, array $fails)
     {
         $this->batchStarted = false;
-        $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_BATCH_FINISHED_EVENT, new FinishedJobBatchEvent($oks, $fails, $retries));
+        if ($this->eventDispatcher) {
+            $this->eventDispatcher->dispatch(self::JOB_BATCH_FINISHED_EVENT, new FinishedJobBatchEvent($oks, $fails, $retries));
+        }
     }
 
     /**
@@ -90,7 +93,9 @@ class JobExecutor
                 throw new InvalidWorkerException("The worker {$job->getName()} is not an instance of ".Worker::class);
             }
             $internal = $worker instanceof InternalWorker;
-            $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_START_EVENT, new StartJobEvent($job, $internal));
+            if ($this->eventDispatcher) {
+                $this->eventDispatcher->dispatch(self::JOB_START_EVENT, new StartJobEvent($job, $internal));
+            }
             $worker->execute($job->getArguments());
         } catch (NotFoundExceptionInterface $e) {
             $unrecoverable = new UnrecoverableJobException("Missing worker {$job->getName()}", 0, $e);
@@ -128,11 +133,15 @@ class JobExecutor
      */
     protected function finishJob(Job $job, bool $internal)
     {
-        $this->logger && $this->logger->debug('Finished a job', [
-            'name' => $job->getName(),
-            'arguments' => $job->getArguments(),
-        ]);
-        $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_FINISHED_EVENT, new FinishedJobEvent($job, $internal));
+        if ($this->logger) {
+            $this->logger->debug('Finished a job', [
+                'name' => $job->getName(),
+                'arguments' => $job->getArguments(),
+            ]);
+        }
+        if ($this->eventDispatcher) {
+            $this->eventDispatcher->dispatch(self::JOB_FINISHED_EVENT, new FinishedJobEvent($job, $internal));
+        }
         if ($this->triggerBatchEvents) {
             $this->finishBatch([$job], [], []);
         }
@@ -141,7 +150,7 @@ class JobExecutor
     /**
      * Called when a job failed.
      */
-    protected function failedJob(Job $job, \Exception $exception, bool $internal)
+    protected function failedJob(Job $job, \Throwable $exception, bool $internal)
     {
         if ($this->logger) {
             $context = [
@@ -156,7 +165,9 @@ class JobExecutor
             }
             $this->logger->error('Job failed', $context);
         }
-        $this->eventDispatcher && $this->eventDispatcher->dispatch(self::JOB_FAILED_EVENT, new FailedJobEvent($job, $exception, $internal));
+        if ($this->eventDispatcher) {
+            $this->eventDispatcher->dispatch(self::JOB_FAILED_EVENT, new FailedJobEvent($job, $exception, $internal));
+        }
         if ($this->triggerBatchEvents) {
             $this->finishBatch([], [], [$job]);
         }

@@ -9,25 +9,20 @@ use Mcfedr\QueueManagerBundle\Queue\Job;
 class FailedJobEvent extends JobEvent
 {
     /**
-     * @var \Exception
+     * @var \Throwable
      */
     private $exception;
 
-    /**
-     * @param Job        $job
-     * @param \Exception $exception
-     * @param bool       $internal
-     */
-    public function __construct(Job $job, \Exception $exception, bool $internal)
+    public function __construct(Job $job, \Throwable $exception, bool $internal)
     {
         parent::__construct($job, $internal);
         $this->exception = $exception;
     }
 
     /**
-     * @return \Exception
+     * @return \Throwable
      */
-    public function getException(): \Exception
+    public function getException(): \Throwable
     {
         return $this->exception;
     }
