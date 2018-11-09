@@ -10,8 +10,6 @@ use Mcfedr\QueueManagerBundle\Queue\Job;
 
 interface QueueManager
 {
-    public function __construct(array $options);
-
     /**
      * Put a new job on a queue.
      *
@@ -29,5 +27,5 @@ interface QueueManager
      * @throws WrongJobException  When this manager doesn't know how to delete the given job
      * @throws NoSuchJobException When this manager is unable to delete the given job
      */
-    public function delete(Job $job);
+    public function delete(Job $job): void;
 }

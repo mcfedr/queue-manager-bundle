@@ -30,7 +30,7 @@ class TestWorker implements Worker
      * @throws \Exception
      * @throws UnrecoverableJobException
      */
-    public function execute(array $arguments)
+    public function execute(array $arguments): void
     {
         $this->logger->info('Test worker is executing', [
             'arguments' => $arguments,

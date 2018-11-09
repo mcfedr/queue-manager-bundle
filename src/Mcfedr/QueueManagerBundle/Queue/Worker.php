@@ -14,5 +14,5 @@ interface Worker
      * @throws \Exception
      * @throws UnrecoverableJobExceptionInterface This job should not be retried
      */
-    public function execute(array $arguments);
+    public function execute(array $arguments): void;
 }

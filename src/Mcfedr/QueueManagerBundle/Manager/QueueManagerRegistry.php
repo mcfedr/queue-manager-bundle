@@ -4,64 +4,34 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\Manager;
 
-use Mcfedr\QueueManagerBundle\Exception\JobNotDeletableException;
-use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Queue\Job;
+use Psr\Container\ContainerInterface;
 
 class QueueManagerRegistry
 {
     /**
-     * @var QueueManager[]
+     * @var ContainerInterface
      */
     private $queueManagers;
 
     /**
      * @var string
      */
-    private $default;
+    private $defaultManager;
 
-    public function __construct(array $queueManagers, string $default)
+    public function __construct(ContainerInterface $queueManagers, string $defaultManager)
     {
         $this->queueManagers = $queueManagers;
-        $this->default = $default;
+        $this->defaultManager = $defaultManager;
     }
 
-    /**
-     * @param string $name
-     * @param array  $arguments
-     * @param array  $options
-     * @param string $manager
-     *
-     * @return Job
-     */
     public function put(string $name, array $arguments = [], array $options = [], ?string $manager = null): Job
     {
-        return $this->queueManagers[$manager ?: $this->default]->put($name, $arguments, $options);
+        return $this->queueManagers->get($manager ?: $this->defaultManager)->put($name, $arguments, $options);
     }
 
-    /**
-     * @param Job    $job
-     * @param string $manager
-     *
-     * @throws JobNotDeletableException
-     */
-    public function delete(Job $job, ?string $manager = null)
+    public function delete(Job $job, ?string $manager = null): void
     {
-        if ($manager) {
-            $this->queueManagers[$manager]->delete($job);
-
-            return;
-        }
-
-        foreach ($this->queueManagers as $queueManager) {
-            try {
-                $queueManager->delete($job);
-
-                return;
-            } catch (WrongJobException $e) {
-            }
-        }
-
-        throw new WrongJobException('Cannot find a manager able to delete this job');
+        $this->queueManagers->get($manager ?: $this->defaultManager)->delete($job);
     }
 }

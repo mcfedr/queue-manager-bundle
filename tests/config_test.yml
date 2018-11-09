@@ -1,8 +1,22 @@
+parameters:
+    env(DATABASE_URL): sqlite:///%kernel.project_dir%/var/app.db
+
 framework:
     test: ~
     session:
         storage_id: session.storage.mock_file
     secret: 'fake_secret'
+
+doctrine:
+    dbal:
+        url: '%env(resolve:DATABASE_URL)%'
+        mapping_types:
+            enum: string
+        logging: false
+        profiling: false
+    orm:
+        auto_generate_proxy_classes: "%kernel.debug%"
+        auto_mapping: true
 
 mcfedr_queue_manager:
     drivers:
@@ -12,6 +26,7 @@ mcfedr_queue_manager:
             options:
                 host: 127.0.0.1
                 default_queue: mcfedr_queue
+
         test_retry:
             class: Mcfedr\QueueManagerBundle\Driver\TestRetryQueueManager
             command_class: Mcfedr\QueueManagerBundle\Command\TestRetryRunnerCommand
@@ -31,6 +46,21 @@ mcfedr_queue_manager:
             options:
                 host: 127.0.0.3
                 port: 12345
+        beanstalkd:
+            driver: beanstalkd
+            options:
+                host: 127.0.0.1
+                port: 1234
+                default_queue: mcfedr_queue
+        delay:
+            driver: doctrine_delay
+        periodic:
+            driver: periodic
+        sqs:
+            driver: sqs
+            options:
+                default_url: 'http://sqs.com'
+                region: 'eu-west-1'
 
 monolog:
     handlers:
@@ -49,3 +79,30 @@ services:
 
     test_worker_old:
         alias: Mcfedr\QueueManagerBundle\Queue\TestWorker
+
+    beanstalk_test_worker:
+        class: Mcfedr\QueueManagerBundle\Worker\TestWorker
+        arguments:
+        - "@logger"
+
+    doctrine_test_worker:
+        class: Mcfedr\QueueManagerBundle\Worker\DoctrineTestWorker
+        arguments:
+        - "@logger"
+
+    doctrine_test_create_fake_jobs:
+        class: Mcfedr\QueueManagerBundle\Command\CreateFakeJobsCommand
+        arguments:
+        - "@mcfedr_queue_manager.registry"
+        tags:
+        - { name: console.command }
+
+    test_periodic_distribution_command:
+        class: Mcfedr\QueueManagerBundle\Command\PeriodicDistributionCommand
+        tags:
+        - { name: console.command }
+
+    test_rand_add_distribution_command:
+        class: Mcfedr\QueueManagerBundle\Command\RandAddDistributionCommand
+        tags:
+        - { name: console.command }

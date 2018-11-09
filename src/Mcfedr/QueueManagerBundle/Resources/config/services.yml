@@ -1,6 +1,37 @@
+parameters:
+    mcfedr_queue_manager.default_manager: 'default'
+
 services:
-    Mcfedr\QueueManagerBundle\Runner\JobExecutor:
-        class: Mcfedr\QueueManagerBundle\Runner\JobExecutor
+    Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry:
         public: true
         autowire: true
         autoconfigure: true
+        bind:
+            $defaultManager: '%mcfedr_queue_manager.default_manager%'
+
+    mcfedr_queue_manager.registry:
+        alias: Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry
+        public: true
+
+    Mcfedr\QueueManagerBundle\Runner\JobExecutor:
+        public: true
+        autowire: true
+        autoconfigure: true
+
+    Mcfedr\QueueManagerBundle\Worker\DoctrineDelayWorker:
+        public: true
+        autowire: true
+        autoconfigure: true
+
+    mcfedr_doctrine_delay_queue_driver.worker:
+        public: true
+        alias: Mcfedr\QueueManagerBundle\Worker\DoctrineDelayWorker
+
+    Mcfedr\QueueManagerBundle\Worker\PeriodicWorker:
+        public: true
+        autowire: true
+        autoconfigure: true
+
+    mcfedr_periodic_queue_driver.worker:
+        public: true
+        alias: Mcfedr\QueueManagerBundle\Worker\PeriodicWorker

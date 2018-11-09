@@ -29,17 +29,11 @@ abstract class JobEvent extends Event
         $this->internal = $internal;
     }
 
-    /**
-     * @return Job
-     */
     public function getJob(): Job
     {
         return $this->job;
     }
 
-    /**
-     * @return bool
-     */
     public function isInternal(): bool
     {
         return $this->internal;

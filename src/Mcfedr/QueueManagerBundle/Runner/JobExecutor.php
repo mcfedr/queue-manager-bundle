@@ -23,12 +23,12 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class JobExecutor
 {
-    const JOB_START_EVENT = 'mcfedr_queue_manager.job_start';
-    const JOB_FINISHED_EVENT = 'mcfedr_queue_manager.job_finished';
-    const JOB_FAILED_EVENT = 'mcfedr_queue_manager.job_failed';
+    public const JOB_START_EVENT = 'mcfedr_queue_manager.job_start';
+    public const JOB_FINISHED_EVENT = 'mcfedr_queue_manager.job_finished';
+    public const JOB_FAILED_EVENT = 'mcfedr_queue_manager.job_failed';
 
-    const JOB_BATCH_START_EVENT = 'mcfedr_queue_manager.job_batch_start';
-    const JOB_BATCH_FINISHED_EVENT = 'mcfedr_queue_manager.job_batch_finished';
+    public const JOB_BATCH_START_EVENT = 'mcfedr_queue_manager.job_batch_start';
+    public const JOB_BATCH_FINISHED_EVENT = 'mcfedr_queue_manager.job_batch_finished';
 
     /**
      * @var ContainerInterface

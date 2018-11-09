@@ -2,7 +2,7 @@
     "name": "mcfedr/queue-manager-bundle",
     "type": "symfony-bundle",
     "description": "A bundle for managing job queues",
-    "keywords": ["queue", "job", "schedule", "task", "beanstalkd"],
+    "keywords": ["queue", "job", "schedule", "task", "beanstalkd", "doctrine", "sqs", "aws"],
     "autoload": {
         "psr-4": { "Mcfedr\\QueueManagerBundle\\": "src/Mcfedr/QueueManagerBundle/" }
     },
@@ -12,7 +12,10 @@
     },
     "require": {
         "php": ">=7.2",
-        "symfony/framework-bundle": "^3.3|^4"
+        "ext-json": "*",
+        "symfony/framework-bundle": "^3.3|^4",
+        "nesbot/carbon": "^1|^2",
+        "ramsey/uuid": "^3.7"
     },
     "require-dev": {
         "phpunit/phpunit": "^7",
@@ -22,14 +25,21 @@
         "symfony/swiftmailer-bundle": "^2.3|^3.0",
         "symfony/browser-kit": "^3.0|^4.0",
         "phpstan/phpstan": "^0.10.3",
-        "symfony/yaml": "^3|^4"
+        "symfony/yaml": "^3|^4",
+        "pda/pheanstalk": "^3.1",
+        "doctrine/orm": "^2.5",
+        "symfony/proxy-manager-bridge": "^3.3|^4.0",
+        "aws/aws-sdk-php": "^3.15",
+        "phpstan/phpstan-phpunit": "^0.10.0",
+        "phpstan/phpstan-symfony": "^0.10.2",
+        "phpstan/phpstan-doctrine": "^0.10.0"
     },
     "suggest": {
         "ext-pcntl": "For cleaner job handling in runner",
-        "mcfedr/beanstalk-queue-driver-bundle": "A driver for beanstalkd",
-        "mcfedr/resque-queue-driver-bundle": "A driver for resque",
-        "mcfedr/sqs-queue-driver-bundle": "A driver for SQS",
-        "mcfedr/doctrine-delay-queue-driver-bundle": "A driver to delay tasks and send to other drivers",
+        "pda/pheanstalk": "Required to use beanstalkd driver",
+        "doctrine/doctrine-bundle": "Required to use doctrine driver",
+        "symfony/proxy-manager-bridge": "Required to use doctrine driver",
+        "aws/aws-sdk-php": "Required to use SQS driver",
         "mcfedr/periodic-queue-driver-bundle": "A driver that periodically runs tasks"
     },
     "license": "MIT",

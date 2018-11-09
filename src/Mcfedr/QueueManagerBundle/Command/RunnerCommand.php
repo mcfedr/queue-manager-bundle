@@ -6,7 +6,6 @@ namespace Mcfedr\QueueManagerBundle\Command;
 
 use Mcfedr\QueueManagerBundle\Exception\UnexpectedJobDataException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobExceptionInterface;
-use Mcfedr\QueueManagerBundle\Manager\QueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
 use Psr\Log\LoggerInterface;
@@ -19,9 +18,9 @@ use Symfony\Component\Process\Process;
 
 abstract class RunnerCommand extends Command
 {
-    const OK = 0;
-    const FAIL = 1;
-    const RETRY = 2;
+    private const OK = 0;
+    private const FAIL = 1;
+    private const RETRY = 2;
 
     /**
      * @var int
@@ -32,11 +31,6 @@ abstract class RunnerCommand extends Command
      * @var int
      */
     private $sleepSeconds = 5;
-
-    /**
-     * @var QueueManager
-     */
-    protected $queueManager;
 
     /**
      * @var ?LoggerInterface
@@ -53,10 +47,9 @@ abstract class RunnerCommand extends Command
      */
     private $jobExecutor;
 
-    public function __construct($name, array $options, QueueManager $queueManager, JobExecutor $jobExecutor, ?LoggerInterface $logger = null)
+    public function __construct(string $name, array $options, JobExecutor $jobExecutor, ?LoggerInterface $logger = null)
     {
         parent::__construct($name);
-        $this->queueManager = $queueManager;
         if (array_key_exists('retry_limit', $options)) {
             $this->retryLimit = $options['retry_limit'];
         }
@@ -67,7 +60,7 @@ abstract class RunnerCommand extends Command
         $this->logger = $logger;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setDescription('Run a queue runner')
@@ -75,7 +68,7 @@ abstract class RunnerCommand extends Command
             ->addOption('process-isolation', null, InputOption::VALUE_NONE, 'New processes for each job');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $this->handleInput($input);
 
@@ -83,7 +76,7 @@ abstract class RunnerCommand extends Command
         $ignoreLimit = 0 === $limit;
         $running = true;
 
-        if (function_exists('pcntl_signal')) {
+        if (\function_exists('pcntl_signal')) {
             $handle = function ($sig) use (&$running) {
                 if ($this->logger) {
                     $this->logger->debug("Received signal ($sig), stopping...");
@@ -101,7 +94,7 @@ abstract class RunnerCommand extends Command
                 $this->executeBatch();
             }
 
-            if (isset($handle)) {
+            if (\function_exists('pcntl_signal')) {
                 pcntl_signal_dispatch();
             }
 
@@ -109,11 +102,11 @@ abstract class RunnerCommand extends Command
         } while ($running && ($ignoreLimit || --$limit > 0));
     }
 
-    protected function executeBatch()
+    protected function executeBatch(): void
     {
         try {
             $jobs = $this->getJobs();
-            if (count($jobs)) {
+            if (\count($jobs)) {
                 $this->jobExecutor->startBatch($jobs);
                 $oks = [];
                 $fails = [];
@@ -152,7 +145,7 @@ abstract class RunnerCommand extends Command
         }
     }
 
-    protected function executeBatchWithProcess(InputInterface $input, OutputInterface $output)
+    protected function executeBatchWithProcess(InputInterface $input, OutputInterface $output): void
     {
         /** @var Process $process */
         $process = $this->getProcess($input);
@@ -192,18 +185,13 @@ abstract class RunnerCommand extends Command
      * @param Job[] $retryJobs
      * @param Job[] $failedJobs
      */
-    abstract protected function finishJobs(array $okJobs, array $retryJobs, array $failedJobs);
+    abstract protected function finishJobs(array $okJobs, array $retryJobs, array $failedJobs): void;
 
-    protected function handleInput(InputInterface $input)
+    protected function handleInput(InputInterface $input): void
     {
         // Allows overriding
     }
 
-    /**
-     * @param InputInterface $input
-     *
-     * @return Process
-     */
     private function getProcess(InputInterface $input): Process
     {
         if (!$this->process) {
@@ -234,10 +222,6 @@ abstract class RunnerCommand extends Command
 
     /**
      * Get the number of seconds to delay a try.
-     *
-     * @param int $count
-     *
-     * @return int
      */
     protected function getRetryDelaySeconds(int $count): int
     {

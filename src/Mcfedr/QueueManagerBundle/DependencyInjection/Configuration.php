@@ -9,12 +9,11 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class Configuration implements ConfigurationInterface
 {
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder();
         $treeBuilder->root('mcfedr_queue_manager')
             ->children()
-                ->booleanNode('debug')->defaultFalse()->end()
                 ->integerNode('retry_limit')->defaultValue(3)->end()
                 ->integerNode('sleep_seconds')->defaultValue(5)->end()
                 ->booleanNode('report_memory')->defaultFalse()->end()
@@ -38,7 +37,37 @@ class Configuration implements ConfigurationInterface
                         ->addDefaultsIfNotSet()
                         ->children()
                             ->scalarNode('driver')->cannotBeEmpty()->end()
-                            ->variableNode('options')->end()
+                            ->arrayNode('options')
+                                ->children()
+                                    // Generic
+                                    ->scalarNode('host')->end()
+                                    ->integerNode('port')->end()
+                                    ->scalarNode('default_queue')->end()
+                                    //Beanstalk
+                                    ->arrayNode('connection')
+                                        ->children()
+                                            ->integerNode('timeout')->end()
+                                            ->booleanNode('persistent')->end()
+                                        ->end()
+                                    ->end()
+                                    ->scalarNode('pheanstalk')->end()
+                                    //Doctrine Delay
+                                    ->scalarNode('entity_manager')->end()
+                                    ->scalarNode('default_manager')->end()
+                                    ->variableNode('default_manager_options')->end()
+                                    //SQS
+                                    ->arrayNode('queues')
+                                        ->scalarPrototype()->end()
+                                    ->end()
+                                    ->scalarNode('default_url')->end()
+                                    ->scalarNode('region')->end()
+                                    ->variableNode('credentials')->end()
+                                    ->scalarNode('sqs_client')->end()
+                                    // Periodic
+                                    ->scalarNode('delay_manager')->end()
+                                    ->variableNode('delay_manager_options')->end()
+                                ->end()
+                            ->end()
                         ->end()
                     ->end()
                 ->end()

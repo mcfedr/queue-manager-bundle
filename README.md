@@ -9,18 +9,17 @@ A bundle for running background jobs in [Symfony](symfony.com).
 This bundle provides a consistent queue interface, with plugable 'drivers' that can schedule jobs using a number of
 different queue types.
 
-- [Beanstalkd](https://packagist.org/packages/mcfedr/beanstalk-queue-driver-bundle)
-- [Resque](https://packagist.org/packages/mcfedr/resque-queue-driver-bundle) (Redis)
-- [Amazon SQS](https://packagist.org/packages/mcfedr/sqs-queue-driver-bundle)
+- [Beanstalkd](https://beanstalkd.github.io/)
+- [Amazon SQS](https://aws.amazon.com/sqs/)
 
 There are also a number of 'helper' plugins
 
-- [Doctrine Delay Queue](https://packagist.org/packages/mcfedr/doctrine-delay-queue-driver-bundle)
+- [Doctrine Delay Queue](https://www.doctrine-project.org/)
   
   This plugins can schedule jobs far in advance and move them into a real time queue when they should be run. Use in
   combination with SQS or Beanstalkd which don't support scheduling jobs
    
-- [Perioidic Jobs](https://packagist.org/packages/mcfedr/periodic-queue-driver-bundle)
+- Perioidic Jobs
 
   Automatically schedule a jobs to run every hour/day/week or other period. Randomizes the actual time to keep an even
   server load.
@@ -38,17 +37,21 @@ Check the documentation of the driver you are using as to how to run the daemon 
 
 ### Composer
 
-    composer require mcfedr/queue-manager-bundle
+```bash
+composer require mcfedr/queue-manager-bundle
+```
 
 ### AppKernel
 
 Include the bundle in your AppKernel
 
+```php
     public function registerBundles()
     {
         $bundles = [
             ...
             new Mcfedr\QueueManagerBundle\McfedrQueueManagerBundle(),
+```
 
 You will also need to including your driver here.
 
@@ -56,18 +59,168 @@ You will also need to including your driver here.
 
 You must configure one (or more) drivers to use. Generally you will have just one and call it 'default'
 
-This is an example config if you have installed [`mcfedr/resque-queue-driver-bundle`](https://github.com/mcfedr/resque-queue-driver-bundle)
+### Beanstalk
 
-    mcfedr_queue_manager:
-        managers:
-            default:
-                driver: resque
-                options:
-                    host: 127.0.0.1
-                    port: 6379
-                    default_queue: queue
+#### Usage
 
-Check the driver docs on how to configure it.
+The beanstalk runner is a Symfony command. You can runner multiple instances if you need to
+handle higher numbers of jobs.
+
+```bash
+./bin/console mcfedr:queue:{name}-runner
+```
+
+Where `{name}` is what you used in the config. Add `-v` or more to get detailed logs.
+
+#### Config
+
+```yaml
+mcfedr_queue_manager:
+    managers:
+        default:
+            driver: beanstalkd
+            options:
+                host: 127.0.0.1
+                port: 11300
+                default_queue: mcfedr_queue
+```
+
+#### Supported options to `QueueManager::put`
+
+* `queue` - The name of the queue to put the job in
+* `priority` - The job priority
+* `ttr` - Beanstalk Time to run, the time given for a job to finish before it is repeated
+* `time` - A `\DateTime` object of when to schedule this job
+* `delay` - Number of seconds from now to schedule this job
+
+### SQS
+
+#### Usage
+
+The sqs runner is a Symfony command. You can runner multiple instances if you need to
+handle higher numbers of jobs.
+
+```bash
+./bin/console mcfedr:queue:{name}-runner
+```
+
+Where `{name}` is what you used in the config. Add `-v` or more to get detailed logs.
+
+#### Config
+
+```yaml
+mcfedr_queue_manager:
+    managers:
+        default:
+            driver: sqs
+            options:
+                default_url: https://sqs.eu-west-1.amazonaws.com/...
+                region: eu-west-1
+                credentials:
+                    key: 'my-access-key-id'
+                    secret: 'my-secret-access-key'
+                queues:
+                    name: https://sqs.eu-west-1.amazonaws.com/...
+                    name2: https://sqs.eu-west-1.amazonaws.com/...
+```
+
+* `default_url` - Default SQS queue url
+* `region` **required** - The region where your queue is
+* `credentials` *optional* - [Specify your key and secret](http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/credentials.html#using-hard-coded-credentials)
+  This is optional because the SDK can pick up your credentials from a [variety of places](http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/credentials.html)
+* `queues` *optional* - Allows you to setup a mapping of short names for queues, this makes it easier to use multiple queues and keep the config in one place
+
+#### Supported options to `QueueManager::put`
+
+* `url` - A `string` with the url of a queue
+* `queue` - A `string` with the name of a queue in the config
+* `time` - A `\DateTime` object of when to schedule this job. **Note:** SQS can delay jobs up to 15 minutes 
+* `delay` - Number of seconds from now to schedule this job. **Note:** SQS can delay jobs up to 15 minutes
+* `visibilityTimeout` - Number of seconds during which Amazon SQS prevents other consumers from receiving and processing the message.
+
+### Periodic
+
+This driver doesn't run jobs, it requires another driver to actually process jobs.
+
+#### Usage
+
+There is no runner daemon for this driver as it just plugs into other drivers. Use it by
+`put`ting jobs into this driver with the `period` option.
+
+#### Config
+
+```yaml
+mcfedr_queue_manager:
+    managers:
+        periodic:
+            driver: periodic
+            options:
+                default_manager: delay
+                default_manager_options: []
+```
+
+This will create a `QueueManager` service named `"mcfedr_queue_manager.periodic"`
+
+* `default_manager` - Default job processor, must support delayed jobs, for example [Doctrine Delay](https://packagist.org/packages/mcfedr/doctrine-delay-queue-driver-bundle)
+* `default_manager_options` - Default options to pass to job processor `put`
+
+#### Supported options to `QueueManager::put`
+
+* `period` - The average number of seconds between job runs
+* `manager` - Use a different job processor for this job
+* `manager_options` - Options to pass to the processors `put` method
+
+### Doctrine Delay
+
+This driver doesn't run jobs, it requires another driver to actually process jobs.
+
+It currently **only** works with MySQL as a native query is required to find jobs in a concurrency safe way.
+
+#### Usage
+
+You should run the daemon for delay in addition to any other daemons you are using.
+This runner simply moves jobs from Doctrine into your other job queues. Because its 
+not doing much work generally a single instance can cope with a high number of jobs.
+
+```bash
+./bin/console mcfedr:queue:{name}-runner
+```
+
+Where `{name}` is what you used in the config. Add `-v` or more to get detailed logs.
+
+#### Config
+
+```yaml
+mcfedr_queue_manager:
+    managers:
+        delay:
+            driver: doctrine_delay
+            options:
+                entity_manager: default
+                default_manager: default
+                default_manager_options: []
+```
+
+This will create a `QueueManager` service named `"mcfedr_queue_manager.delay"`
+
+* `entity_manager` - Doctrine entity manager to use
+* `default_manager` - Default job processor
+* `default_manager_options` - Default options to pass to job processor `put`
+
+#### Supported options to `QueueManager::put`
+
+* `time` - A `\DateTime` object of when to schedule this job
+* `delay` - Number of seconds from now to schedule this job
+* `manager` - Use a different job processor for this job
+* `manager_options` - Options to pass to the processors `put` method
+
+#### Note
+
+If `delay` or `time` option is less then 30 seconds the job will be scheduled for immediate execution
+
+#### Tables
+
+After you have installed you will need to do a schema update so that the table of delayed tasks is created
 
 ### Additional options
 

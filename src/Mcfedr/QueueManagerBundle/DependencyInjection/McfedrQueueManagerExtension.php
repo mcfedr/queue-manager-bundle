@@ -4,27 +4,41 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\DependencyInjection;
 
-use Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry;
+use Aws\Sqs\SqsClient;
+use Mcfedr\QueueManagerBundle\Command\BeanstalkCommand;
+use Mcfedr\QueueManagerBundle\Command\DoctrineDelayRunnerCommand;
+use Mcfedr\QueueManagerBundle\Command\SqsRunnerCommand;
+use Mcfedr\QueueManagerBundle\Manager\BeanstalkQueueManager;
+use Mcfedr\QueueManagerBundle\Manager\DoctrineDelayQueueManager;
+use Mcfedr\QueueManagerBundle\Manager\PeriodicQueueManager;
+use Mcfedr\QueueManagerBundle\Manager\QueueManager;
+use Mcfedr\QueueManagerBundle\Manager\SqsQueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Worker;
-use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
 use Mcfedr\QueueManagerBundle\Subscriber\MemoryReportSubscriber;
+use Pheanstalk\Connection;
+use Pheanstalk\Pheanstalk;
+use Pheanstalk\PheanstalkInterface;
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
-class McfedrQueueManagerExtension extends Extension
+class McfedrQueueManagerExtension extends Extension implements PrependExtensionInterface
 {
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $container
             ->registerForAutoconfiguration(Worker::class)
             ->addTag('mcfedr_queue_manager.worker');
+
+        $container
+            ->registerForAutoconfiguration(QueueManager::class)
+            ->addTag('mcfedr_queue_manager.manager');
 
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
@@ -42,26 +56,64 @@ class McfedrQueueManagerExtension extends Extension
             $managerClass = $config['drivers'][$manager['driver']]['class'];
             $defaultOptions = isset($config['drivers'][$manager['driver']]['options']) ? $config['drivers'][$manager['driver']]['options'] : [];
             $options = isset($manager['options']) ? $manager['options'] : [];
-
-            $merged = array_merge([
-                'debug' => $config['debug'],
+            $mergedOptions = array_merge([
                 'retry_limit' => $config['retry_limit'],
                 'sleep_seconds' => $config['sleep_seconds'],
             ], $defaultOptions, $options);
-
-            $container->setParameter("mcfedr_queue_manager.$name.options", $merged);
-
+            $bindings = [
+                '$options' => $mergedOptions,
+            ];
             $managerServiceName = "mcfedr_queue_manager.$name";
-            $managerDefinition = new Definition($managerClass, [
-                $merged,
-            ]);
-            $managerDefinition->addTag('mcfedr_queue_manager.manager');
 
-            $managerDefinition->setPublic(true);
-
-            if ((new \ReflectionClass($managerClass))->implementsInterface(ContainerAwareInterface::class)) {
-                $managerDefinition->addMethodCall('setContainer', [new Reference('service_container')]);
+            switch ($manager['driver']) {
+                case 'beanstalkd':
+                    if (isset($mergedOptions['pheanstalk'])) {
+                        $bindings[PheanstalkInterface::class] = new Reference($mergedOptions['pheanstalk']);
+                        unset($mergedOptions['pheanstalk']);
+                    } else {
+                        $pheanstalk = new Definition(Pheanstalk::class, [
+                            $mergedOptions['host'],
+                            $mergedOptions['port'],
+                            $mergedOptions['connection']['timeout'],
+                            $mergedOptions['connection']['persistent'],
+                        ]);
+                        unset($mergedOptions['host']);
+                        unset($mergedOptions['port']);
+                        unset($mergedOptions['connection']);
+                        $pheanstalkName = "$managerServiceName.pheanstalk";
+                        $container->setDefinition($pheanstalkName, $pheanstalk);
+                        $bindings[PheanstalkInterface::class] = new Reference($pheanstalkName);
+                    }
+                    break;
+                case 'sqs':
+                    if (isset($mergedOptions['sqs_client'])) {
+                        $bindings[SqsClient::class] = new Reference($mergedOptions['sqs_client']);
+                        unset($mergedOptions['sqs_client']);
+                    } else {
+                        $sqsOptions = [
+                            'region' => $mergedOptions['region'],
+                            'version' => '2012-11-05',
+                        ];
+                        unset($mergedOptions['region']);
+                        if (array_key_exists('credentials', $mergedOptions)) {
+                            $sqsOptions['credentials'] = $mergedOptions['credentials'];
+                            unset($mergedOptions['credentials']);
+                        }
+                        $sqsClient = new Definition(SqsClient::class, [$sqsOptions]);
+                        $sqsClientName = "$managerServiceName.sqs_client";
+                        $container->setDefinition($sqsClientName, $sqsClient);
+                        $bindings[SqsClient::class] = new Reference($sqsClientName);
+                    }
+                    break;
             }
+
+            $container->setParameter("mcfedr_queue_manager.$name.options", $mergedOptions);
+            $managerDefinition = new Definition($managerClass);
+            $managerDefinition->setBindings($bindings);
+            $managerDefinition->setAutoconfigured(true);
+            $managerDefinition->setAutowired(true);
+            $managerDefinition->setPublic(true);
+            $managerDefinition->addTag('mcfedr_queue_manager.manager', ['id' => $name]);
 
             $container->setDefinition($managerServiceName, $managerDefinition);
             if (!$container->has($managerClass)) {
@@ -69,17 +121,17 @@ class McfedrQueueManagerExtension extends Extension
                 $managerServiceAlias->setPublic(true);
             }
 
-            $queueManagers[$name] = new Reference($managerServiceName);
+            $queueManagers[$name] = true;
 
             if (isset($config['drivers'][$manager['driver']]['command_class'])) {
                 $commandClass = $config['drivers'][$manager['driver']]['command_class'];
-                $commandDefinition = new Definition($commandClass, [
-                    "mcfedr:queue:$name-runner",
-                    $merged,
-                    new Reference($managerServiceName),
-                    new Reference(JobExecutor::class),
-                    new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE),
-                ]);
+                $commandDefinition = new Definition($commandClass);
+                $commandBindings = array_merge([
+                    '$name' => "mcfedr:queue:$name-runner",
+                ], $bindings);
+                $commandDefinition->setBindings($commandBindings);
+                $commandDefinition->setAutoconfigured(true);
+                $commandDefinition->setAutowired(true);
                 $commandDefinition->setPublic(true);
                 $commandDefinition->setTags(
                     ['console.command' => []]
@@ -99,12 +151,7 @@ class McfedrQueueManagerExtension extends Extension
             reset($queueManagers);
             $defaultManager = key($queueManagers);
         }
-
-        $queueManagerDefinition = new Definition(QueueManagerRegistry::class, [$queueManagers, $defaultManager]);
-        $queueManagerDefinition->setPublic(true);
-        $container->setDefinition(QueueManagerRegistry::class, $queueManagerDefinition);
-        $queueManagerAlias = $container->setAlias('mcfedr_queue_manager.registry', QueueManagerRegistry::class);
-        $queueManagerAlias->setPublic(true);
+        $container->setParameter('mcfedr_queue_manager.default_manager', $defaultManager);
 
         if ($config['report_memory']) {
             $memoryListener = new Definition(MemoryReportSubscriber::class, [new Reference('logger')]);
@@ -138,6 +185,60 @@ class McfedrQueueManagerExtension extends Extension
                 'kernel.event_subscriber' => [],
             ]);
             $container->setDefinition('Mcfedr\QueueManagerBundle\Subscriber\SwiftMailerSubscriber', $swiftListener);
+        }
+    }
+
+    /**
+     * Allow an extension to prepend the extension configurations.
+     *
+     * @param ContainerBuilder $container
+     */
+    public function prepend(ContainerBuilder $container)
+    {
+        // get all Bundles
+        $bundles = $container->getParameter('kernel.bundles');
+        // determine if McfedrQueueManagerBundle is registered
+        if (isset($bundles['McfedrQueueManagerBundle'])) {
+            $container->prependExtensionConfig('mcfedr_queue_manager', [
+                'drivers' => [
+                    'periodic' => [
+                        'class' => PeriodicQueueManager::class,
+                        'options' => [
+                            'delay_manager' => null,
+                            'delay_manager_options' => [],
+                        ],
+                    ],
+                    'beanstalkd' => [
+                        'class' => BeanstalkQueueManager::class,
+                        'options' => [
+                            'host' => '127.0.0.1',
+                            'port' => PheanstalkInterface::DEFAULT_PORT,
+                            'default_queue' => PheanstalkInterface::DEFAULT_TUBE,
+                            'connection' => [
+                                'timeout' => Connection::DEFAULT_CONNECT_TIMEOUT,
+                                'persistent' => false,
+                            ],
+                        ],
+                        'command_class' => BeanstalkCommand::class,
+                    ],
+                    'doctrine_delay' => [
+                        'class' => DoctrineDelayQueueManager::class,
+                        'options' => [
+                            'entity_manager' => null,
+                            'default_manager' => null,
+                            'default_manager_options' => [],
+                        ],
+                        'command_class' => DoctrineDelayRunnerCommand::class,
+                    ],
+                    'sqs' => [
+                        'class' => SqsQueueManager::class,
+                        'options' => [
+                            'queues' => [],
+                        ],
+                        'command_class' => SqsRunnerCommand::class,
+                    ],
+                ],
+            ]);
         }
     }
 }

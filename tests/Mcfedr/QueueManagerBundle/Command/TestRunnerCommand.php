@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\Command;
 
-use Mcfedr\QueueManagerBundle\Manager\QueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\TestJob;
 use Mcfedr\QueueManagerBundle\Queue\TestRetryableJob;
@@ -15,9 +14,9 @@ class TestRunnerCommand extends RunnerCommand
 {
     private $options;
 
-    public function __construct($name, array $options, QueueManager $queueManager, JobExecutor $jobExecutor, ?LoggerInterface $logger = null)
+    public function __construct($name, array $options, JobExecutor $jobExecutor, ?LoggerInterface $logger = null)
     {
-        parent::__construct($name, $options, $queueManager, $jobExecutor, $logger);
+        parent::__construct($name, $options, $jobExecutor, $logger);
         $this->options = $options;
     }
 
@@ -45,7 +44,7 @@ class TestRunnerCommand extends RunnerCommand
      * @param Job[] $failedJobs
      * @param Job[] $retryJobs
      */
-    protected function finishJobs(array $okJobs, array $failedJobs, array $retryJobs)
+    protected function finishJobs(array $okJobs, array $failedJobs, array $retryJobs): void
     {
     }
 }

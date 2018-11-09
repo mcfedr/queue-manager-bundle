@@ -9,6 +9,7 @@ class TestKernel extends Symfony\Component\HttpKernel\Kernel
         return [
             new Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
             new Symfony\Bundle\MonologBundle\MonologBundle(),
+            new Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),
             new Mcfedr\QueueManagerBundle\McfedrQueueManagerBundle(),
         ];
     }
