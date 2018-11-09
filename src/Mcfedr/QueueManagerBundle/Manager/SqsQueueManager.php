@@ -38,6 +38,8 @@ class SqsQueueManager implements QueueManager
         $visibilityTimeout = null;
         if (isset($options['visibilityTimeout'])) {
             $visibilityTimeout = $options['visibilityTimeout'];
+        } elseif (isset($options['ttr'])) {
+            $visibilityTimeout = $options['ttr'];
         }
 
         $sendMessage = [

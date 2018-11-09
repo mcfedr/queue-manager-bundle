@@ -7,17 +7,17 @@ A bundle for running background jobs in [Symfony](symfony.com).
 [![Build Status](https://travis-ci.org/mcfedr/queue-manager-bundle.svg?branch=master)](https://travis-ci.org/mcfedr/queue-manager-bundle)
 
 This bundle provides a consistent queue interface, with plugable 'drivers' that can schedule jobs using a number of
-different queue types.
+different queue types:
 
 - [Beanstalkd](https://beanstalkd.github.io/)
 - [Amazon SQS](https://aws.amazon.com/sqs/)
 
-There are also a number of 'helper' plugins
+There are also a number of 'helper' plugins:
 
 - [Doctrine Delay Queue](https://www.doctrine-project.org/)
   
   This plugins can schedule jobs far in advance and move them into a real time queue when they should be run. Use in
-  combination with SQS or Beanstalkd which don't support scheduling jobs
+  combination with SQS or Beanstalkd which don't support scheduling jobs.
    
 - Perioidic Jobs
 
@@ -53,11 +53,9 @@ Include the bundle in your AppKernel
             new Mcfedr\QueueManagerBundle\McfedrQueueManagerBundle(),
 ```
 
-You will also need to including your driver here.
-
 ## Config
 
-You must configure one (or more) drivers to use. Generally you will have just one and call it 'default'
+You must configure one (or more) drivers to use. Generally you will have just one and call it 'default'.
 
 ### Beanstalk
 
@@ -87,11 +85,11 @@ mcfedr_queue_manager:
 
 #### Supported options to `QueueManager::put`
 
-* `queue` - The name of the queue to put the job in
-* `priority` - The job priority
-* `ttr` - Beanstalk Time to run, the time given for a job to finish before it is repeated
-* `time` - A `\DateTime` object of when to schedule this job
-* `delay` - Number of seconds from now to schedule this job
+* `queue` - The name of the queue to put the job in.
+* `priority` - The job priority.
+* `ttr` - Time to run, the time given for a job to finish before it is repeated.
+* `time` - A `\DateTime` object of when to schedule this job.
+* `delay` - Number of seconds from now to schedule this job.
 
 ### SQS
 
@@ -124,19 +122,20 @@ mcfedr_queue_manager:
                     name2: https://sqs.eu-west-1.amazonaws.com/...
 ```
 
-* `default_url` - Default SQS queue url
-* `region` **required** - The region where your queue is
+* `default_url` - Default SQS queue url.
+* `region` - The region where your queue is. Required if not passing `sqs_client`.
 * `credentials` *optional* - [Specify your key and secret](http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/credentials.html#using-hard-coded-credentials)
-  This is optional because the SDK can pick up your credentials from a [variety of places](http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/credentials.html)
-* `queues` *optional* - Allows you to setup a mapping of short names for queues, this makes it easier to use multiple queues and keep the config in one place
+  This is optional because the SDK can pick up your credentials from a [variety of places](http://docs.aws.amazon.com/aws-sdk-php/v3/guide/guide/credentials.html).
+* `sqs_client` - Name of `SQSClient` service to use.
+* `queues` *optional* - Allows you to setup a mapping of short names for queues, this makes it easier to use multiple queues and keep the config in one place.
 
 #### Supported options to `QueueManager::put`
 
-* `url` - A `string` with the url of a queue
-* `queue` - A `string` with the name of a queue in the config
-* `time` - A `\DateTime` object of when to schedule this job. **Note:** SQS can delay jobs up to 15 minutes 
-* `delay` - Number of seconds from now to schedule this job. **Note:** SQS can delay jobs up to 15 minutes
-* `visibilityTimeout` - Number of seconds during which Amazon SQS prevents other consumers from receiving and processing the message.
+* `url` - A `string` with the url of a queue.
+* `queue` - A `string` with the name of a queue in the config.
+* `time` - A `\DateTime` object of when to schedule this job. **Note:** SQS can delay jobs up to 15 minutes. 
+* `delay` - Number of seconds from now to schedule this job. **Note:** SQS can delay jobs up to 15 minutes.
+* `ttr` - Number of seconds during which Amazon SQS prevents other consumers from receiving and processing the message (SQS Visibility Timeout).
 
 ### Periodic
 
@@ -159,16 +158,16 @@ mcfedr_queue_manager:
                 default_manager_options: []
 ```
 
-This will create a `QueueManager` service named `"mcfedr_queue_manager.periodic"`
+This will create a `QueueManager` service named `"mcfedr_queue_manager.periodic"`.
 
-* `default_manager` - Default job processor, must support delayed jobs, for example [Doctrine Delay](https://packagist.org/packages/mcfedr/doctrine-delay-queue-driver-bundle)
-* `default_manager_options` - Default options to pass to job processor `put`
+* `default_manager` - Default job processor, must support delayed jobs, for example [Doctrine Delay](https://packagist.org/packages/mcfedr/doctrine-delay-queue-driver-bundle).
+* `default_manager_options` - Default options to pass to job processor `put`.
 
 #### Supported options to `QueueManager::put`
 
-* `period` - The average number of seconds between job runs
-* `manager` - Use a different job processor for this job
-* `manager_options` - Options to pass to the processors `put` method
+* `period` - The average number of seconds between job runs.
+* `manager` - Use a different job processor for this job.
+* `manager_options` - Options to pass to the processors `put` method.
 
 ### Doctrine Delay
 
@@ -201,30 +200,30 @@ mcfedr_queue_manager:
                 default_manager_options: []
 ```
 
-This will create a `QueueManager` service named `"mcfedr_queue_manager.delay"`
+This will create a `QueueManager` service named `"mcfedr_queue_manager.delay"`.
 
-* `entity_manager` - Doctrine entity manager to use
-* `default_manager` - Default job processor
-* `default_manager_options` - Default options to pass to job processor `put`
+* `entity_manager` - Doctrine entity manager to use.
+* `default_manager` - Default job processor.
+* `default_manager_options` - Default options to pass to job processor `put`.
 
 #### Supported options to `QueueManager::put`
 
-* `time` - A `\DateTime` object of when to schedule this job
-* `delay` - Number of seconds from now to schedule this job
-* `manager` - Use a different job processor for this job
-* `manager_options` - Options to pass to the processors `put` method
+* `time` - A `\DateTime` object of when to schedule this job.
+* `delay` - Number of seconds from now to schedule this job.
+* `manager` - Use a different job processor for this job.
+* `manager_options` - Options to pass to the processors `put` method.
 
 #### Note
 
-If `delay` or `time` option is less then 30 seconds the job will be scheduled for immediate execution
+If `delay` or `time` option is less then 30 seconds the job will be scheduled for immediate execution.
 
 #### Tables
 
-After you have installed you will need to do a schema update so that the table of delayed tasks is created
+After you have installed you will need to do a schema update so that the table of delayed tasks is created.
 
 ### Additional options
 
-These are the defaults for a number of other options
+These are the defaults for a number of other options.
 
 ```yaml
 mcfedr_queue_manager:
@@ -248,9 +247,11 @@ mcfedr_queue_manager:
 To avoid memory leaks entity manager is being reset after job execution.
 
 Resetting a non-lazy manager service is deprecated since Symfony 3.2 and will throw an exception in version 4.0.
-So if you use Symfony 3.2 or greater you need to install symfony/proxy-manager-bridge to support [Lazy Services](https://symfony.com/doc/current/service_container/lazy_services.html)
+So if you use Symfony 3.2 or greater you need to install symfony/proxy-manager-bridge to support [Lazy Services](https://symfony.com/doc/current/service_container/lazy_services.html).
 
-    composer require proxy-manager-bridge
+```bash
+composer require proxy-manager-bridge
+```
 
 ## Usage
 
@@ -266,9 +267,8 @@ It implements the `QueueManager` interface, where you can call just 2 simple met
      * @param string $name The service name of the worker that implements {@link \Mcfedr\QueueManagerBundle\Queue\Worker}
      * @param array $arguments Arguments to pass to execute - must be json serializable
      * @param array $options Options for creating the job - these depend on the driver used
-     * @return Job
      */
-    public function put($name, array $arguments = [], array $options = []);
+    public function put(string $name, array $arguments = [], array $options = []): Job
     
     /**
      * Remove a job, you should call this to cancel a job
@@ -277,12 +277,12 @@ It implements the `QueueManager` interface, where you can call just 2 simple met
      * @throws WrongJobException
      * @throws NoSuchJobException
      */
-    public function delete(Job $job);
+    public function delete(Job $job): void;
 
 ## Jobs
 
 Jobs to run are Symfony services that implement `Mcfedr\QueueManagerBundle\Queue\Worker`
-There is one method, that is called with the arguments you passed to `QueueManager::put`
+There is one method, that is called with the arguments you passed to `QueueManager::put`.
 
     /**
      * Called to start the queued task
@@ -290,7 +290,7 @@ There is one method, that is called with the arguments you passed to `QueueManag
      * @param array $arguments
      * @throws \Exception
      */
-    public function execute(array $arguments);
+    public function execute(array $arguments): void;
 
 If your job throws an exception it will be retried (assuming the driver supports retrying),
 unless the exception thrown is an instance of `UnrecoverableJobExceptionInterface`.
@@ -306,7 +306,7 @@ Worker:
   - { name: 'mcfedr_queue_manager.worker', id: 'test_worker' }
 ```
 
-Now you can schedule this job with both
+Now you can schedule this job with both:
 
 ```php
 $queueManager->put(Worker::class, ...)
@@ -315,7 +315,7 @@ $queueManager->put('test_worker', ...)
 
 ## Events
 
-A number of events are triggered during the running of jobs
+A number of events are triggered during the running of jobs.
 
 | Name | Event Object |
 |------|--------------|

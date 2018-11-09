@@ -1,5 +1,12 @@
 # Changelog
 
+### 6.1.0
+
+- Considering 6.0 a broken release
+- Now the supported drivers are bundled
+- Removes container dependencies from all drivers
+- Changes the Worker interface
+
 ### 6.0.0
 
 - Min php requirement is 7.2
