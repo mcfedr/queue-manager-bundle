@@ -23,5 +23,5 @@ before_script:
 script:
   - ./vendor/bin/php-cs-fixer fix --dry-run --diff
   - ./tests/console cache:clear
-  - ./vendor/bin/phpstan analyse src tests
+  - ./vendor/bin/phpstan analyse
   - ./vendor/bin/phpunit

@@ -32,7 +32,7 @@ class CreateFakeJobsCommand extends Command
         ;
     }
 
-    public function execute(InputInterface $input, OutputInterface $output): void
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $jobsCount = (int) $input->getOption('jobs');
 
@@ -44,5 +44,7 @@ class CreateFakeJobsCommand extends Command
             ], 'delay');
             $output->writeln("Job ${i}");
         }
+
+        return 0;
     }
 }

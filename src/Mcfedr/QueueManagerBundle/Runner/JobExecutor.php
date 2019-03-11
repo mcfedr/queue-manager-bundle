@@ -83,7 +83,7 @@ class JobExecutor
         // This is here so that if executeJob is called with out startBatch the events will still be called
         $this->triggerBatchEvents = !$this->batchStarted;
         if ($this->triggerBatchEvents) {
-            $this->startBatch([$job]);
+            $this->startBatch(new JobBatch([$job]));
         }
 
         $internal = false;
@@ -144,7 +144,7 @@ class JobExecutor
             $this->eventDispatcher->dispatch(self::JOB_FINISHED_EVENT, new FinishedJobEvent($job, $internal));
         }
         if ($this->triggerBatchEvents) {
-            $this->finishBatch([$job], [], []);
+            $this->finishBatch(new JobBatch([], [$job]));
         }
     }
 
@@ -170,7 +170,10 @@ class JobExecutor
             $this->eventDispatcher->dispatch(self::JOB_FAILED_EVENT, new FailedJobEvent($job, $exception, $internal));
         }
         if ($this->triggerBatchEvents) {
-            $this->finishBatch([], [], [$job]);
+            $batch = new JobBatch([$job]);
+            $batch->next();
+            $batch->result($exception);
+            $this->finishBatch($batch);
         }
     }
 }

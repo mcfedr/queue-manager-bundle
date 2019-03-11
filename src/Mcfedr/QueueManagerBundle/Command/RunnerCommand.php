@@ -44,7 +44,7 @@ abstract class RunnerCommand extends Command
     private $jobExecutor;
 
     /**
-     * @var string
+     * @var ?string
      *
      * This is a chunk of memory that is reserved for use when handling out
      * of memory errors
@@ -52,7 +52,7 @@ abstract class RunnerCommand extends Command
     private $reservedMemory;
 
     /**
-     * @var JobBatch
+     * @var ?JobBatch
      *
      * Stored for fatal exception handling, so we know what job was running
      */
@@ -99,7 +99,7 @@ abstract class RunnerCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->handleInput($input);
 
@@ -134,6 +134,8 @@ abstract class RunnerCommand extends Command
 
             gc_collect_cycles();
         } while ($running && ($ignoreLimit || --$limit > 0));
+
+        return 0;
     }
 
     protected function executeBatch(): void

@@ -16,29 +16,35 @@ class JobBatch implements \Countable
     /**
      * @var Job[]
      */
-    private $oks = [];
+    private $oks;
 
     /**
      * @var Job[]
      */
-    private $fails = [];
+    private $fails;
 
     /**
      * @var Job[]
      */
-    private $retries = [];
+    private $retries;
 
     /**
-     * @var Job
+     * @var ?Job
      */
     private $currentJob;
 
     /**
      * @param Job[] $jobs
+     * @param Job[] $oks
+     * @param Job[] $fails
+     * @param Job[] $retries
      */
-    public function __construct(array $jobs)
+    public function __construct(array $jobs = [], array $oks = [], array $fails = [], array $retries = [])
     {
         $this->jobs = $jobs;
+        $this->oks = $oks;
+        $this->fails = $fails;
+        $this->retries = $retries;
     }
 
     public function next()

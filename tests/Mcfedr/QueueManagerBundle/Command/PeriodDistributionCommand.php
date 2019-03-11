@@ -19,7 +19,7 @@ abstract class PeriodDistributionCommand extends Command
         ;
     }
 
-    public function execute(InputInterface $input, OutputInterface $output): void
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $period = (int) $input->getOption('period');
         $jobsCount = (int) $input->getOption('jobs');
@@ -36,6 +36,8 @@ abstract class PeriodDistributionCommand extends Command
                 $output->writeln($time);
             }
         }
+
+        return 0;
     }
 
     abstract protected function job($period);

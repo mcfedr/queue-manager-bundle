@@ -28,7 +28,7 @@ class Configuration implements ConfigurationInterface
             ->arrayNode('drivers')
             ->requiresAtLeastOneElement()
             ->useAttributeAsKey('name')
-            ->prototype('array')
+            ->arrayPrototype()
             ->children()
             ->scalarNode('class')->isRequired()->cannotBeEmpty()->end()
             ->scalarNode('command_class')->end()

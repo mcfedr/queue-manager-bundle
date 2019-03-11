@@ -76,6 +76,7 @@ class SqsRunnerCommand extends RunnerCommand
 
     protected function finishJobs(JobBatch $batch): void
     {
+        /** @var SqsJob[] $retryJobs */
         $retryJobs = $batch->getRetries();
         if (\count($retryJobs)) {
             $count = 0;
@@ -111,6 +112,7 @@ class SqsRunnerCommand extends RunnerCommand
             ]);
         }
 
+        /** @var SqsJob[] $remainingJobs */
         $remainingJobs = $batch->getJobs();
         if (\count($remainingJobs)) {
             $count = 0;
@@ -184,7 +186,7 @@ class SqsRunnerCommand extends RunnerCommand
                     continue;
                 }
 
-                $jobs[] = new SqsJob(
+                $job = new SqsJob(
                     $data['name'],
                     $data['arguments'],
                     0,
@@ -194,6 +196,11 @@ class SqsRunnerCommand extends RunnerCommand
                     $message['ReceiptHandle'],
                     $data['visibilityTimeout'] ?? null
                 );
+
+                $jobs[] = $job;
+                if ($job->getVisibilityTimeout() !== null) {
+                    $toChangeVisibility[] = $job;
+                }
             }
 
             if (\count($toDelete)) {
