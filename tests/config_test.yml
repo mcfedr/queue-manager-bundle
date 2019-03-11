@@ -29,10 +29,13 @@ mcfedr_queue_manager:
 
         test_retry:
             class: Mcfedr\QueueManagerBundle\Driver\TestRetryQueueManager
-            command_class: Mcfedr\QueueManagerBundle\Command\TestRetryRunnerCommand
+            command_class: Mcfedr\QueueManagerBundle\Command\TestRunnerCommand
             options:
                 host: 127.0.0.1
                 default_queue: mcfedr_queue
+        oom:
+            class: Mcfedr\QueueManagerBundle\Driver\TestQueueManager
+            command_class: Mcfedr\QueueManagerBundle\Command\OomRunnerCommand
     managers:
         default:
             driver: test
@@ -61,6 +64,8 @@ mcfedr_queue_manager:
             options:
                 default_url: 'http://sqs.com'
                 region: 'eu-west-1'
+        oom:
+            driver: oom
 
 monolog:
     handlers:
@@ -71,11 +76,14 @@ monolog:
 
 services:
     Mcfedr\QueueManagerBundle\Queue\TestWorker:
-        class: Mcfedr\QueueManagerBundle\Queue\TestWorker
         autowire: true
         autoconfigure: true
         tags:
         - { name: 'mcfedr_queue_manager.worker', id: 'test_worker' }
+
+    Mcfedr\QueueManagerBundle\Worker\OomWorker:
+        autowire: true
+        autoconfigure: true
 
     test_worker_old:
         alias: Mcfedr\QueueManagerBundle\Queue\TestWorker
