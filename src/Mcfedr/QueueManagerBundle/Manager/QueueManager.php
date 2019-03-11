@@ -16,8 +16,6 @@ interface QueueManager
      * @param string $name      The service name of the worker that implements {@link \Mcfedr\QueueManagerBundle\Queue\Worker}
      * @param array  $arguments Arguments to pass to execute - must be json serializable
      * @param array  $options   Options for creating the job - these depend on the driver used
-     *
-     * @return Job
      */
     public function put(string $name, array $arguments = [], array $options = []): Job;
 

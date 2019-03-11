@@ -14,7 +14,7 @@ trait PheanstalkClientTrait
      */
     private $defaultQueue;
 
-    private function setOptions(array $options)
+    private function setOptions(array $options): void
     {
         $this->defaultQueue = $options['default_queue'];
     }

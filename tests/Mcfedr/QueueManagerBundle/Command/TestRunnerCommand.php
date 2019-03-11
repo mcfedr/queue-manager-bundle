@@ -20,17 +20,14 @@ class TestRunnerCommand extends RunnerCommand
         $this->options = $options;
     }
 
-    /**
-     * @return array
-     */
-    public function getOptions()
+    public function getOptions(): array
     {
         return $this->options;
     }
 
     protected function getJobs(): array
     {
-        if (1 == rand(1, 2)) {
+        if (1 === random_int(1, 2)) {
             return [new TestRetryableJob('test_worker', [], [])];
         }
 

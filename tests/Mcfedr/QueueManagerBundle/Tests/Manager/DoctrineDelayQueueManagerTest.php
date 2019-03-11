@@ -14,7 +14,11 @@ use Mcfedr\QueueManagerBundle\Queue\Job;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class DoctrineDelayQueueManagerTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class DoctrineDelayQueueManagerTest extends TestCase
 {
     /**
      * @var DoctrineDelayQueueManager
@@ -22,21 +26,21 @@ class DoctrineDelayQueueManagerTest extends TestCase
     private $manager;
 
     /**
-     * @var MockObject|EntityRepository
+     * @var EntityRepository|MockObject
      */
     private $repo;
 
     /**
-     * @var MockObject|EntityManager
+     * @var EntityManager|MockObject
      */
     private $entityManager;
 
     /**
-     * @var QueueManagerRegistry|MockObject
+     * @var MockObject|QueueManagerRegistry
      */
     private $queueManagerRegistry;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->repo = $this->getMockBuilder(EntityRepository::class)->disableOriginalConstructor()->getMock();
 
@@ -44,16 +48,19 @@ class DoctrineDelayQueueManagerTest extends TestCase
 
         $this->entityManager->method('getRepository')
             ->with(DoctrineDelayJob::class)
-            ->willReturn($this->repo);
+            ->willReturn($this->repo)
+        ;
 
         $doctrine = $this->getMockBuilder(Registry::class)->disableOriginalConstructor()->getMock();
         $doctrine->method('getManager')
             ->with(null)
-            ->willReturn($this->entityManager);
+            ->willReturn($this->entityManager)
+        ;
 
         $this->queueManagerRegistry = $this->getMockBuilder(QueueManagerRegistry::class)
             ->disableOriginalConstructor()
-            ->getMock();
+            ->getMock()
+        ;
 
         $this->manager = new DoctrineDelayQueueManager($this->queueManagerRegistry, $doctrine, [
             'entity_manager' => null,
@@ -64,22 +71,24 @@ class DoctrineDelayQueueManagerTest extends TestCase
         ]);
     }
 
-    public function testPutWithSignificantDelay()
+    public function testPutWithSignificantDelay(): void
     {
         $this->entityManager
             ->expects($this->once())
-            ->method('persist');
+            ->method('persist')
+        ;
 
         $this->entityManager
             ->expects($this->once())
-            ->method('flush');
+            ->method('flush')
+        ;
 
         $job = $this->manager->put('test_worker', [
             'argument_a' => 'a',
         ], ['time' => new \DateTime('+1 minute')]);
 
-        $this->assertEquals('test_worker', $job->getName());
-        $this->assertEquals([
+        $this->assertSame('test_worker', $job->getName());
+        $this->assertSame([
             'argument_a' => 'a',
         ], $job->getArguments());
     }
@@ -87,7 +96,7 @@ class DoctrineDelayQueueManagerTest extends TestCase
     /**
      * @dataProvider getNotSignificantDelayAndTimeInPastJobTimes
      */
-    public function testPutWithNotSignificantDelayAndTimeInPast(\DateTime $jobTime)
+    public function testPutWithNotSignificantDelayAndTimeInPast(\DateTime $jobTime): void
     {
         $job = $this->getMockBuilder(Job::class)->getMock();
 
@@ -99,13 +108,14 @@ class DoctrineDelayQueueManagerTest extends TestCase
             ], [
                 'manager_option_a' => 'a',
             ], 'default')
-            ->willReturn($job);
+            ->willReturn($job)
+        ;
 
         $putJob = $this->manager->put('test_worker', [
             'argument_a' => 'a',
         ], ['time' => $jobTime]);
 
-        $this->assertEquals($job, $putJob);
+        $this->assertSame($job, $putJob);
     }
 
     public function getNotSignificantDelayAndTimeInPastJobTimes()
@@ -116,7 +126,7 @@ class DoctrineDelayQueueManagerTest extends TestCase
         ];
     }
 
-    public function testPutFast()
+    public function testPutFast(): void
     {
         $job = $this->getMockBuilder(Job::class)->getMock();
 
@@ -128,16 +138,17 @@ class DoctrineDelayQueueManagerTest extends TestCase
             ], [
                 'manager_option_a' => 'a',
             ], 'default')
-            ->willReturn($job);
+            ->willReturn($job)
+        ;
 
         $putJob = $this->manager->put('test_worker', [
             'argument_a' => 'a',
         ]);
 
-        $this->assertEquals($job, $putJob);
+        $this->assertSame($job, $putJob);
     }
 
-    public function testDelete()
+    public function testDelete(): void
     {
         $toDelete = $this->getMockBuilder(DoctrineDelayJob::class)->setConstructorArgs(['test_worker', [], [], 'default', new \DateTime()])->getMock();
         $toDelete->method('getId')->willReturn(1);
@@ -146,29 +157,33 @@ class DoctrineDelayQueueManagerTest extends TestCase
             ->expects($this->once())
             ->method('contains')
             ->with($toDelete)
-            ->willReturn(false);
+            ->willReturn(false)
+        ;
 
         $reference = 1;
 
         $this->entityManager
             ->expects($this->once())
             ->method('getReference')
-            ->willReturn($reference);
+            ->willReturn($reference)
+        ;
 
         $this->entityManager
             ->expects($this->once())
             ->method('remove')
-            ->with($reference);
+            ->with($reference)
+        ;
 
         $this->entityManager
             ->expects($this->once())
             ->method('flush')
-            ->with($reference);
+            ->with($reference)
+        ;
 
         $this->manager->delete($toDelete);
     }
 
-    public function testDeleteFromEM()
+    public function testDeleteFromEM(): void
     {
         $toDelete = new DoctrineDelayJob('test_worker', [], [], 'default', new \DateTime());
 
@@ -176,17 +191,20 @@ class DoctrineDelayQueueManagerTest extends TestCase
             ->expects($this->once())
             ->method('contains')
             ->with($toDelete)
-            ->willReturn(true);
+            ->willReturn(true)
+        ;
 
         $this->entityManager
             ->expects($this->once())
             ->method('remove')
-            ->with($toDelete);
+            ->with($toDelete)
+        ;
 
         $this->entityManager
             ->expects($this->once())
             ->method('flush')
-            ->with($toDelete);
+            ->with($toDelete)
+        ;
 
         $this->manager->delete($toDelete);
     }
@@ -194,7 +212,7 @@ class DoctrineDelayQueueManagerTest extends TestCase
     /**
      * @expectedException \Mcfedr\QueueManagerBundle\Exception\WrongJobException
      */
-    public function testDeleteOther()
+    public function testDeleteOther(): void
     {
         $this->manager->delete($this->getMockBuilder(Job::class)->getMock());
     }
@@ -202,7 +220,7 @@ class DoctrineDelayQueueManagerTest extends TestCase
     /**
      * @expectedException \Mcfedr\QueueManagerBundle\Exception\NoSuchJobException
      */
-    public function testNonPersisted()
+    public function testNonPersisted(): void
     {
         $toDelete = new DoctrineDelayJob('test_worker', [], [], 'default', new \DateTime());
 

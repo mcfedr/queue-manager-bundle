@@ -41,7 +41,8 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
         parent::configure();
         $this
             ->addOption('batch-size', null, InputOption::VALUE_REQUIRED, 'Number of messages to fetch at once', 20)
-            ->addOption('reverse', null, InputOption::VALUE_NONE, 'Fetch jobs from the database in reverse order (newest first)');
+            ->addOption('reverse', null, InputOption::VALUE_NONE, 'Fetch jobs from the database in reverse order (newest first)')
+        ;
     }
 
     protected function getJobs(): array
@@ -54,25 +55,30 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
             $repo = $em->getRepository(DoctrineDelayJob::class);
             $orderDir = $this->reverse ? 'DESC' : 'ASC';
 
-            $em->getConnection()->executeUpdate("UPDATE DoctrineDelayJob job SET job.processing = TRUE WHERE job.time < :now ORDER BY job.time $orderDir LIMIT :limit",
+            $em->getConnection()->executeUpdate(
+                "UPDATE DoctrineDelayJob job SET job.processing = TRUE WHERE job.time < :now ORDER BY job.time ${orderDir} LIMIT :limit",
                 [
                     'now' => $now,
                     'limit' => $this->batchSize,
-                ], [
+                ],
+                [
                     'now' => Type::getType(Type::DATETIME),
                     'limit' => Type::getType(Type::INTEGER),
-                ]);
+                ]
+            );
 
             $jobs = $repo->createQueryBuilder('job')
                 ->andWhere('job.processing = true')
                 ->getQuery()
-                ->getResult();
+                ->getResult()
+            ;
 
             $repo->createQueryBuilder('job')
                 ->delete()
                 ->andWhere('job.processing = true')
                 ->getQuery()
-                ->execute();
+                ->execute()
+            ;
 
             $em->getConnection()->commit();
 
@@ -80,8 +86,9 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
                 return new WorkerJob($job);
             }, $jobs);
         } catch (DriverException $e) {
-            if (1213 == $e->getErrorCode()) { //Deadlock found when trying to get lock;
+            if (1213 === $e->getErrorCode()) { //Deadlock found when trying to get lock;
                 $em->rollback();
+
                 throw new UnexpectedJobDataException('Deadlock trying to lock table', 0, $e);
             }
         }
@@ -96,8 +103,14 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
             foreach ($retryJobs as $job) {
                 $oldJob = $job->getDelayJob();
                 $retryCount = $oldJob->getRetryCount() + 1;
-                $newJob = new DoctrineDelayJob($oldJob->getName(), $oldJob->getArguments(), $oldJob->getOptions(),
-                    $oldJob->getManager(), new Carbon(sprintf('+%d seconds', $this->getRetryDelaySeconds($retryCount))), $retryCount);
+                $newJob = new DoctrineDelayJob(
+                    $oldJob->getName(),
+                    $oldJob->getArguments(),
+                    $oldJob->getOptions(),
+                    $oldJob->getManager(),
+                    new Carbon(sprintf('+%d seconds', $this->getRetryDelaySeconds($retryCount))),
+                    $retryCount
+                );
                 $em->persist($newJob);
             }
 

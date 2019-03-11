@@ -23,15 +23,16 @@ class CreateFakeJobsCommand extends Command
         parent::__construct();
     }
 
-    public function configure()
+    public function configure(): void
     {
         parent::configure();
         $this->setName('test:create-jobs')
             ->setDescription('Create a bunch of jobs')
-            ->addOption('jobs', 'j', InputOption::VALUE_REQUIRED, 'How many jobs to create', '1000');
+            ->addOption('jobs', 'j', InputOption::VALUE_REQUIRED, 'How many jobs to create', '1000')
+        ;
     }
 
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): void
     {
         $jobsCount = (int) $input->getOption('jobs');
 
@@ -41,7 +42,7 @@ class CreateFakeJobsCommand extends Command
             ], [
                 'delay' => 10,
             ], 'delay');
-            $output->writeln("Job $i");
+            $output->writeln("Job ${i}");
         }
     }
 }

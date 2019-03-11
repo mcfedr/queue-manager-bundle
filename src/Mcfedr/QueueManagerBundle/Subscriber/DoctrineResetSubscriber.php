@@ -26,24 +26,14 @@ class DoctrineResetSubscriber implements EventSubscriberInterface
         $this->doctrine = $doctrine;
     }
 
-    public function onJobFailed(FailedJobEvent $e)
+    public function onJobFailed(FailedJobEvent $e): void
     {
         $this->reset();
     }
 
-    public function onJobFinished(FinishedJobEvent $e)
+    public function onJobFinished(FinishedJobEvent $e): void
     {
         $this->reset();
-    }
-
-    private function reset()
-    {
-        if ($this->doctrine) {
-            /** @var Connection $c */
-            $c = $this->doctrine->getConnection();
-            $c->close();
-            $this->doctrine->resetManager();
-        }
     }
 
     public static function getSubscribedEvents()
@@ -52,5 +42,15 @@ class DoctrineResetSubscriber implements EventSubscriberInterface
             JobExecutor::JOB_FINISHED_EVENT => 'onJobFinished',
             JobExecutor::JOB_FAILED_EVENT => 'onJobFailed',
         ];
+    }
+
+    private function reset(): void
+    {
+        if ($this->doctrine) {
+            /** @var Connection $c */
+            $c = $this->doctrine->getConnection();
+            $c->close();
+            $this->doctrine->resetManager();
+        }
     }
 }

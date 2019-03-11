@@ -54,10 +54,10 @@ class PeriodicWorker implements InternalWorker
 
     public static function nextRun(int $periodLength): \DateTime
     {
-        list($startOfNextPeriod, $endOfNextPeriod) = self::nextPeriod($periodLength);
+        [$startOfNextPeriod, $endOfNextPeriod] = self::nextPeriod($periodLength);
         $time = random_int($startOfNextPeriod, $endOfNextPeriod);
 
-        return new Carbon("@$time");
+        return new Carbon("@${time}");
     }
 
     public static function nextPeriod(int $periodLength): array

@@ -20,9 +20,6 @@ class TestQueueManager implements QueueManager
      */
     private $options;
 
-    /**
-     * @param array $options
-     */
     public function __construct(LoggerInterface $logger, array $options)
     {
         $this->logger = $logger;
@@ -48,9 +45,9 @@ class TestQueueManager implements QueueManager
         ]);
     }
 
-    protected function info(string $message, array $context)
+    protected function info(string $message, array $context): void
     {
-        $this->logger->info("{$this->getLogName()}: $message", $context);
+        $this->logger->info("{$this->getLogName()}: ${message}", $context);
     }
 
     protected function getLogName()

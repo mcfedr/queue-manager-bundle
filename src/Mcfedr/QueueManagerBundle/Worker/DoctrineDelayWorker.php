@@ -24,8 +24,6 @@ class DoctrineDelayWorker implements InternalWorker
     /**
      * Called to start the queued task.
      *
-     * @param array $arguments
-     *
      * @throws \Exception
      * @throws UnrecoverableJobException
      */

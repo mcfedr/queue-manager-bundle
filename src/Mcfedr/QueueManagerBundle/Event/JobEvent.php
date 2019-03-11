@@ -19,10 +19,6 @@ abstract class JobEvent extends Event
      */
     private $internal;
 
-    /**
-     * @param Job  $job
-     * @param bool $internal
-     */
     public function __construct(Job $job, bool $internal)
     {
         $this->job = $job;

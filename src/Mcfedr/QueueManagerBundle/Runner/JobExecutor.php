@@ -31,6 +31,11 @@ class JobExecutor
     public const JOB_BATCH_FINISHED_EVENT = 'mcfedr_queue_manager.job_batch_finished';
 
     /**
+     * @var ?LoggerInterface
+     */
+    protected $logger;
+
+    /**
      * @var ContainerInterface
      */
     private $workersMap;
@@ -39,11 +44,6 @@ class JobExecutor
      * @var ?EventDispatcherInterface
      */
     private $eventDispatcher;
-
-    /**
-     * @var ?LoggerInterface
-     */
-    protected $logger;
 
     private $batchStarted = false;
     private $triggerBatchEvents = false;
@@ -55,7 +55,7 @@ class JobExecutor
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    public function startBatch(array $jobs)
+    public function startBatch(array $jobs): void
     {
         if ($this->eventDispatcher) {
             $this->eventDispatcher->dispatch(self::JOB_BATCH_START_EVENT, new StartJobBatchEvent($jobs));
@@ -63,7 +63,7 @@ class JobExecutor
         $this->batchStarted = true;
     }
 
-    public function finishBatch(array $oks, array $retries, array $fails)
+    public function finishBatch(array $oks, array $retries, array $fails): void
     {
         $this->batchStarted = false;
         if ($this->eventDispatcher) {
@@ -72,13 +72,12 @@ class JobExecutor
     }
 
     /**
-     * @param Job $job
      * @param int $retryLimit Turn \Exception into UnrecoverableJobException when the retry limit is reached on RetryableJob
      *
      * @throws UnrecoverableJobException
      * @throws \Exception
      */
-    public function executeJob(Job $job, int $retryLimit = 0)
+    public function executeJob(Job $job, int $retryLimit = 0): void
     {
         // This is here so that if executeJob is called with out startBatch the events will still be called
         $this->triggerBatchEvents = !$this->batchStarted;
@@ -87,6 +86,7 @@ class JobExecutor
         }
 
         $internal = false;
+
         try {
             $worker = $this->workersMap->get($job->getName());
             if (!$worker instanceof Worker) {
@@ -131,7 +131,7 @@ class JobExecutor
     /**
      * Called when a job is finished.
      */
-    protected function finishJob(Job $job, bool $internal)
+    protected function finishJob(Job $job, bool $internal): void
     {
         if ($this->logger) {
             $this->logger->debug('Finished a job', [
@@ -150,7 +150,7 @@ class JobExecutor
     /**
      * Called when a job failed.
      */
-    protected function failedJob(Job $job, \Throwable $exception, bool $internal)
+    protected function failedJob(Job $job, \Throwable $exception, bool $internal): void
     {
         if ($this->logger) {
             $context = [

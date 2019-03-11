@@ -11,14 +11,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class PeriodDistributionCommand extends Command
 {
-    public function configure()
+    public function configure(): void
     {
         $this->addOption('period', 'p', InputOption::VALUE_REQUIRED, 'How often the job repeats (seconds)', '21600')
             ->addOption('jobs', 'j', InputOption::VALUE_REQUIRED, 'How many jobs to run', '100000')
-            ->addOption('iterations', 'i', InputOption::VALUE_REQUIRED, 'How many times to run each job', '100');
+            ->addOption('iterations', 'i', InputOption::VALUE_REQUIRED, 'How many times to run each job', '100')
+        ;
     }
 
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): void
     {
         $period = (int) $input->getOption('period');
         $jobsCount = (int) $input->getOption('jobs');

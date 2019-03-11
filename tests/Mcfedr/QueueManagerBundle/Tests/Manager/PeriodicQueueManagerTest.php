@@ -12,7 +12,11 @@ use Mcfedr\QueueManagerBundle\Worker\PeriodicWorker;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class PeriodicQueueManagerTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class PeriodicQueueManagerTest extends TestCase
 {
     /**
      * @var PeriodicQueueManager
@@ -20,15 +24,16 @@ class PeriodicQueueManagerTest extends TestCase
     private $manager;
 
     /**
-     * @var QueueManagerRegistry|MockObject
+     * @var MockObject|QueueManagerRegistry
      */
     private $registry;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->registry = $this->getMockBuilder(QueueManagerRegistry::class)
             ->disableOriginalConstructor()
-            ->getMock();
+            ->getMock()
+        ;
 
         $this->manager = new PeriodicQueueManager($this->registry, [
             'delay_manager' => 'delay',
@@ -38,7 +43,7 @@ class PeriodicQueueManagerTest extends TestCase
         ]);
     }
 
-    public function testPut()
+    public function testPut(): void
     {
         $fakeJob = $this->getMockBuilder(Job::class)->getMock();
         $this->registry->expects($this->once())
@@ -48,12 +53,12 @@ class PeriodicQueueManagerTest extends TestCase
                 $this->callback(function ($arguments) {
                     $this->assertCount(6, $arguments);
                     $this->assertArrayHasKey('name', $arguments);
-                    $this->assertEquals('test_worker', $arguments['name']);
+                    $this->assertSame('test_worker', $arguments['name']);
                     $this->assertArrayHasKey('arguments', $arguments);
                     $this->assertCount(1, $arguments['arguments']);
 
                     $this->assertArrayHasKey('argument_a', $arguments['arguments']);
-                    $this->assertEquals('a', $arguments['arguments']['argument_a']);
+                    $this->assertSame('a', $arguments['arguments']['argument_a']);
 
                     $this->assertArrayHasKey('job_tokens', $arguments);
                     $this->assertCount(2, $arguments['job_tokens']);
@@ -63,13 +68,13 @@ class PeriodicQueueManagerTest extends TestCase
                     $this->assertNotEmpty($arguments['job_tokens']['next_token']);
 
                     $this->assertArrayHasKey('period', $arguments);
-                    $this->assertEquals(3600, $arguments['period']);
+                    $this->assertSame(3600, $arguments['period']);
                     $this->assertArrayHasKey('delay_options', $arguments);
                     $this->assertCount(1, $arguments['delay_options']);
                     $this->assertArrayHasKey('delay_manager_option_a', $arguments['delay_options']);
-                    $this->assertEquals('a', $arguments['delay_options']['delay_manager_option_a']);
+                    $this->assertSame('a', $arguments['delay_options']['delay_manager_option_a']);
                     $this->assertArrayHasKey('delay_manager', $arguments);
-                    $this->assertEquals('delay', $arguments['delay_manager']);
+                    $this->assertSame('delay', $arguments['delay_manager']);
 
                     return true;
                 }),
@@ -77,7 +82,7 @@ class PeriodicQueueManagerTest extends TestCase
                     if (!\is_array($options)) {
                         return false;
                     }
-                    if (!isset($options['delay_manager_option_a']) || 'a' != $options['delay_manager_option_a']) {
+                    if (!isset($options['delay_manager_option_a']) || 'a' !== $options['delay_manager_option_a']) {
                         return false;
                     }
                     if (!isset($options['time']) || !$options['time'] instanceof \DateTime) {
@@ -85,8 +90,11 @@ class PeriodicQueueManagerTest extends TestCase
                     }
 
                     return true;
-                }), 'delay')
-            ->willReturn($fakeJob);
+                }),
+                'delay'
+            )
+            ->willReturn($fakeJob)
+        ;
 
         $job = $this->manager->put('test_worker', [
             'argument_a' => 'a',
@@ -96,7 +104,7 @@ class PeriodicQueueManagerTest extends TestCase
         $this->assertNotEmpty($job->getJobToken());
     }
 
-    public function testNoPeriod()
+    public function testNoPeriod(): void
     {
         $fakeJob = $this->getMockBuilder(Job::class)->getMock();
         $this->registry->expects($this->once())
@@ -106,19 +114,20 @@ class PeriodicQueueManagerTest extends TestCase
             ], [
                 'delay_manager_option_a' => 'a',
             ], 'delay')
-            ->willReturn($fakeJob);
+            ->willReturn($fakeJob)
+        ;
 
         $job = $this->manager->put('test_worker', [
             'argument_a' => 'a',
         ]);
 
-        $this->assertEquals($fakeJob, $job);
+        $this->assertSame($fakeJob, $job);
     }
 
     /**
      * @expectedException \Mcfedr\QueueManagerBundle\Exception\WrongJobException
      */
-    public function testDelete()
+    public function testDelete(): void
     {
         $this->manager->delete($this->getMockBuilder(Job::class)->getMock());
     }
