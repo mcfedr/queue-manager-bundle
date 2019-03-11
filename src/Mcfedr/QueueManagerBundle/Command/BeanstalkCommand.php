@@ -7,6 +7,7 @@ namespace Mcfedr\QueueManagerBundle\Command;
 use Mcfedr\QueueManagerBundle\Exception\UnexpectedJobDataException;
 use Mcfedr\QueueManagerBundle\Manager\PheanstalkClientTrait;
 use Mcfedr\QueueManagerBundle\Queue\BeanstalkJob;
+use Mcfedr\QueueManagerBundle\Queue\JobBatch;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
 use Pheanstalk\PheanstalkInterface;
 use Psr\Log\LoggerInterface;
@@ -48,11 +49,11 @@ class BeanstalkCommand extends RunnerCommand
         }
     }
 
-    protected function getJobs(): array
+    protected function getJobs(): ?JobBatch
     {
         $job = $this->pheanstalk->reserve();
         if (!$job) {
-            return [];
+            return null;
         }
 
         $data = json_decode($job->getData(), true);
@@ -62,26 +63,31 @@ class BeanstalkCommand extends RunnerCommand
             throw new UnexpectedJobDataException('Beanstalkd message missing data fields name, arguments, retryCount, priority and ttr');
         }
 
-        return [new BeanstalkJob($data['name'], $data['arguments'], $data['priority'], $data['ttr'], $job->getId(), $data['retryCount'], $job)];
+        return new JobBatch([new BeanstalkJob($data['name'], $data['arguments'], $data['priority'], $data['ttr'], $job->getId(), $data['retryCount'], $job)]);
     }
 
-    protected function finishJobs(array $okJobs, array $retryJobs, array $failedJobs): void
+    protected function finishJobs(JobBatch $batch): void
     {
         /** @var BeanstalkJob $job */
-        foreach ($okJobs as $job) {
+        foreach ($batch->getOks() as $job) {
             $this->pheanstalk->delete($job->getJob());
         }
 
         /** @var BeanstalkJob $job */
-        foreach ($retryJobs as $job) {
+        foreach ($batch->getRetries() as $job) {
             $this->pheanstalk->delete($job->getJob());
             $job->incrementRetryCount();
             $this->pheanstalk->put($job->getData(), $job->getPriority(), $job->getRetryCount() * $job->getRetryCount() * 30, $job->getTtr());
         }
 
         /** @var BeanstalkJob $job */
-        foreach ($failedJobs as $job) {
+        foreach ($batch->getFails() as $job) {
             $this->pheanstalk->delete($job->getJob());
+        }
+
+        /** @var BeanstalkJob $job */
+        foreach ($batch->getJobs() as $job) {
+            $this->pheanstalk->release($job->getJob());
         }
     }
 }

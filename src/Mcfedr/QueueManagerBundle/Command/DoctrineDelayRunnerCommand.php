@@ -9,9 +9,9 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Types\Type;
 use Mcfedr\QueueManagerBundle\Entity\DoctrineDelayJob;
-use Mcfedr\QueueManagerBundle\Exception\UnexpectedJobDataException;
 use Mcfedr\QueueManagerBundle\Manager\DoctrineDelayTrait;
 use Mcfedr\QueueManagerBundle\Queue\Job;
+use Mcfedr\QueueManagerBundle\Queue\JobBatch;
 use Mcfedr\QueueManagerBundle\Queue\WorkerJob;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
 use Psr\Log\LoggerInterface;
@@ -45,7 +45,7 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
         ;
     }
 
-    protected function getJobs(): array
+    protected function getJobs(): ?JobBatch
     {
         $now = new Carbon(null, new \DateTimeZone('UTC'));
         $em = $this->getEntityManager();
@@ -82,20 +82,28 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
 
             $em->getConnection()->commit();
 
-            return array_map(function (DoctrineDelayJob $job) {
-                return new WorkerJob($job);
-            }, $jobs);
+            if (\count($jobs)) {
+                return new JobBatch(array_map(function (DoctrineDelayJob $job) {
+                    return new WorkerJob($job);
+                }, $jobs));
+            }
         } catch (DriverException $e) {
             if (1213 === $e->getErrorCode()) { //Deadlock found when trying to get lock;
                 $em->rollback();
 
-                throw new UnexpectedJobDataException('Deadlock trying to lock table', 0, $e);
+                // Just return an empty batch so that the runner sleeps
+                $this->logger->warning('Deadlock trying to lock table', [
+                    'exception' => $e,
+                ]);
             }
         }
+
+        return null;
     }
 
-    protected function finishJobs(array $okJobs, array $retryJobs, array $failedJobs): void
+    protected function finishJobs(JobBatch $batch): void
     {
+        $retryJobs = $batch->getRetries();
         if (\count($retryJobs)) {
             $em = $this->getEntityManager();
 
@@ -110,6 +118,27 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
                     $oldJob->getManager(),
                     new Carbon(sprintf('+%d seconds', $this->getRetryDelaySeconds($retryCount))),
                     $retryCount
+                );
+                $em->persist($newJob);
+            }
+
+            $em->flush();
+        }
+
+        $remainingJobs = $batch->getJobs();
+        if (\count($remainingJobs)) {
+            $em = $this->getEntityManager();
+
+            /** @var WorkerJob $job */
+            foreach ($remainingJobs as $job) {
+                $oldJob = $job->getDelayJob();
+                $newJob = new DoctrineDelayJob(
+                    $oldJob->getName(),
+                    $oldJob->getArguments(),
+                    $oldJob->getOptions(),
+                    $oldJob->getManager(),
+                    new Carbon(),
+                    $oldJob->getRetryCount()
                 );
                 $em->persist($newJob);
             }

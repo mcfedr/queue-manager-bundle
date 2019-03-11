@@ -7,6 +7,8 @@
 - Removes container dependencies from all drivers
 - Changes the Worker interface
 - Checks for missing driver components
+- Handle out of memory errors
+- Changes to RunnerCommand interface
 
 ### 6.0.0
 

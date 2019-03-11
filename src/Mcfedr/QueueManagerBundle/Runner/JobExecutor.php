@@ -14,6 +14,7 @@ use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobExceptionInterface;
 use Mcfedr\QueueManagerBundle\Queue\InternalWorker;
 use Mcfedr\QueueManagerBundle\Queue\Job;
+use Mcfedr\QueueManagerBundle\Queue\JobBatch;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
 use Mcfedr\QueueManagerBundle\Queue\Worker;
 use Psr\Container\ContainerInterface;
@@ -55,19 +56,19 @@ class JobExecutor
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    public function startBatch(array $jobs): void
+    public function startBatch(JobBatch $batch): void
     {
         if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch(self::JOB_BATCH_START_EVENT, new StartJobBatchEvent($jobs));
+            $this->eventDispatcher->dispatch(self::JOB_BATCH_START_EVENT, new StartJobBatchEvent($batch->getJobs()));
         }
         $this->batchStarted = true;
     }
 
-    public function finishBatch(array $oks, array $retries, array $fails): void
+    public function finishBatch(JobBatch $batch): void
     {
         $this->batchStarted = false;
         if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch(self::JOB_BATCH_FINISHED_EVENT, new FinishedJobBatchEvent($oks, $fails, $retries));
+            $this->eventDispatcher->dispatch(self::JOB_BATCH_FINISHED_EVENT, new FinishedJobBatchEvent($batch->getOks(), $batch->getRetries(), $batch->getFails(), $batch->getJobs()));
         }
     }
 
@@ -106,7 +107,7 @@ class JobExecutor
             $this->failedJob($job, $e, $internal);
 
             throw $e;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             if (!$job instanceof RetryableJob) {
                 $unrecoverable = new UnrecoverableJobException('Job failed and is not retryable', 0, $e);
                 $this->failedJob($job, $unrecoverable, $internal);

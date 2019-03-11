@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\Command;
 
-use Mcfedr\QueueManagerBundle\Queue\Job;
+use Mcfedr\QueueManagerBundle\Queue\JobBatch;
 use Mcfedr\QueueManagerBundle\Queue\TestJob;
 use Mcfedr\QueueManagerBundle\Queue\TestRetryableJob;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
@@ -25,23 +25,16 @@ class TestRunnerCommand extends RunnerCommand
         return $this->options;
     }
 
-    protected function getJobs(): array
+    protected function getJobs(): JobBatch
     {
         if (1 === random_int(1, 2)) {
-            return [new TestRetryableJob('test_worker', [], [])];
+            return new JobBatch([new TestRetryableJob('test_worker', [], [])]);
         }
 
-        return [new TestJob('test_worker', [])];
+        return new JobBatch([new TestJob('test_worker', [])]);
     }
 
-    /**
-     * Called after a batch of jobs finishes.
-     *
-     * @param Job[] $okJobs
-     * @param Job[] $failedJobs
-     * @param Job[] $retryJobs
-     */
-    protected function finishJobs(array $okJobs, array $failedJobs, array $retryJobs): void
+    protected function finishJobs(JobBatch $batch): void
     {
     }
 }

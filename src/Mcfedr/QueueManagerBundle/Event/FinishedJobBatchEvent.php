@@ -25,17 +25,24 @@ class FinishedJobBatchEvent extends Event
     private $fails;
 
     /**
+     * @var Job[]
+     */
+    private $outstandingJobs;
+
+    /**
      * FinishedJobBatchEvent constructor.
      *
      * @param Job[] $oks
-     * @param Job[] $fails
      * @param Job[] $retries
+     * @param Job[] $fails
+     * @param Job[] $outstandingJobs
      */
-    public function __construct(array $oks, array $retries, array $fails)
+    public function __construct(array $oks, array $retries, array $fails, array $outstandingJobs)
     {
         $this->oks = $oks;
         $this->retries = $retries;
         $this->fails = $fails;
+        $this->outstandingJobs = $outstandingJobs;
     }
 
     /**
@@ -60,5 +67,13 @@ class FinishedJobBatchEvent extends Event
     public function getFails(): array
     {
         return $this->fails;
+    }
+
+    /**
+     * @return Job[]
+     */
+    public function getOutstandingJobs(): array
+    {
+        return $this->outstandingJobs;
     }
 }

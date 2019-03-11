@@ -8,6 +8,7 @@ use Mcfedr\QueueManagerBundle\Command\RunnerCommand;
 use Mcfedr\QueueManagerBundle\Exception\TestException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
 use Mcfedr\QueueManagerBundle\Queue\Job;
+use Mcfedr\QueueManagerBundle\Queue\JobBatch;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
 use Mcfedr\QueueManagerBundle\Queue\Worker;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
@@ -32,11 +33,15 @@ final class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker();
 
         $methods = ['getJobs', 'finishJobs'];
-        $command = $this->getMockCommand($methods, [$job], $this->getJobExecutor($worker));
+        $command = $this->getMockCommand($methods, new JobBatch([$job]), $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('finishJobs')
-            ->with([$job], [], [])
+            ->with($this->callback(function (JobBatch $batch) use ($job): bool {
+                $this->assertEquals([$job], $batch->getOks());
+
+                return true;
+            }))
         ;
 
         $this->executeCommand($command);
@@ -51,11 +56,15 @@ final class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker($exce);
 
         $methods = ['getJobs', 'finishJobs'];
-        $command = $this->getMockCommand($methods, [$job], $this->getJobExecutor($worker));
+        $command = $this->getMockCommand($methods, new JobBatch([$job]), $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('finishJobs')
-            ->with([], [], [$job])
+            ->with($this->callback(function (JobBatch $batch) use ($job): bool {
+                $this->assertEquals([$job], $batch->getFails());
+
+                return true;
+            }))
         ;
 
         $this->executeCommand($command);
@@ -70,11 +79,15 @@ final class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker($exce);
 
         $methods = ['getJobs', 'finishJobs'];
-        $command = $this->getMockCommand($methods, [$job], $this->getJobExecutor($worker));
+        $command = $this->getMockCommand($methods, new JobBatch([$job]), $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('finishJobs')
-            ->with([], [], [$job])
+            ->with($this->callback(function (JobBatch $batch) use ($job): bool {
+                $this->assertEquals([$job], $batch->getFails());
+
+                return true;
+            }))
         ;
 
         $this->executeCommand($command);
@@ -87,11 +100,15 @@ final class RunnerCommandTest extends TestCase
         $methods = ['getJobs', 'finishJobs'];
         $worker = new \stdClass();
 
-        $command = $this->getMockCommand($methods, [$job], $this->getJobExecutor($worker));
+        $command = $this->getMockCommand($methods, new JobBatch([$job]), $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('finishJobs')
-            ->with([], [], [$job])
+            ->with($this->callback(function (JobBatch $batch) use ($job): bool {
+                $this->assertEquals([$job], $batch->getFails());
+
+                return true;
+            }))
         ;
 
         $this->executeCommand($command);
@@ -106,11 +123,15 @@ final class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker($exce);
 
         $methods = ['getJobs', 'finishJobs'];
-        $command = $this->getMockCommand($methods, [$job], $this->getJobExecutor($worker));
+        $command = $this->getMockCommand($methods, new JobBatch([$job]), $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('finishJobs')
-            ->with([], [], [$job])
+            ->with($this->callback(function (JobBatch $batch) use ($job): bool {
+                $this->assertEquals([$job], $batch->getFails());
+
+                return true;
+            }))
         ;
 
         $this->executeCommand($command);
@@ -125,11 +146,15 @@ final class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker($exce);
 
         $methods = ['getJobs', 'finishJobs'];
-        $command = $this->getMockCommand($methods, [$job], $this->getJobExecutor($worker));
+        $command = $this->getMockCommand($methods, new JobBatch([$job]), $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('finishJobs')
-            ->with([], [$job], [])
+            ->with($this->callback(function (JobBatch $batch) use ($job): bool {
+                $this->assertEquals([$job], $batch->getRetries());
+
+                return true;
+            }))
         ;
 
         $this->executeCommand($command);
@@ -144,11 +169,15 @@ final class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker($exce);
 
         $methods = ['getJobs', 'finishJobs'];
-        $command = $this->getMockCommand($methods, [$job], $this->getJobExecutor($worker));
+        $command = $this->getMockCommand($methods, new JobBatch([$job]), $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('finishJobs')
-            ->with([], [], [$job])
+            ->with($this->callback(function (JobBatch $batch) use ($job): bool {
+                $this->assertEquals([$job], $batch->getFails());
+
+                return true;
+            }))
         ;
 
         $this->executeCommand($command);
@@ -161,11 +190,15 @@ final class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker(null, 2);
 
         $methods = ['getJobs', 'finishJobs'];
-        $command = $this->getMockCommand($methods, $jobs, $this->getJobExecutor($worker));
+        $command = $this->getMockCommand($methods, new JobBatch($jobs), $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('finishJobs')
-            ->with($jobs, [], [])
+            ->with($this->callback(function (JobBatch $batch) use ($jobs): bool {
+                $this->assertEquals($jobs, $batch->getOks());
+
+                return true;
+            }))
         ;
 
         $this->executeCommand($command);
@@ -180,11 +213,15 @@ final class RunnerCommandTest extends TestCase
         $worker = $this->getMockWorker($exce, 2);
 
         $methods = ['getJobs', 'finishJobs'];
-        $command = $this->getMockCommand($methods, $jobs, $this->getJobExecutor($worker));
+        $command = $this->getMockCommand($methods, new JobBatch($jobs), $this->getJobExecutor($worker));
 
         $command->expects($this->once())
             ->method('finishJobs')
-            ->with([], [], $jobs)
+            ->with($this->callback(function (JobBatch $batch) use ($jobs): bool {
+                $this->assertEquals($jobs, $batch->getFails());
+
+                return true;
+            }))
         ;
 
         $this->executeCommand($command);
@@ -214,11 +251,15 @@ final class RunnerCommandTest extends TestCase
         ;
 
         $methods = ['getJobs', 'finishJobs'];
-        $command = $this->getMockCommand($methods, $jobs, $this->getJobExecutor($worker, $eventDispatcher));
+        $command = $this->getMockCommand($methods, new JobBatch($jobs), $this->getJobExecutor($worker, $eventDispatcher));
 
         $command->expects($this->once())
             ->method('finishJobs')
-            ->with($jobs, [], [])
+            ->with($this->callback(function (JobBatch $batch) use ($jobs): bool {
+                $this->assertEquals($jobs, $batch->getOks());
+
+                return true;
+            }))
         ;
 
         $this->executeCommand($command);
@@ -255,7 +296,7 @@ final class RunnerCommandTest extends TestCase
         return $worker;
     }
 
-    private function getMockCommand(array $methods, array $jobs, JobExecutor $executor): MockObject
+    private function getMockCommand(array $methods, JobBatch $batch, JobExecutor $executor): MockObject
     {
         $command = $this
             ->getMockBuilder(RunnerCommand::class)
@@ -266,7 +307,7 @@ final class RunnerCommandTest extends TestCase
 
         $command->expects($this->once())
             ->method('getJobs')
-            ->willReturn($jobs)
+            ->willReturn($batch)
         ;
 
         return $command;

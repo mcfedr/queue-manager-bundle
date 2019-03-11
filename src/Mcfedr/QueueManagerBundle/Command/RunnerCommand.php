@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Mcfedr\QueueManagerBundle\Command;
 
 use Mcfedr\QueueManagerBundle\Exception\UnexpectedJobDataException;
-use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobExceptionInterface;
 use Mcfedr\QueueManagerBundle\Queue\Job;
+use Mcfedr\QueueManagerBundle\Queue\JobBatch;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -18,10 +18,6 @@ use Symfony\Component\Process\Process;
 
 abstract class RunnerCommand extends Command
 {
-    private const OK = 0;
-    private const FAIL = 1;
-    private const RETRY = 2;
-
     /**
      * @var ?LoggerInterface
      */
@@ -47,6 +43,21 @@ abstract class RunnerCommand extends Command
      */
     private $jobExecutor;
 
+    /**
+     * @var string
+     *
+     * This is a chunk of memory that is reserved for use when handling out
+     * of memory errors
+     */
+    private $reservedMemory;
+
+    /**
+     * @var JobBatch
+     *
+     * Stored for fatal exception handling, so we know what job was running
+     */
+    private $jobs;
+
     public function __construct(string $name, array $options, JobExecutor $jobExecutor, ?LoggerInterface $logger = null)
     {
         parent::__construct($name);
@@ -58,6 +69,25 @@ abstract class RunnerCommand extends Command
         }
         $this->jobExecutor = $jobExecutor;
         $this->logger = $logger;
+    }
+
+    public function shutdown(): void
+    {
+        $this->reservedMemory = null;
+
+        if (null === $error = error_get_last()) {
+            return;
+        }
+
+        if (!$this->jobs || !$this->jobs->current()) {
+            return;
+        }
+
+        $e = new \ErrorException(@$error['message'], 0, @$error['type'], @$error['file'], @$error['line']);
+        $this->jobs->result($e);
+
+        $this->finishJobs($this->jobs);
+        $this->jobExecutor->finishBatch($this->jobs);
     }
 
     protected function configure(): void
@@ -88,6 +118,9 @@ abstract class RunnerCommand extends Command
             pcntl_signal(SIGINT, $handle);
         }
 
+        $this->reservedMemory = str_repeat('x', 1024 * 10);
+        register_shutdown_function([$this, 'shutdown']);
+
         do {
             if ($input->getOption('process-isolation')) {
                 $this->executeBatchWithProcess($input, $output);
@@ -106,32 +139,15 @@ abstract class RunnerCommand extends Command
     protected function executeBatch(): void
     {
         try {
-            $jobs = $this->getJobs();
-            if (\count($jobs)) {
-                $this->jobExecutor->startBatch($jobs);
-                $oks = [];
-                $fails = [];
-                $retries = [];
-                foreach ($jobs as $job) {
+            $this->jobs = $this->getJobs();
+            if ($this->jobs) {
+                $this->jobExecutor->startBatch($this->jobs);
+                while (($job = $this->jobs->next())) {
                     $result = $this->executeJob($job);
-
-                    switch ($result) {
-                        case self::OK:
-                            $oks[] = $job;
-
-                            break;
-                        case self::FAIL:
-                            $fails[] = $job;
-
-                            break;
-                        default:
-                            $retries[] = $job;
-
-                            break;
-                    }
+                    $this->jobs->result($result);
                 }
-                $this->finishJobs($oks, $retries, $fails);
-                $this->jobExecutor->finishBatch($oks, $retries, $fails);
+                $this->finishJobs($this->jobs);
+                $this->jobExecutor->finishBatch($this->jobs);
             } else {
                 if ($this->logger) {
                     $this->logger->debug('No jobs, sleeping...', [
@@ -162,34 +178,26 @@ abstract class RunnerCommand extends Command
     /**
      * Executes a single job.
      */
-    protected function executeJob(Job $job): int
+    protected function executeJob(Job $job): ?\Throwable
     {
         try {
             $this->jobExecutor->executeJob($job, $this->retryLimit);
-        } catch (UnrecoverableJobExceptionInterface $e) {
-            return self::FAIL;
-        } catch (\Exception $e) {
-            return self::RETRY;
+        } catch (\Throwable $e) {
+            return $e;
         }
 
-        return self::OK;
+        return null;
     }
 
     /**
      * @throws UnexpectedJobDataException
-     *
-     * @return Job[]
      */
-    abstract protected function getJobs(): array;
+    abstract protected function getJobs(): ?JobBatch;
 
     /**
      * Called after a batch of jobs finishes.
-     *
-     * @param Job[] $okJobs
-     * @param Job[] $retryJobs
-     * @param Job[] $failedJobs
      */
-    abstract protected function finishJobs(array $okJobs, array $retryJobs, array $failedJobs): void;
+    abstract protected function finishJobs(JobBatch $batch): void;
 
     protected function handleInput(InputInterface $input): void
     {
