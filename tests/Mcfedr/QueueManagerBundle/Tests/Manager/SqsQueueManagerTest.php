@@ -13,7 +13,6 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
- * @coversNothing
  */
 final class SqsQueueManagerTest extends TestCase
 {

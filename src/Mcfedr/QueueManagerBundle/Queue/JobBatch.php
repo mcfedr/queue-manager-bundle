@@ -47,9 +47,9 @@ class JobBatch implements \Countable
         $this->retries = $retries;
     }
 
-    public function next()
+    public function next(): ?Job
     {
-        $this->currentJob = array_pop($this->jobs);
+        $this->currentJob = array_shift($this->jobs);
 
         return $this->currentJob;
     }

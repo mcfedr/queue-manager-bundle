@@ -6,7 +6,6 @@ namespace Mcfedr\QueueManagerBundle\Command;
 
 use Mcfedr\QueueManagerBundle\Queue\JobBatch;
 use Mcfedr\QueueManagerBundle\Queue\TestJob;
-use Mcfedr\QueueManagerBundle\Queue\TestRetryableJob;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
 use Mcfedr\QueueManagerBundle\Worker\OomWorker;
 use Psr\Log\LoggerInterface;
@@ -32,6 +31,7 @@ class OomRunnerCommand extends RunnerCommand
     {
         if ($this->once) {
             $this->once = false;
+
             return new JobBatch([new TestJob(OomWorker::class, [])]);
         }
 
@@ -41,7 +41,7 @@ class OomRunnerCommand extends RunnerCommand
     protected function finishJobs(JobBatch $batch): void
     {
         $this->logger->info('Finished batch', [
-            'batch' => $batch
+            'batch' => $batch,
         ]);
     }
 }

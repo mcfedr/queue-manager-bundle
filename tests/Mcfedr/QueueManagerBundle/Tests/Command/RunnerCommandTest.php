@@ -22,7 +22,6 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * @internal
- * @coversNothing
  */
 final class RunnerCommandTest extends TestCase
 {

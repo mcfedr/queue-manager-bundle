@@ -14,7 +14,6 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
- * @coversNothing
  */
 final class PeriodicQueueManagerTest extends TestCase
 {

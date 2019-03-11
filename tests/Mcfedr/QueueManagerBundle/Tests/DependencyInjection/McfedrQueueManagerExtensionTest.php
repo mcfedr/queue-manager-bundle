@@ -13,7 +13,6 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
  * @internal
- * @coversNothing
  */
 final class McfedrQueueManagerExtensionTest extends WebTestCase
 {
