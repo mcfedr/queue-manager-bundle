@@ -39,8 +39,7 @@
         "pda/pheanstalk": "Required to use beanstalkd driver",
         "doctrine/doctrine-bundle": "Required to use doctrine driver",
         "symfony/proxy-manager-bridge": "Required to use doctrine driver",
-        "aws/aws-sdk-php": "Required to use SQS driver",
-        "mcfedr/periodic-queue-driver-bundle": "A driver that periodically runs tasks"
+        "aws/aws-sdk-php": "Required to use SQS driver"
     },
     "license": "MIT",
     "authors": [

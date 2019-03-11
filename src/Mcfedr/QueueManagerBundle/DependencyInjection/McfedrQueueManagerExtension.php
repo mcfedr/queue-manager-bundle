@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mcfedr\QueueManagerBundle\DependencyInjection;
 
 use Aws\Sqs\SqsClient;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Mcfedr\QueueManagerBundle\Command\BeanstalkCommand;
 use Mcfedr\QueueManagerBundle\Command\DoctrineDelayRunnerCommand;
 use Mcfedr\QueueManagerBundle\Command\SqsRunnerCommand;
@@ -15,7 +16,6 @@ use Mcfedr\QueueManagerBundle\Manager\QueueManager;
 use Mcfedr\QueueManagerBundle\Manager\SqsQueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Worker;
 use Mcfedr\QueueManagerBundle\Subscriber\MemoryReportSubscriber;
-use Pheanstalk\Connection;
 use Pheanstalk\Pheanstalk;
 use Pheanstalk\PheanstalkInterface;
 use Symfony\Component\Config\FileLocator;
@@ -67,6 +67,9 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
 
             switch ($manager['driver']) {
                 case 'beanstalkd':
+                    if (!interface_exists(PheanstalkInterface::class)) {
+                        throw new \LogicException('"pheanstalk" requires pda/pheanstalk to be installed.');
+                    }
                     if (isset($mergedOptions['pheanstalk'])) {
                         $bindings[PheanstalkInterface::class] = new Reference($mergedOptions['pheanstalk']);
                         unset($mergedOptions['pheanstalk']);
@@ -86,6 +89,9 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                     }
                     break;
                 case 'sqs':
+                    if (!class_exists(SqsClient::class)) {
+                        throw new \LogicException('"sqs" requires aws/aws-sdk-php to be installed.');
+                    }
                     if (isset($mergedOptions['sqs_client'])) {
                         $bindings[SqsClient::class] = new Reference($mergedOptions['sqs_client']);
                         unset($mergedOptions['sqs_client']);
@@ -103,6 +109,11 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                         $sqsClientName = "$managerServiceName.sqs_client";
                         $container->setDefinition($sqsClientName, $sqsClient);
                         $bindings[SqsClient::class] = new Reference($sqsClientName);
+                    }
+                    break;
+                case 'doctrine_delay':
+                    if (!interface_exists(ManagerRegistry::class)) {
+                        throw new \LogicException('"doctrine_delay" requires doctrine/doctrine-bundle to be installed.');
                     }
                     break;
             }
@@ -212,10 +223,10 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                         'class' => BeanstalkQueueManager::class,
                         'options' => [
                             'host' => '127.0.0.1',
-                            'port' => PheanstalkInterface::DEFAULT_PORT,
-                            'default_queue' => PheanstalkInterface::DEFAULT_TUBE,
+                            'port' => 11300,
+                            'default_queue' => 'default',
                             'connection' => [
-                                'timeout' => Connection::DEFAULT_CONNECT_TIMEOUT,
+                                'timeout' => 2,
                                 'persistent' => false,
                             ],
                         ],

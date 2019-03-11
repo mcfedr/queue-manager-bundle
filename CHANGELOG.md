@@ -6,6 +6,7 @@
 - Now the supported drivers are bundled
 - Removes container dependencies from all drivers
 - Changes the Worker interface
+- Checks for missing driver components
 
 ### 6.0.0
 
