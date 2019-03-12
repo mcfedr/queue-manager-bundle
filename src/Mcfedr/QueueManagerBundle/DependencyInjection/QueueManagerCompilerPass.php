@@ -19,7 +19,7 @@ class QueueManagerCompilerPass implements CompilerPassInterface
         $this->createMap($container, QueueManagerRegistry::class, 'mcfedr_queue_manager.manager');
     }
 
-    private function createMap(ContainerBuilder $container, string $callerId, string $tag)
+    private function createMap(ContainerBuilder $container, string $callerId, string $tag): void
     {
         $serviceIds = $container->findTaggedServiceIds($tag);
 
@@ -42,6 +42,7 @@ class QueueManagerCompilerPass implements CompilerPassInterface
 
         $container
             ->getDefinition($callerId)
-            ->addTag('container.service_subscriber.locator', ['id' => (string) ServiceLocatorTagPass::register($container, $serviceMap, $callerId)]);
+            ->addTag('container.service_subscriber.locator', ['id' => (string) ServiceLocatorTagPass::register($container, $serviceMap, $callerId)])
+        ;
     }
 }

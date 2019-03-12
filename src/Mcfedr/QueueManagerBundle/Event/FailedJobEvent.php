@@ -19,9 +19,6 @@ class FailedJobEvent extends JobEvent
         $this->exception = $exception;
     }
 
-    /**
-     * @return \Throwable
-     */
     public function getException(): \Throwable
     {
         return $this->exception;

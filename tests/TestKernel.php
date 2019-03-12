@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Symfony\Component\Config\Loader\LoaderInterface;
+
 class TestKernel extends Symfony\Component\HttpKernel\Kernel
 {
     public function registerBundles()
@@ -14,7 +16,7 @@ class TestKernel extends Symfony\Component\HttpKernel\Kernel
         ];
     }
 
-    public function registerContainerConfiguration(\Symfony\Component\Config\Loader\LoaderInterface $loader)
+    public function registerContainerConfiguration(LoaderInterface $loader): void
     {
         $loader->load(__DIR__.'/config_test.yml');
     }

@@ -9,11 +9,12 @@ use Mcfedr\QueueManagerBundle\Worker\PeriodicWorker;
 
 class PeriodicDistributionCommand extends PeriodDistributionCommand
 {
-    public function configure()
+    public function configure(): void
     {
         parent::configure();
         $this->setName('test:distribution:periodic')
-            ->setDescription('Emit samples for nextRun');
+            ->setDescription('Emit samples for nextRun')
+        ;
     }
 
     protected function job($period)

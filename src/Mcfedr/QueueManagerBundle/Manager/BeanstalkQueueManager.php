@@ -28,8 +28,8 @@ class BeanstalkQueueManager implements QueueManager
 
     public function put(string $name, array $arguments = [], array $options = []): Job
     {
-        $queue = isset($options['queue']) ? $options['queue'] : $this->defaultQueue;
-        $priority = isset($options['priority']) ? $options['priority'] : PheanstalkInterface::DEFAULT_PRIORITY;
+        $queue = $options['queue'] ?? $this->defaultQueue;
+        $priority = $options['priority'] ?? PheanstalkInterface::DEFAULT_PRIORITY;
         if (isset($options['time'])) {
             $seconds = ($s = $options['time']->getTimestamp() - time()) > 0 ? $s : 0;
         } elseif (isset($options['delay'])) {
@@ -37,7 +37,7 @@ class BeanstalkQueueManager implements QueueManager
         } else {
             $seconds = PheanstalkInterface::DEFAULT_DELAY;
         }
-        $ttr = isset($options['ttr']) ? $options['ttr'] : PheanstalkInterface::DEFAULT_TTR;
+        $ttr = $options['ttr'] ?? PheanstalkInterface::DEFAULT_TTR;
 
         $job = new BeanstalkJob($name, $arguments, $priority, $ttr);
         $id = $this->pheanstalk->useTube($queue)->put($job->getData(), $priority, $seconds, $ttr);

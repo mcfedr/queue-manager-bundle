@@ -6,11 +6,12 @@ namespace Mcfedr\QueueManagerBundle\Command;
 
 class RandAddDistributionCommand extends PeriodDistributionCommand
 {
-    public function configure()
+    public function configure(): void
     {
         parent::configure();
         $this->setName('test:distribution:rand-add')
-            ->setDescription('Emit samples for adding rand');
+            ->setDescription('Emit samples for adding rand')
+        ;
     }
 
     protected function job($period)
@@ -18,7 +19,7 @@ class RandAddDistributionCommand extends PeriodDistributionCommand
         $currentTime = 0;
 
         return function () use (&$currentTime, $period) {
-            $currentTime += mt_rand($period, $period * 2);
+            $currentTime += random_int($period, $period * 2);
 
             return $currentTime;
         };

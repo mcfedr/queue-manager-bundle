@@ -6,13 +6,15 @@ namespace Mcfedr\QueueManagerBundle\Command;
 
 use Mcfedr\QueueManagerBundle\Queue\JobBatch;
 use Mcfedr\QueueManagerBundle\Queue\TestJob;
-use Mcfedr\QueueManagerBundle\Queue\TestRetryableJob;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
+use Mcfedr\QueueManagerBundle\Worker\OomWorker;
 use Psr\Log\LoggerInterface;
 
-class TestRunnerCommand extends RunnerCommand
+class OomRunnerCommand extends RunnerCommand
 {
     private $options;
+
+    private $once = true;
 
     public function __construct($name, array $options, JobExecutor $jobExecutor, ?LoggerInterface $logger = null)
     {
@@ -25,16 +27,21 @@ class TestRunnerCommand extends RunnerCommand
         return $this->options;
     }
 
-    protected function getJobs(): JobBatch
+    protected function getJobs(): ?JobBatch
     {
-        if (1 === random_int(1, 2)) {
-            return new JobBatch([new TestRetryableJob('test_worker', [], [])]);
+        if ($this->once) {
+            $this->once = false;
+
+            return new JobBatch([new TestJob(OomWorker::class, [])]);
         }
 
-        return new JobBatch([new TestJob('test_worker', [])]);
+        return null;
     }
 
     protected function finishJobs(JobBatch $batch): void
     {
+        $this->logger->info('Finished batch', [
+            'batch' => $batch,
+        ]);
     }
 }

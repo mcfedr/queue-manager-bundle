@@ -7,6 +7,7 @@ namespace Mcfedr\QueueManagerBundle\Command;
 use Aws\Sqs\SqsClient;
 use Mcfedr\QueueManagerBundle\Exception\UnexpectedJobDataException;
 use Mcfedr\QueueManagerBundle\Manager\SqsClientTrait;
+use Mcfedr\QueueManagerBundle\Queue\JobBatch;
 use Mcfedr\QueueManagerBundle\Queue\SqsJob;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
 use Psr\Log\LoggerInterface;
@@ -57,92 +58,26 @@ class SqsRunnerCommand extends RunnerCommand
             ->addOption('queue', null, InputOption::VALUE_REQUIRED, 'The name of a queue in the config, can be a comma separated list')
             ->addOption('timeout', null, InputOption::VALUE_REQUIRED, 'The visibility timeout for SQS')
             ->addOption('batch-size', null, InputOption::VALUE_REQUIRED, 'Number of messages to fetch at once', 10)
-            ->addOption('wait-time', null, InputOption::VALUE_OPTIONAL, 'Wait time between 0-20 seconds');
+            ->addOption('wait-time', null, InputOption::VALUE_OPTIONAL, 'Wait time between 0-20 seconds')
+        ;
     }
 
-    protected function getJobs(): array
+    protected function getJobs(): ?JobBatch
     {
         foreach ($this->urls as $url) {
             $jobs = $this->getJobsFromUrl($url);
-            if (\count($jobs)) {
+            if ($jobs) {
                 return $jobs;
             }
         }
 
-        return [];
+        return null;
     }
 
-    private function getJobsFromUrl($url): array
+    protected function finishJobs(JobBatch $batch): void
     {
-        $response = $this->sqs->receiveMessage([
-            'QueueUrl' => $url,
-            'WaitTimeSeconds' => $this->waitTime,
-            'VisibilityTimeout' => $this->visibilityTimeout,
-            'MaxNumberOfMessages' => $this->batchSize,
-        ]);
-
-        if (isset($response['Messages'])) {
-            $jobs = [];
-            $exception = null;
-            $toDelete = [];
-
-            /** @var array $message */
-            foreach ($response['Messages'] as $message) {
-                $data = json_decode($message['Body'], true);
-                if (!\is_array($data) || !isset($data['name']) || !isset($data['arguments']) || !isset($data['retryCount'])) {
-                    $toDelete[] = $message['ReceiptHandle'];
-                    $exception = new UnexpectedJobDataException('Sqs message(s) missing data fields name, arguments and retryCount');
-                    continue;
-                }
-
-                $visibilityTimeout = null;
-                if (isset($data['visibilityTimeout'])) {
-                    $visibilityTimeout = $data['visibilityTimeout'];
-                    $this->sqs->changeMessageVisibility([
-                        'QueueUrl' => $url,
-                        'ReceiptHandle' => $message['ReceiptHandle'],
-                        'VisibilityTimeout' => $visibilityTimeout,
-                    ]);
-                }
-
-                $jobs[] = new SqsJob($data['name'], $data['arguments'], 0, $url, $message['MessageId'], $data['retryCount'], $message['ReceiptHandle'], $visibilityTimeout);
-            }
-
-            if (\count($toDelete)) {
-                $count = 0;
-                $this->sqs->deleteMessageBatch([
-                    'QueueUrl' => $url,
-                    'Entries' => array_map(function ($handle) use (&$count) {
-                        ++$count;
-
-                        return [
-                            'Id' => "E{$count}",
-                            'ReceiptHandle' => $handle,
-                        ];
-                    }, $toDelete),
-                ]);
-            }
-
-            if ($exception) {
-                if (\count($jobs)) {
-                    if ($this->logger) {
-                        $this->logger->warning('Found unexpected job data in the queue', [
-                            'message' => $exception->getMessage(),
-                        ]);
-                    }
-                } else {
-                    throw $exception;
-                }
-            }
-
-            return $jobs;
-        }
-
-        return [];
-    }
-
-    protected function finishJobs(array $okJobs, array $retryJobs, array $failedJobs): void
-    {
+        /** @var SqsJob[] $retryJobs */
+        $retryJobs = $batch->getRetries();
         if (\count($retryJobs)) {
             $count = 0;
             $this->sqs->sendMessageBatch([
@@ -160,12 +95,12 @@ class SqsRunnerCommand extends RunnerCommand
             ]);
         }
 
-        /** @var SqsJob[] $allJobs */
-        $allJobs = array_merge($okJobs, $retryJobs, $failedJobs);
-        if (\count($allJobs)) {
+        /** @var SqsJob[] $toDelete */
+        $toDelete = array_merge($batch->getOks(), $batch->getRetries(), $batch->getFails());
+        if (\count($toDelete)) {
             $count = 0;
             $this->sqs->deleteMessageBatch([
-                'QueueUrl' => $allJobs[0]->getUrl(),
+                'QueueUrl' => $toDelete[0]->getUrl(),
                 'Entries' => array_map(function (SqsJob $job) use (&$count) {
                     ++$count;
 
@@ -173,7 +108,26 @@ class SqsRunnerCommand extends RunnerCommand
                         'Id' => "J{$count}",
                         'ReceiptHandle' => $job->getReceiptHandle(),
                     ];
-                }, array_merge($okJobs, $retryJobs, $failedJobs)),
+                }, $toDelete),
+            ]);
+        }
+
+        /** @var SqsJob[] $remainingJobs */
+        $remainingJobs = $batch->getJobs();
+        if (\count($remainingJobs)) {
+            $count = 0;
+            $this->sqs->changeMessageVisibilityBatch([
+                'QueueUrl' => $remainingJobs[0]->getUrl(),
+                'Entries' => array_map(function (SqsJob $job) use (&$count) {
+                    ++$count;
+                    $job->incrementRetryCount();
+
+                    return [
+                        'Id' => "V{$count}",
+                        'ReceiptHandle' => $job->getReceiptHandle(),
+                        'VisibilityTimeout' => 0,
+                    ];
+                }, $remainingJobs),
             ]);
         }
     }
@@ -205,5 +159,98 @@ class SqsRunnerCommand extends RunnerCommand
         if (($waitTime = $input->getOption('wait-time'))) {
             $this->waitTime = (int) $waitTime;
         }
+    }
+
+    private function getJobsFromUrl($url): ?JobBatch
+    {
+        $response = $this->sqs->receiveMessage([
+            'QueueUrl' => $url,
+            'WaitTimeSeconds' => $this->waitTime,
+            'VisibilityTimeout' => $this->visibilityTimeout,
+            'MaxNumberOfMessages' => $this->batchSize,
+        ]);
+
+        if (isset($response['Messages'])) {
+            $jobs = [];
+            $exception = null;
+            $toDelete = [];
+            $toChangeVisibility = [];
+
+            /** @var array $message */
+            foreach ($response['Messages'] as $message) {
+                $data = json_decode($message['Body'], true);
+                if (!\is_array($data) || !isset($data['name']) || !isset($data['arguments']) || !isset($data['retryCount'])) {
+                    $toDelete[] = $message['ReceiptHandle'];
+                    $exception = new UnexpectedJobDataException('Sqs message(s) missing data fields name, arguments and retryCount');
+
+                    continue;
+                }
+
+                $job = new SqsJob(
+                    $data['name'],
+                    $data['arguments'],
+                    0,
+                    $url,
+                    $message['MessageId'],
+                    $data['retryCount'],
+                    $message['ReceiptHandle'],
+                    $data['visibilityTimeout'] ?? null
+                );
+
+                $jobs[] = $job;
+                if ($job->getVisibilityTimeout() !== null) {
+                    $toChangeVisibility[] = $job;
+                }
+            }
+
+            if (\count($toDelete)) {
+                $count = 0;
+                $this->sqs->deleteMessageBatch([
+                    'QueueUrl' => $url,
+                    'Entries' => array_map(function ($handle) use (&$count) {
+                        ++$count;
+
+                        return [
+                            'Id' => "E{$count}",
+                            'ReceiptHandle' => $handle,
+                        ];
+                    }, $toDelete),
+                ]);
+            }
+
+            if (\count($toChangeVisibility)) {
+                $count = 0;
+                $this->sqs->changeMessageVisibilityBatch([
+                    'QueueUrl' => $url,
+                    'Entries' => array_map(function (SqsJob $job) use (&$count) {
+                        ++$count;
+
+                        return [
+                            'Id' => "E{$count}",
+                            'ReceiptHandle' => $job->getReceiptHandle(),
+                            'VisibilityTimeout' => $job->getVisibilityTimeout(),
+                        ];
+                    }, $toChangeVisibility),
+                ]);
+            }
+
+            if ($exception) {
+                if (\count($jobs)) {
+                    if ($this->logger) {
+                        $this->logger->warning('Found unexpected job data in the queue', [
+                            'message' => $exception->getMessage(),
+                        ]);
+                    }
+                } else {
+                    throw $exception;
+                }
+            }
+
+            if (\count($jobs)) {
+                return new JobBatch($jobs);
+            }
+        }
+
+        return null;
     }
 }

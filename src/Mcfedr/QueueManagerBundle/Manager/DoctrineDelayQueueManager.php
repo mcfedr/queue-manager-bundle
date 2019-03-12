@@ -29,13 +29,13 @@ class DoctrineDelayQueueManager implements QueueManager
 
     public function put(string $name, array $arguments = [], array $options = []): Job
     {
-        if (array_key_exists('manager_options', $options)) {
+        if (\array_key_exists('manager_options', $options)) {
             $jobOptions = array_merge($this->defaultManagerOptions, $options['manager_options']);
         } else {
             $jobOptions = array_merge($this->defaultManagerOptions, array_diff_key($options, ['manager' => 1, 'time' => 1, 'delay' => 1]));
         }
 
-        if (array_key_exists('manager', $options)) {
+        if (\array_key_exists('manager', $options)) {
             $jobManager = $options['manager'];
         } else {
             $jobManager = $this->defaultManager;
@@ -44,7 +44,7 @@ class DoctrineDelayQueueManager implements QueueManager
         if (isset($options['time'])) {
             /** @var \DateTime $jobTime */
             $jobTime = $options['time'];
-            if ('UTC' != $jobTime->getTimezone()->getName()) {
+            if ('UTC' !== $jobTime->getTimezone()->getName()) {
                 $jobTime = clone $jobTime;
                 $jobTime->setTimezone(new \DateTimeZone('UTC'));
             }

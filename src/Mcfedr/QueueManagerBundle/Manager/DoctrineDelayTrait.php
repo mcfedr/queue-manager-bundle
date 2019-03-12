@@ -37,7 +37,7 @@ trait DoctrineDelayTrait
         return $this->doctrine->getManager($this->entityManagerName);
     }
 
-    private function setOptions(array $options)
+    private function setOptions(array $options): void
     {
         $this->defaultManager = $options['default_manager'];
         $this->defaultManagerOptions = $options['default_manager_options'];

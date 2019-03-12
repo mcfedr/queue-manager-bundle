@@ -14,9 +14,6 @@ class TestWorker implements Worker
      */
     private $logger;
 
-    /**
-     * @param LoggerInterface $logger
-     */
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
@@ -24,8 +21,6 @@ class TestWorker implements Worker
 
     /**
      * Called to start the queued task.
-     *
-     * @param array $arguments
      *
      * @throws \Exception
      * @throws UnrecoverableJobException
@@ -36,7 +31,7 @@ class TestWorker implements Worker
             'arguments' => $arguments,
         ]);
         sleep(1);
-        switch (rand(1, 3)) {
+        switch (random_int(1, 3)) {
             case 1:
                 throw new UnrecoverableJobException('job is going to fail forever');
             case 2:

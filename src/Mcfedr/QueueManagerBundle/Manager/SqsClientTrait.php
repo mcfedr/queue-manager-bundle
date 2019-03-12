@@ -23,7 +23,7 @@ trait SqsClientTrait
     {
         $this->defaultUrl = $options['default_url'];
         $this->queues = $options['queues'];
-        if (!array_key_exists('default', $this->queues)) {
+        if (!\array_key_exists('default', $this->queues)) {
             $this->queues['default'] = $this->defaultUrl;
         }
     }

@@ -26,9 +26,6 @@ class PeriodicQueueManager implements QueueManager
      */
     private $delayManagerOptions = [];
 
-    /**
-     * @param array $options
-     */
     public function __construct(QueueManagerRegistry $queueManagerRegistry, array $options)
     {
         $this->queueManagerRegistry = $queueManagerRegistry;
@@ -38,13 +35,13 @@ class PeriodicQueueManager implements QueueManager
 
     public function put(string $name, array $arguments = [], array $options = []): Job
     {
-        if (array_key_exists('delay_manager_options', $options)) {
+        if (\array_key_exists('delay_manager_options', $options)) {
             $jobOptions = array_merge($this->delayManagerOptions, $options['delay_manager_options']);
         } else {
             $jobOptions = array_merge($this->delayManagerOptions, array_diff_key($options, ['period' => 1, 'time' => 1, 'delay' => 1]));
         }
 
-        if (array_key_exists('delay_manager', $options)) {
+        if (\array_key_exists('delay_manager', $options)) {
             $jobManager = $options['delay_manager'];
         } else {
             $jobManager = $this->delayManager;

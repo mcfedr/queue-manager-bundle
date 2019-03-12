@@ -14,6 +14,7 @@ use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobExceptionInterface;
 use Mcfedr\QueueManagerBundle\Queue\InternalWorker;
 use Mcfedr\QueueManagerBundle\Queue\Job;
+use Mcfedr\QueueManagerBundle\Queue\JobBatch;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
 use Mcfedr\QueueManagerBundle\Queue\Worker;
 use Psr\Container\ContainerInterface;
@@ -31,6 +32,11 @@ class JobExecutor
     public const JOB_BATCH_FINISHED_EVENT = 'mcfedr_queue_manager.job_batch_finished';
 
     /**
+     * @var ?LoggerInterface
+     */
+    protected $logger;
+
+    /**
      * @var ContainerInterface
      */
     private $workersMap;
@@ -39,11 +45,6 @@ class JobExecutor
      * @var ?EventDispatcherInterface
      */
     private $eventDispatcher;
-
-    /**
-     * @var ?LoggerInterface
-     */
-    protected $logger;
 
     private $batchStarted = false;
     private $triggerBatchEvents = false;
@@ -55,38 +56,38 @@ class JobExecutor
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    public function startBatch(array $jobs)
+    public function startBatch(JobBatch $batch): void
     {
         if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch(self::JOB_BATCH_START_EVENT, new StartJobBatchEvent($jobs));
+            $this->eventDispatcher->dispatch(self::JOB_BATCH_START_EVENT, new StartJobBatchEvent($batch->getJobs()));
         }
         $this->batchStarted = true;
     }
 
-    public function finishBatch(array $oks, array $retries, array $fails)
+    public function finishBatch(JobBatch $batch): void
     {
         $this->batchStarted = false;
         if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch(self::JOB_BATCH_FINISHED_EVENT, new FinishedJobBatchEvent($oks, $fails, $retries));
+            $this->eventDispatcher->dispatch(self::JOB_BATCH_FINISHED_EVENT, new FinishedJobBatchEvent($batch->getOks(), $batch->getRetries(), $batch->getFails(), $batch->getJobs()));
         }
     }
 
     /**
-     * @param Job $job
      * @param int $retryLimit Turn \Exception into UnrecoverableJobException when the retry limit is reached on RetryableJob
      *
      * @throws UnrecoverableJobException
      * @throws \Exception
      */
-    public function executeJob(Job $job, int $retryLimit = 0)
+    public function executeJob(Job $job, int $retryLimit = 0): void
     {
         // This is here so that if executeJob is called with out startBatch the events will still be called
         $this->triggerBatchEvents = !$this->batchStarted;
         if ($this->triggerBatchEvents) {
-            $this->startBatch([$job]);
+            $this->startBatch(new JobBatch([$job]));
         }
 
         $internal = false;
+
         try {
             $worker = $this->workersMap->get($job->getName());
             if (!$worker instanceof Worker) {
@@ -106,7 +107,7 @@ class JobExecutor
             $this->failedJob($job, $e, $internal);
 
             throw $e;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             if (!$job instanceof RetryableJob) {
                 $unrecoverable = new UnrecoverableJobException('Job failed and is not retryable', 0, $e);
                 $this->failedJob($job, $unrecoverable, $internal);
@@ -131,7 +132,7 @@ class JobExecutor
     /**
      * Called when a job is finished.
      */
-    protected function finishJob(Job $job, bool $internal)
+    protected function finishJob(Job $job, bool $internal): void
     {
         if ($this->logger) {
             $this->logger->debug('Finished a job', [
@@ -143,14 +144,14 @@ class JobExecutor
             $this->eventDispatcher->dispatch(self::JOB_FINISHED_EVENT, new FinishedJobEvent($job, $internal));
         }
         if ($this->triggerBatchEvents) {
-            $this->finishBatch([$job], [], []);
+            $this->finishBatch(new JobBatch([], [$job]));
         }
     }
 
     /**
      * Called when a job failed.
      */
-    protected function failedJob(Job $job, \Throwable $exception, bool $internal)
+    protected function failedJob(Job $job, \Throwable $exception, bool $internal): void
     {
         if ($this->logger) {
             $context = [
@@ -169,7 +170,10 @@ class JobExecutor
             $this->eventDispatcher->dispatch(self::JOB_FAILED_EVENT, new FailedJobEvent($job, $exception, $internal));
         }
         if ($this->triggerBatchEvents) {
-            $this->finishBatch([], [], [$job]);
+            $batch = new JobBatch([$job]);
+            $batch->next();
+            $batch->result($exception);
+            $this->finishBatch($batch);
         }
     }
 }

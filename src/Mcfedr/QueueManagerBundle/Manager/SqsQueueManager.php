@@ -27,9 +27,9 @@ class SqsQueueManager implements QueueManager
 
     public function put(string $name, array $arguments = [], array $options = []): Job
     {
-        if (array_key_exists('url', $options)) {
+        if (\array_key_exists('url', $options)) {
             $url = $options['url'];
-        } elseif (array_key_exists('queue', $options)) {
+        } elseif (\array_key_exists('queue', $options)) {
             $url = $this->queues[$options['queue']];
         } else {
             $url = $this->defaultUrl;

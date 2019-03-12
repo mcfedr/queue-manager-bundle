@@ -11,7 +11,10 @@ use Mcfedr\QueueManagerBundle\Queue\SqsJob;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class SqsQueueManagerTest extends TestCase
+/**
+ * @internal
+ */
+final class SqsQueueManagerTest extends TestCase
 {
     /**
      * @var SqsQueueManager
@@ -19,17 +22,18 @@ class SqsQueueManagerTest extends TestCase
     private $manager;
 
     /**
-     * @var SqsClient|MockObject
+     * @var MockObject|SqsClient
      */
     private $sqsClient;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->sqsClient = $this
             ->getMockBuilder(SqsClient::class)
             ->disableOriginalConstructor()
             ->setMethods(['sendMessage'])
-            ->getMock();
+            ->getMock()
+        ;
 
         $this->manager = new SqsQueueManager($this->sqsClient, [
             'default_url' => 'http://sqs.com',
@@ -45,11 +49,12 @@ class SqsQueueManagerTest extends TestCase
             ->with([
                 'QueueUrl' => 'http://sqs.com',
                 'MessageBody' => '{"name":"test_worker","arguments":[],"retryCount":0,"visibilityTimeout":null}',
-            ]);
+            ])
+        ;
 
         $job = $this->manager->put('test_worker');
 
-        $this->assertEquals('test_worker', $job->getName());
+        $this->assertSame('test_worker', $job->getName());
     }
 
     /**
