@@ -9,3 +9,8 @@ parameters:
     paths:
         - src/
         - tests/
+    ignoreErrors:
+        -
+            message: '#Class Symfony\\Component\\Config\\Definition\\Builder\\TreeBuilder does not have a constructor and must be instantiated without any parameters#'
+            path: %rootDir%/../../../src/Mcfedr/QueueManagerBundle/DependencyInjection/Configuration.php
+    reportUnmatchedIgnoredErrors: false

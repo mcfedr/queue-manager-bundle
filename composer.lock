@@ -1190,7 +1190,7 @@
                 },
                 {
                     "name": "Gert de Pagter",
-                    "email": "BackEndTea@gmail.com"
+                    "email": "backendtea@gmail.com"
                 }
             ],
             "description": "Symfony polyfill for ctype functions",
@@ -1476,16 +1476,16 @@
     "packages-dev": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.89.1",
+            "version": "3.90.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "9b085dff6b07eac417caef8cb6d26b471cde9a23"
+                "reference": "c4e20a477f2ec8c880a9821f9e81641b8e3bb696"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/9b085dff6b07eac417caef8cb6d26b471cde9a23",
-                "reference": "9b085dff6b07eac417caef8cb6d26b471cde9a23",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c4e20a477f2ec8c880a9821f9e81641b8e3bb696",
+                "reference": "c4e20a477f2ec8c880a9821f9e81641b8e3bb696",
                 "shasum": ""
             },
             "require": {
@@ -1554,7 +1554,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2019-03-08T19:15:34+00:00"
+            "time": "2019-03-11T18:09:51+00:00"
         },
         {
             "name": "composer/semver",
@@ -4496,16 +4496,16 @@
         },
         {
             "name": "phpstan/phpstan-doctrine",
-            "version": "0.11.1",
+            "version": "0.11.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-doctrine.git",
-                "reference": "977df27bbd8b0c1de02f70b3086f057bf500a941"
+                "reference": "f7ce9844788ff131bfb76d379d940617188b8239"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-doctrine/zipball/977df27bbd8b0c1de02f70b3086f057bf500a941",
-                "reference": "977df27bbd8b0c1de02f70b3086f057bf500a941",
+                "url": "https://api.github.com/repos/phpstan/phpstan-doctrine/zipball/f7ce9844788ff131bfb76d379d940617188b8239",
+                "reference": "f7ce9844788ff131bfb76d379d940617188b8239",
                 "shasum": ""
             },
             "require": {
@@ -4550,7 +4550,7 @@
                 "MIT"
             ],
             "description": "Doctrine extensions for PHPStan",
-            "time": "2019-02-13T13:06:29+00:00"
+            "time": "2019-03-11T11:44:21+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
