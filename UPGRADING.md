@@ -14,6 +14,9 @@ manually.
 
 1. The method `Worker::execute` now has a `void` return type.
 
+1. Replace references to `Mcfedr\DoctrineDelayQueueDriverBundle\Entity\DoctrineDelayJob`
+with `Mcfedr\QueueManagerBundle\Entity\DoctrineDelayJob`
+
 ## Driver implementation
 
 If you have a custom (non `mcfedr/`) queue driver you will need to update it.
