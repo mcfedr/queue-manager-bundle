@@ -8,6 +8,8 @@ use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Mcfedr\QueueManagerBundle\Entity\DoctrineDelayJob;
+use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
+use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Manager\DoctrineDelayQueueManager;
 use Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry;
 use Mcfedr\QueueManagerBundle\Queue\Job;
@@ -208,19 +210,16 @@ final class DoctrineDelayQueueManagerTest extends TestCase
         $this->manager->delete($toDelete);
     }
 
-    /**
-     * @expectedException \Mcfedr\QueueManagerBundle\Exception\WrongJobException
-     */
     public function testDeleteOther(): void
     {
+        $this->expectException(WrongJobException::class);
         $this->manager->delete($this->getMockBuilder(Job::class)->getMock());
     }
 
-    /**
-     * @expectedException \Mcfedr\QueueManagerBundle\Exception\NoSuchJobException
-     */
     public function testNonPersisted(): void
     {
+        $this->expectException(NoSuchJobException::class);
+
         $toDelete = new DoctrineDelayJob('test_worker', [], [], 'default', new \DateTime());
 
         $this->manager->delete($toDelete);

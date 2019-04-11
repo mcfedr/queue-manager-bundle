@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Mcfedr\QueueManagerBundle\Tests\Manager;
 
 use Aws\Sqs\SqsClient;
+use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
+use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Manager\SqsQueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\SqsJob;
@@ -57,19 +59,15 @@ final class SqsQueueManagerTest extends TestCase
         $this->assertSame('test_worker', $job->getName());
     }
 
-    /**
-     * @expectedException \Mcfedr\QueueManagerBundle\Exception\NoSuchJobException
-     */
     public function testDelete(): void
     {
+        $this->expectException(NoSuchJobException::class);
         $this->manager->delete(new SqsJob('test_worker', [], 0, 'queue.com', null, 0));
     }
 
-    /**
-     * @expectedException \Mcfedr\QueueManagerBundle\Exception\WrongJobException
-     */
     public function testDeleteOther(): void
     {
+        $this->expectException(WrongJobException::class);
         $this->manager->delete($this->getMockBuilder(Job::class)->getMock());
     }
 }

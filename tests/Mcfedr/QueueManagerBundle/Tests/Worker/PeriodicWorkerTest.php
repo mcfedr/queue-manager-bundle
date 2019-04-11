@@ -145,11 +145,9 @@ final class PeriodicWorkerTest extends TestCase
         ]);
     }
 
-    /**
-     * @expectedException \Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException
-     */
     public function testExecuteThrows(): void
     {
+        $this->expectException(UnrecoverableJobException::class);
         $this->executor->expects($this->once())
             ->method('executeJob')
             ->with($this->callback(function ($job) {
