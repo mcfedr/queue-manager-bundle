@@ -48,7 +48,7 @@ class DoctrineDelayJob implements RetryableJob
     private $options;
 
     /**
-     * @var string
+     * @var ?string
      *
      * @ORM\Column(type="string", length=255, nullable=true)
      */
@@ -82,7 +82,7 @@ class DoctrineDelayJob implements RetryableJob
      */
     private $retryCount;
 
-    public function __construct(string $name, array $arguments, array $options, string $manager, \DateTime $time, int $retryCount = 0)
+    public function __construct(string $name, array $arguments, array $options, ?string $manager, \DateTime $time, int $retryCount = 0)
     {
         $this->name = $name;
         $this->arguments = $arguments;
@@ -113,7 +113,7 @@ class DoctrineDelayJob implements RetryableJob
         return $this->options;
     }
 
-    public function getManager(): string
+    public function getManager(): ?string
     {
         return $this->manager;
     }

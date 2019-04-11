@@ -1,5 +1,9 @@
 # Changelog
 
+### 6.1.1
+
+- Fix DoctrineDelayJob constructor should take optional manager
+
 ### 6.1.0
 
 - Considering 6.0 a broken release
