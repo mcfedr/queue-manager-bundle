@@ -92,9 +92,11 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
                 $em->rollback();
 
                 // Just return an empty batch so that the runner sleeps
-                $this->logger->warning('Deadlock trying to lock table', [
-                    'exception' => $e,
-                ]);
+                if ($this->logger) {
+                    $this->logger->warning('Deadlock trying to lock table', [
+                        'exception' => $e,
+                    ]);
+                }
             }
         }
 
