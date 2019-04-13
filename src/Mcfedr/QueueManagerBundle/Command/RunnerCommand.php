@@ -220,19 +220,19 @@ abstract class RunnerCommand extends Command
             $finder = new PhpExecutableFinder();
             $php = $finder->find();
 
-            $commandLine = "${php} {$_SERVER['argv'][0]}  {$this->getName()}";
+            $commandLine = [$php, $_SERVER['argv'][0], $this->getName()];
             $input->setOption('limit', '1');
             $input->setOption('no-interaction', true);
             $input->setOption('no-ansi', true);
 
             foreach ($input->getOptions() as $key => $option) {
                 if (true === $option) {
-                    $commandLine .= " --${key}";
+                    $commandLine[] = "--${key}";
 
                     continue;
                 }
                 if (false !== $option && null !== $option) {
-                    $commandLine .= " --${key}=${option}";
+                    $commandLine[] = "--${key}=${option}";
                 }
             }
             $process = new Process($commandLine);
