@@ -53,7 +53,7 @@ class BeanstalkQueueManager implements QueueManager
         }
 
         try {
-            $this->pheanstalk->delete($job->getId());
+            $this->pheanstalk->delete(new \Pheanstalk\Job($job->getId(), ''));
         } catch (ServerException $e) {
             throw new NoSuchJobException('Error deleting job', 0, $e);
         }
