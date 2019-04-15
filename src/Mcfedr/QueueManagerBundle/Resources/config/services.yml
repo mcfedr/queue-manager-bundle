@@ -1,5 +1,6 @@
 parameters:
     mcfedr_queue_manager.default_manager: 'default'
+    mcfedr_queue_manager.manager_ids: []
 
 services:
     Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry:
@@ -8,6 +9,7 @@ services:
         autoconfigure: true
         bind:
             $defaultManager: '%mcfedr_queue_manager.default_manager%'
+            $managerIds: '%mcfedr_queue_manager.manager_ids%'
 
     mcfedr_queue_manager.registry:
         alias: Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\Manager;
 
+use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Psr\Container\ContainerInterface;
 
@@ -19,10 +20,16 @@ class QueueManagerRegistry
      */
     private $defaultManager;
 
-    public function __construct(ContainerInterface $queueManagers, string $defaultManager)
+    /**
+     * @var string[]
+     */
+    private $managerIds;
+
+    public function __construct(ContainerInterface $queueManagers, string $defaultManager, array $managerIds)
     {
         $this->queueManagers = $queueManagers;
         $this->defaultManager = $defaultManager;
+        $this->managerIds = $managerIds;
     }
 
     public function put(string $name, array $arguments = [], array $options = [], ?string $manager = null): Job
@@ -32,6 +39,21 @@ class QueueManagerRegistry
 
     public function delete(Job $job, ?string $manager = null): void
     {
-        $this->queueManagers->get($manager ?: $this->defaultManager)->delete($job);
+        if ($manager) {
+            $this->queueManagers->get($manager)->delete($job);
+
+            return;
+        }
+
+        foreach ($this->managerIds as $id) {
+            try {
+                $this->queueManagers->get($id)->delete($job);
+
+                return;
+            } catch (WrongJobException $e) {
+            }
+        }
+
+        throw new WrongJobException('Cannot find a manager able to delete this job');
     }
 }
