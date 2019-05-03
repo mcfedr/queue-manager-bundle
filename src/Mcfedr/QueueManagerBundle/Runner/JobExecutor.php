@@ -88,6 +88,13 @@ class JobExecutor
 
         $internal = false;
 
+        if ($this->logger) {
+            $this->logger->debug('Start a job.', [
+                'name' => $job->getName(),
+                'arguments' => $job->getArguments(),
+            ]);
+        }
+
         try {
             $worker = $this->workersMap->get($job->getName());
             if (!$worker instanceof Worker) {
@@ -135,7 +142,7 @@ class JobExecutor
     protected function finishJob(Job $job, bool $internal): void
     {
         if ($this->logger) {
-            $this->logger->debug('Finished a job', [
+            $this->logger->info('Finished a job.', [
                 'name' => $job->getName(),
                 'arguments' => $job->getArguments(),
             ]);
@@ -164,7 +171,7 @@ class JobExecutor
             if (($p = $exception->getPrevious())) {
                 $context['cause'] = $p->getMessage();
             }
-            $this->logger->error('Job failed', $context);
+            $this->logger->error('Job failed.', $context);
         }
         if ($this->eventDispatcher) {
             $this->eventDispatcher->dispatch(self::JOB_FAILED_EVENT, new FailedJobEvent($job, $exception, $internal));

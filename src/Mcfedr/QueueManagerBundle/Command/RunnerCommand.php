@@ -110,7 +110,7 @@ abstract class RunnerCommand extends Command
         if (\function_exists('pcntl_signal')) {
             $handle = function ($sig) use (&$running): void {
                 if ($this->logger) {
-                    $this->logger->debug("Received signal (${sig}), stopping...");
+                    $this->logger->notice("Received signal (${sig}), stopping.");
                 }
                 $running = false;
             };
@@ -152,7 +152,7 @@ abstract class RunnerCommand extends Command
                 $this->jobExecutor->finishBatch($this->jobs);
             } else {
                 if ($this->logger) {
-                    $this->logger->debug('No jobs, sleeping...', [
+                    $this->logger->notice('No jobs available, sleeping.', [
                         'sleepSeconds' => $this->sleepSeconds,
                     ]);
                 }
@@ -160,7 +160,7 @@ abstract class RunnerCommand extends Command
             }
         } catch (UnexpectedJobDataException $e) {
             if ($this->logger) {
-                $this->logger->warning('Found unexpected job data in the queue', [
+                $this->logger->error('Found unexpected job data in the queue.', [
                     'message' => $e->getMessage(),
                 ]);
             }

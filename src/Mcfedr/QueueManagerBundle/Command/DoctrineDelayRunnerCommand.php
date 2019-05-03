@@ -93,7 +93,7 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
 
                 // Just return an empty batch so that the runner sleeps
                 if ($this->logger) {
-                    $this->logger->warning('Deadlock trying to lock table', [
+                    $this->logger->warning('Deadlock trying to lock table.', [
                         'exception' => $e,
                     ]);
                 }
