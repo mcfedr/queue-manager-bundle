@@ -7,7 +7,7 @@ namespace Mcfedr\QueueManagerBundle\Queue;
 use Mcfedr\QueueManagerBundle\Entity\DoctrineDelayJob;
 use Mcfedr\QueueManagerBundle\Worker\DoctrineDelayWorker;
 
-class WorkerJob implements RetryableJob
+class DoctrineDelayWorkerJob implements RetryableJob
 {
     /**
      * @var DoctrineDelayJob
