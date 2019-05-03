@@ -45,9 +45,9 @@ class MemoryReportSubscriber implements EventSubscriberInterface
 
     private function report(): void
     {
-        $this->logger->info('Memory after job', [
-            'usage KB:' => round(memory_get_usage(true) / 1024),
-            'peak KB:' => round(memory_get_peak_usage(true) / 1024),
+        $this->logger->info('Memory after job.', [
+            'usage_bytes' => memory_get_usage(true),
+            'peak_bytes' => memory_get_peak_usage(true),
         ]);
     }
 }

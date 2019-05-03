@@ -1,5 +1,9 @@
 # Changelog
 
+### 6.2.0
+
+- Changes log levels
+
 ### 6.1.2
 
 - Fix delete job and not pass manager, will try to delete it using all the managers

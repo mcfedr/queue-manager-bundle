@@ -237,7 +237,7 @@ class SqsRunnerCommand extends RunnerCommand
             if ($exception) {
                 if (\count($jobs)) {
                     if ($this->logger) {
-                        $this->logger->warning('Found unexpected job data in the queue', [
+                        $this->logger->error('Found unexpected job data in the queue.', [
                             'message' => $exception->getMessage(),
                         ]);
                     }

@@ -10,9 +10,9 @@ use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Types\Type;
 use Mcfedr\QueueManagerBundle\Entity\DoctrineDelayJob;
 use Mcfedr\QueueManagerBundle\Manager\DoctrineDelayTrait;
+use Mcfedr\QueueManagerBundle\Queue\DoctrineDelayWorkerJob;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\JobBatch;
-use Mcfedr\QueueManagerBundle\Queue\WorkerJob;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputInterface;
@@ -84,7 +84,7 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
 
             if (\count($jobs)) {
                 return new JobBatch(array_map(function (DoctrineDelayJob $job) {
-                    return new WorkerJob($job);
+                    return new DoctrineDelayWorkerJob($job);
                 }, $jobs));
             }
         } catch (DriverException $e) {
@@ -93,7 +93,7 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
 
                 // Just return an empty batch so that the runner sleeps
                 if ($this->logger) {
-                    $this->logger->warning('Deadlock trying to lock table', [
+                    $this->logger->warning('Deadlock trying to lock table.', [
                         'exception' => $e,
                     ]);
                 }
@@ -109,7 +109,7 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
         if (\count($retryJobs)) {
             $em = $this->getEntityManager();
 
-            /** @var WorkerJob $job */
+            /** @var DoctrineDelayWorkerJob $job */
             foreach ($retryJobs as $job) {
                 $oldJob = $job->getDelayJob();
                 $retryCount = $oldJob->getRetryCount() + 1;
@@ -131,7 +131,7 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
         if (\count($remainingJobs)) {
             $em = $this->getEntityManager();
 
-            /** @var WorkerJob $job */
+            /** @var DoctrineDelayWorkerJob $job */
             foreach ($remainingJobs as $job) {
                 $oldJob = $job->getDelayJob();
                 $newJob = new DoctrineDelayJob(
