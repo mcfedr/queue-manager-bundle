@@ -12,6 +12,10 @@ use Mcfedr\QueueManagerBundle\Queue\JobBatch;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
 use Mcfedr\QueueManagerBundle\Queue\Worker;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
+use Mcfedr\QueueManagerBundle\Event\FinishedJobBatchEvent;
+use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
+use Mcfedr\QueueManagerBundle\Event\StartJobBatchEvent;
+use Mcfedr\QueueManagerBundle\Event\StartJobEvent;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
@@ -240,12 +244,12 @@ final class RunnerCommandTest extends TestCase
         $eventDispatcher->expects($this->exactly(6))
             ->method('dispatch')
             ->withConsecutive(
-                [JobExecutor::JOB_BATCH_START_EVENT],
-                [JobExecutor::JOB_START_EVENT],
-                [JobExecutor::JOB_FINISHED_EVENT],
-                [JobExecutor::JOB_START_EVENT],
-                [JobExecutor::JOB_FINISHED_EVENT],
-                [JobExecutor::JOB_BATCH_FINISHED_EVENT]
+                [$this->isInstanceOf(StartJobBatchEvent::class), JobExecutor::JOB_BATCH_START_EVENT],
+                [$this->isInstanceOf(StartJobEvent::class), JobExecutor::JOB_START_EVENT],
+                [$this->isInstanceOf(FinishedJobEvent::class), JobExecutor::JOB_FINISHED_EVENT],
+                [$this->isInstanceOf(StartJobEvent::class), JobExecutor::JOB_START_EVENT],
+                [$this->isInstanceOf(FinishedJobEvent::class), JobExecutor::JOB_FINISHED_EVENT],
+                [$this->isInstanceOf(FinishedJobBatchEvent::class), JobExecutor::JOB_BATCH_FINISHED_EVENT]
             )
         ;
 
