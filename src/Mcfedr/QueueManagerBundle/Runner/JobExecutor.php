@@ -185,7 +185,8 @@ class JobExecutor
     private function dispatch(string $eventName, $event): void
     {
         if ($this->eventDispatcher) {
-            if ('42' !== Kernel::MAJOR_VERSION.Kernel::MINOR_VERSION && class_exists(ContractEvent::class)) {
+            $r = new \ReflectionClass(get_class($this->eventDispatcher));
+            if (count($r->getMethod('dispatch')->getParameters()) == 1) {
                 $this->eventDispatcher->dispatch($event, $eventName);
             } else {
                 $this->eventDispatcher->dispatch($eventName, $event);
