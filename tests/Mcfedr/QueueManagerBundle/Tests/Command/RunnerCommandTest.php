@@ -23,6 +23,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Contracts\EventDispatcher\Event as ContractEvent;
 
 /**
  * @internal
@@ -241,17 +243,31 @@ final class RunnerCommandTest extends TestCase
             ->getMock()
         ;
 
-        $eventDispatcher->expects($this->exactly(6))
-            ->method('dispatch')
-            ->withConsecutive(
-                [$this->isInstanceOf(StartJobBatchEvent::class), JobExecutor::JOB_BATCH_START_EVENT],
-                [$this->isInstanceOf(StartJobEvent::class), JobExecutor::JOB_START_EVENT],
-                [$this->isInstanceOf(FinishedJobEvent::class), JobExecutor::JOB_FINISHED_EVENT],
-                [$this->isInstanceOf(StartJobEvent::class), JobExecutor::JOB_START_EVENT],
-                [$this->isInstanceOf(FinishedJobEvent::class), JobExecutor::JOB_FINISHED_EVENT],
-                [$this->isInstanceOf(FinishedJobBatchEvent::class), JobExecutor::JOB_BATCH_FINISHED_EVENT]
-            )
-        ;
+        if ('42' !== Kernel::MAJOR_VERSION.Kernel::MINOR_VERSION && class_exists(ContractEvent::class)) {
+            $eventDispatcher->expects($this->exactly(6))
+                ->method('dispatch')
+                ->withConsecutive(
+                    [$this->isInstanceOf(StartJobBatchEvent::class), JobExecutor::JOB_BATCH_START_EVENT],
+                    [$this->isInstanceOf(StartJobEvent::class), JobExecutor::JOB_START_EVENT],
+                    [$this->isInstanceOf(FinishedJobEvent::class), JobExecutor::JOB_FINISHED_EVENT],
+                    [$this->isInstanceOf(StartJobEvent::class), JobExecutor::JOB_START_EVENT],
+                    [$this->isInstanceOf(FinishedJobEvent::class), JobExecutor::JOB_FINISHED_EVENT],
+                    [$this->isInstanceOf(FinishedJobBatchEvent::class), JobExecutor::JOB_BATCH_FINISHED_EVENT]
+                )
+            ;
+        } else {
+            $eventDispatcher->expects($this->exactly(6))
+                ->method('dispatch')
+                ->withConsecutive(
+                    [$this->isInstanceOf(JobExecutor::JOB_BATCH_START_EVENT, StartJobBatchEvent::class)],
+                    [$this->isInstanceOf(JobExecutor::JOB_START_EVENT, StartJobEvent::class)],
+                    [$this->isInstanceOf(JobExecutor::JOB_FINISHED_EVENT, FinishedJobEvent::class)],
+                    [$this->isInstanceOf(JobExecutor::JOB_START_EVENT, StartJobEvent::class)],
+                    [$this->isInstanceOf(JobExecutor::JOB_FINISHED_EVENT, FinishedJobEvent::class)],
+                    [$this->isInstanceOf(JobExecutor::JOB_BATCH_FINISHED_EVENT, FinishedJobBatchEvent::class)]
+                )
+            ;
+        }
 
         $methods = ['getJobs', 'finishJobs'];
         $command = $this->getMockCommand($methods, new JobBatch($jobs), $this->getJobExecutor($worker, $eventDispatcher));
