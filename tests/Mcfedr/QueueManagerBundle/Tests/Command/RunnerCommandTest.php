@@ -259,12 +259,12 @@ final class RunnerCommandTest extends TestCase
             $eventDispatcher->expects($this->exactly(6))
                 ->method('dispatch')
                 ->withConsecutive(
-                    [$this->isInstanceOf(JobExecutor::JOB_BATCH_START_EVENT, StartJobBatchEvent::class)],
-                    [$this->isInstanceOf(JobExecutor::JOB_START_EVENT, StartJobEvent::class)],
-                    [$this->isInstanceOf(JobExecutor::JOB_FINISHED_EVENT, FinishedJobEvent::class)],
-                    [$this->isInstanceOf(JobExecutor::JOB_START_EVENT, StartJobEvent::class)],
-                    [$this->isInstanceOf(JobExecutor::JOB_FINISHED_EVENT, FinishedJobEvent::class)],
-                    [$this->isInstanceOf(JobExecutor::JOB_BATCH_FINISHED_EVENT, FinishedJobBatchEvent::class)]
+                    [JobExecutor::JOB_BATCH_START_EVENT, $this->isInstanceOf(StartJobBatchEvent::class)],
+                    [JobExecutor::JOB_START_EVENT, $this->isInstanceOf(StartJobEvent::class)],
+                    [JobExecutor::JOB_FINISHED_EVENT, $this->isInstanceOf(FinishedJobEvent::class)],
+                    [JobExecutor::JOB_START_EVENT, $this->isInstanceOf(StartJobEvent::class)],
+                    [JobExecutor::JOB_FINISHED_EVENT, $this->isInstanceOf(FinishedJobEvent::class)],
+                    [JobExecutor::JOB_BATCH_FINISHED_EVENT, $this->isInstanceOf(FinishedJobBatchEvent::class)]
                 )
             ;
         }
