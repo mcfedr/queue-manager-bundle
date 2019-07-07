@@ -23,8 +23,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\HttpKernel\Kernel;
-use Symfony\Contracts\EventDispatcher\Event as ContractEvent;
 
 /**
  * @internal
@@ -243,7 +241,8 @@ final class RunnerCommandTest extends TestCase
             ->getMock()
         ;
 
-        if ('42' !== Kernel::MAJOR_VERSION.Kernel::MINOR_VERSION && class_exists(ContractEvent::class)) {
+        $r = new \ReflectionClass(EventDispatcher::class);
+        if (count($r->getMethod('dispatch')->getParameters()) == 1) {
             $eventDispatcher->expects($this->exactly(6))
                 ->method('dispatch')
                 ->withConsecutive(
