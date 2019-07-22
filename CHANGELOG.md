@@ -1,5 +1,10 @@
 # Changelog
 
+### 6.3.0
+
+- Increased reserved memory
+- Throw when job batch used incorrectly
+
 ### 6.2.0
 
 - Changes log levels
