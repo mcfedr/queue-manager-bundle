@@ -55,9 +55,9 @@ final class PeriodicWorkerTest extends TestCase
 
     public function testExecute(): void
     {
-        $this->executor->expects($this->once())
+        $this->executor->expects(static::once())
             ->method('executeJob')
-            ->with($this->callback(function ($job) {
+            ->with(static::callback(function ($job) {
                 if (!$job instanceof Job) {
                     return false;
                 }
@@ -78,11 +78,11 @@ final class PeriodicWorkerTest extends TestCase
             }))
         ;
 
-        $this->registry->expects($this->once())
+        $this->registry->expects(static::once())
             ->method('put')
             ->withConsecutive([
                 PeriodicWorker::class,
-                $this->callback(function ($arguments) {
+                static::callback(function ($arguments) {
                     $this->assertCount(6, $arguments);
                     $this->assertArrayHasKey('name', $arguments);
                     $this->assertSame('test_worker', $arguments['name']);
@@ -110,7 +110,7 @@ final class PeriodicWorkerTest extends TestCase
 
                     return true;
                 }),
-                $this->callback(function ($options) {
+                static::callback(function ($options) {
                     if (!\is_array($options)) {
                         return false;
                     }
@@ -148,9 +148,9 @@ final class PeriodicWorkerTest extends TestCase
     public function testExecuteThrows(): void
     {
         $this->expectException(UnrecoverableJobException::class);
-        $this->executor->expects($this->once())
+        $this->executor->expects(static::once())
             ->method('executeJob')
-            ->with($this->callback(function ($job) {
+            ->with(static::callback(function ($job) {
                 if (!$job instanceof Job) {
                     return false;
                 }
@@ -172,7 +172,7 @@ final class PeriodicWorkerTest extends TestCase
             ->willThrowException(new UnrecoverableJobException('Fail'))
         ;
 
-        $this->registry->expects($this->never())
+        $this->registry->expects(static::never())
             ->method('put')
         ;
 
@@ -200,13 +200,13 @@ final class PeriodicWorkerTest extends TestCase
     {
         Carbon::setTestNow(Carbon::now());
         [$startOfNextPeriod, $endOfNextPeriod] = PeriodicWorker::nextPeriod($length);
-        $start = new Carbon("@${startOfNextPeriod}");
-        $end = new Carbon("@${endOfNextPeriod}");
+        $start = new Carbon("@{$startOfNextPeriod}");
+        $end = new Carbon("@{$endOfNextPeriod}");
 
         $test = PeriodicWorker::nextRun($length);
 
-        $this->assertGreaterThanOrEqual($start, $test);
-        $this->assertLessThanOrEqual($end, $test);
+        static::assertGreaterThanOrEqual($start, $test);
+        static::assertLessThanOrEqual($end, $test);
     }
 
     /**
@@ -220,22 +220,22 @@ final class PeriodicWorkerTest extends TestCase
 
         [$startOfNextPeriod, $endOfNextPeriod] = PeriodicWorker::nextPeriod($length);
 
-        $this->assertSame($time + 1, $startOfNextPeriod);
-        $this->assertSame($time + $length, $endOfNextPeriod);
+        static::assertSame($time + 1, $startOfNextPeriod);
+        static::assertSame($time + $length, $endOfNextPeriod);
 
         Carbon::setTestNow(Carbon::createFromTimestamp($time + 1));
 
         [$startOfNextPeriod, $endOfNextPeriod] = PeriodicWorker::nextPeriod($length);
 
-        $this->assertSame($time + $length + 1, $startOfNextPeriod);
-        $this->assertSame($time + $length + $length, $endOfNextPeriod);
+        static::assertSame($time + $length + 1, $startOfNextPeriod);
+        static::assertSame($time + $length + $length, $endOfNextPeriod);
 
         Carbon::setTestNow(Carbon::createFromTimestamp($time + 15));
 
         [$startOfNextPeriod, $endOfNextPeriod] = PeriodicWorker::nextPeriod($length);
 
-        $this->assertSame($time + $length + 1, $startOfNextPeriod);
-        $this->assertSame($time + $length + $length, $endOfNextPeriod);
+        static::assertSame($time + $length + 1, $startOfNextPeriod);
+        static::assertSame($time + $length + $length, $endOfNextPeriod);
     }
 
     public function length()

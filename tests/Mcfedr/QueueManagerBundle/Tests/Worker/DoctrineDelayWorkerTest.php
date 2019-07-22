@@ -41,7 +41,7 @@ final class DoctrineDelayWorkerTest extends TestCase
 
     public function testExecute(): void
     {
-        $this->queueManagerRegistry->expects($this->once())->method('put')->with('name', ['args'], ['options'], 'manager');
+        $this->queueManagerRegistry->expects(static::once())->method('put')->with('name', ['args'], ['options'], 'manager');
 
         $this->doctrineDelayWorker->execute(['job' => new DoctrineDelayJob('name', ['args'], ['options'], 'manager', new Carbon())]);
     }

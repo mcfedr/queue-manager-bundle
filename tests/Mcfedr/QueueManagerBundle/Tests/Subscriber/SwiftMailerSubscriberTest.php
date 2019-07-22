@@ -24,7 +24,7 @@ final class SwiftMailerSubscriberTest extends TestCase
             ->getMock()
         ;
 
-        $listener->expects($this->exactly(2))->method('onTerminate');
+        $listener->expects(static::exactly(2))->method('onTerminate');
 
         $jobEvent = $this->getMockBuilder(FailedJobEvent::class)->disableOriginalConstructor()->getMock();
         $listener->onJobFailed($jobEvent);
@@ -43,7 +43,7 @@ final class SwiftMailerSubscriberTest extends TestCase
             ->getMock()
         ;
 
-        $listener->expects($this->exactly(2))->method('onTerminate');
+        $listener->expects(static::exactly(2))->method('onTerminate');
 
         $jobEvent = $this->getMockBuilder(FinishedJobEvent::class)->disableOriginalConstructor()->getMock();
         $listener->onJobFinished($jobEvent);

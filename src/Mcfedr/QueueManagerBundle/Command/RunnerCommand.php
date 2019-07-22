@@ -106,11 +106,12 @@ abstract class RunnerCommand extends Command
         $limit = (int) $input->getOption('limit');
         $ignoreLimit = 0 === $limit;
         $running = true;
+        $isolation = $input->getOption('process-isolation');
 
         if (\function_exists('pcntl_signal')) {
             $handle = function ($sig) use (&$running): void {
                 if ($this->logger) {
-                    $this->logger->notice("Received signal (${sig}), stopping.");
+                    $this->logger->notice("Received signal ({$sig}), stopping.");
                 }
                 $running = false;
             };
@@ -118,17 +119,18 @@ abstract class RunnerCommand extends Command
             pcntl_signal(SIGINT, $handle);
         }
 
-        $this->reservedMemory = str_repeat('x', 1024 * 10);
+        // Reserve 2MB
+        $this->reservedMemory = str_repeat('x', 1024 * 1024 * 2);
         register_shutdown_function([$this, 'shutdown']);
 
         do {
-            if ($input->getOption('process-isolation')) {
+            if ($isolation) {
                 $this->executeBatchWithProcess($input, $output);
             } else {
                 $this->executeBatch();
             }
 
-            if (\function_exists('pcntl_signal')) {
+            if (\function_exists('pcntl_signal_dispatch')) {
                 pcntl_signal_dispatch();
             }
 
@@ -169,10 +171,9 @@ abstract class RunnerCommand extends Command
 
     protected function executeBatchWithProcess(InputInterface $input, OutputInterface $output): void
     {
-        /** @var Process $process */
         $process = $this->getProcess($input);
 
-        $process->mustRun(function ($type, $data) use ($output): void {
+        $process->run(function ($type, $data) use ($output): void {
             $output->write($data);
         });
     }
@@ -220,19 +221,25 @@ abstract class RunnerCommand extends Command
             $finder = new PhpExecutableFinder();
             $php = $finder->find();
 
-            $commandLine = [$php, $_SERVER['argv'][0], $this->getName()];
-            $input->setOption('limit', '1');
-            $input->setOption('no-interaction', true);
-            $input->setOption('no-ansi', true);
-
+            $commandLine = [
+                $php,
+                $_SERVER['argv'][0],
+                $this->getName(),
+                '--limit=1',
+                '--no-interaction',
+                '--no-ansi',
+            ];
             foreach ($input->getOptions() as $key => $option) {
+                if (\in_array($key, ['process-isolation', 'limit', 'no-interaction', 'no-ansi'], true)) {
+                    continue;
+                }
                 if (true === $option) {
-                    $commandLine[] = "--${key}";
+                    $commandLine[] = "--{$key}";
 
                     continue;
                 }
                 if (false !== $option && null !== $option) {
-                    $commandLine[] = "--${key}=${option}";
+                    $commandLine[] = "--{$key}={$option}";
                 }
             }
             $process = new Process($commandLine);

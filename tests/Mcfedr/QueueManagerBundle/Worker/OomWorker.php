@@ -8,8 +8,15 @@ use Mcfedr\QueueManagerBundle\Queue\Worker;
 
 class OomWorker implements Worker
 {
+    private static $a = 0;
+
     public function execute(array $arguments): void
     {
+        ++self::$a;
+        if (isset($arguments['nth']) && self::$a < $arguments['nth']) {
+            return;
+        }
+
         $x = '';
         while (true) {
             $x .= str_repeat('x', 1024 * 10);

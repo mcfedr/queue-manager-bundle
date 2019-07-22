@@ -57,7 +57,7 @@ class JobBatch implements \Countable
     public function result(?\Throwable $result): void
     {
         if (!$this->currentJob) {
-            return;
+            throw new \LogicException('Tried to set a result when no current job');
         }
 
         if (!$result) {

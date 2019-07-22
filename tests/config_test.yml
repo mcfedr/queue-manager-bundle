@@ -22,20 +22,20 @@ mcfedr_queue_manager:
     drivers:
         test:
             class: Mcfedr\QueueManagerBundle\Driver\TestQueueManager
-            command_class: Mcfedr\QueueManagerBundle\Command\TestRunnerCommand
+            command_class: Mcfedr\QueueManagerBundle\RunnerCommand\TestRunnerCommand
             options:
                 host: 127.0.0.1
                 default_queue: mcfedr_queue
 
         test_retry:
             class: Mcfedr\QueueManagerBundle\Driver\TestRetryQueueManager
-            command_class: Mcfedr\QueueManagerBundle\Command\TestRunnerCommand
+            command_class: Mcfedr\QueueManagerBundle\RunnerCommand\TestRunnerCommand
             options:
                 host: 127.0.0.1
                 default_queue: mcfedr_queue
         oom:
             class: Mcfedr\QueueManagerBundle\Driver\TestQueueManager
-            command_class: Mcfedr\QueueManagerBundle\Command\OomRunnerCommand
+            command_class: Mcfedr\QueueManagerBundle\RunnerCommand\OomRunnerCommand
     managers:
         default:
             driver: test
@@ -66,6 +66,11 @@ mcfedr_queue_manager:
                 region: 'eu-west-1'
         oom:
             driver: oom
+        realsqs:
+            driver: sqs
+            options:
+                default_url: '%env(TEST_SQS_URL)%'
+                region: '%env(TEST_SQS_REGION)%'
 
 monolog:
     handlers:
@@ -98,19 +103,7 @@ services:
         arguments:
         - "@logger"
 
-    doctrine_test_create_fake_jobs:
-        class: Mcfedr\QueueManagerBundle\Command\CreateFakeJobsCommand
-        arguments:
-        - "@mcfedr_queue_manager.registry"
-        tags:
-        - { name: console.command }
-
-    test_periodic_distribution_command:
-        class: Mcfedr\QueueManagerBundle\Command\PeriodicDistributionCommand
-        tags:
-        - { name: console.command }
-
-    test_rand_add_distribution_command:
-        class: Mcfedr\QueueManagerBundle\Command\RandAddDistributionCommand
-        tags:
-        - { name: console.command }
+    Mcfedr\QueueManagerBundle\Command\:
+        resource: 'Mcfedr/QueueManagerBundle/Command/*'
+        autowire: true
+        autoconfigure: true

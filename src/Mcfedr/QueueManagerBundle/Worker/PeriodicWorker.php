@@ -57,7 +57,7 @@ class PeriodicWorker implements InternalWorker
         [$startOfNextPeriod, $endOfNextPeriod] = self::nextPeriod($periodLength);
         $time = random_int($startOfNextPeriod, $endOfNextPeriod);
 
-        return new Carbon("@${time}");
+        return new Carbon("@{$time}");
     }
 
     public static function nextPeriod(int $periodLength): array

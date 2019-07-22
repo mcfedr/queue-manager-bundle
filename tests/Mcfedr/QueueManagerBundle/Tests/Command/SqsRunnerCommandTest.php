@@ -57,7 +57,7 @@ final class SqsRunnerCommandTest extends TestCase
 
     public function testGetJobs(): void
     {
-        $this->sqsClient->expects($this->once())
+        $this->sqsClient->expects(static::once())
             ->method('receiveMessage')
             ->with([
                 'QueueUrl' => 'http://sqs.com',
@@ -91,30 +91,30 @@ final class SqsRunnerCommandTest extends TestCase
 
         $this->command->handleInput(new ArrayInput([], $this->command->getDefinition()));
         $batch = $this->command->getJobs();
-        $this->assertCount(2, $batch);
+        static::assertCount(2, $batch);
         $job = $batch->next();
-        $this->assertSame('job_name1', $job->getName());
-        $this->assertSame(['first1', 'second1'], $job->getArguments());
-        $this->assertInstanceOf(SqsJob::class, $job);
-        $this->assertSame('id1', $job->getId());
-        $this->assertSame('http://sqs.com', $job->getUrl());
-        $this->assertSame('handle1', $job->getReceiptHandle());
-        $this->assertNull($job->getVisibilityTimeout());
-        $this->assertSame(0, $job->getDelay());
+        static::assertSame('job_name1', $job->getName());
+        static::assertSame(['first1', 'second1'], $job->getArguments());
+        static::assertInstanceOf(SqsJob::class, $job);
+        static::assertSame('id1', $job->getId());
+        static::assertSame('http://sqs.com', $job->getUrl());
+        static::assertSame('handle1', $job->getReceiptHandle());
+        static::assertNull($job->getVisibilityTimeout());
+        static::assertSame(0, $job->getDelay());
         $job = $batch->next();
-        $this->assertSame('job_name2', $job->getName());
-        $this->assertSame(['first2', 'second2'], $job->getArguments());
-        $this->assertInstanceOf(SqsJob::class, $job);
-        $this->assertSame('id2', $job->getId());
-        $this->assertSame('http://sqs.com', $job->getUrl());
-        $this->assertSame('handle2', $job->getReceiptHandle());
-        $this->assertNull($job->getVisibilityTimeout());
-        $this->assertSame(0, $job->getDelay());
+        static::assertSame('job_name2', $job->getName());
+        static::assertSame(['first2', 'second2'], $job->getArguments());
+        static::assertInstanceOf(SqsJob::class, $job);
+        static::assertSame('id2', $job->getId());
+        static::assertSame('http://sqs.com', $job->getUrl());
+        static::assertSame('handle2', $job->getReceiptHandle());
+        static::assertNull($job->getVisibilityTimeout());
+        static::assertSame(0, $job->getDelay());
     }
 
     public function testGetJobsEmpty(): void
     {
-        $this->sqsClient->expects($this->once())
+        $this->sqsClient->expects(static::once())
             ->method('receiveMessage')
             ->with([
                 'QueueUrl' => 'http://sqs.com',
@@ -130,12 +130,12 @@ final class SqsRunnerCommandTest extends TestCase
 
         $this->command->handleInput(new ArrayInput([], $this->command->getDefinition()));
         $batch = $this->command->getJobs();
-        $this->assertNull($batch);
+        static::assertNull($batch);
     }
 
     public function testGetInvalid(): void
     {
-        $this->sqsClient->expects($this->once())
+        $this->sqsClient->expects(static::once())
             ->method('receiveMessage')
             ->with([
                 'QueueUrl' => 'http://sqs.com',
@@ -166,7 +166,7 @@ final class SqsRunnerCommandTest extends TestCase
             ])
         ;
 
-        $this->sqsClient->expects($this->once())
+        $this->sqsClient->expects(static::once())
             ->method('deleteMessageBatch')
             ->with([
                 'QueueUrl' => 'http://sqs.com',
@@ -181,21 +181,21 @@ final class SqsRunnerCommandTest extends TestCase
 
         $this->command->handleInput(new ArrayInput([], $this->command->getDefinition()));
         $batch = $this->command->getJobs();
-        $this->assertCount(1, $batch);
+        static::assertCount(1, $batch);
         $job = $batch->next();
-        $this->assertSame('job_name1', $job->getName());
-        $this->assertSame(['first1', 'second1'], $job->getArguments());
-        $this->assertInstanceOf(SqsJob::class, $job);
-        $this->assertSame('id1', $job->getId());
-        $this->assertSame('http://sqs.com', $job->getUrl());
-        $this->assertSame('handle1', $job->getReceiptHandle());
-        $this->assertNull($job->getVisibilityTimeout());
-        $this->assertSame(0, $job->getDelay());
+        static::assertSame('job_name1', $job->getName());
+        static::assertSame(['first1', 'second1'], $job->getArguments());
+        static::assertInstanceOf(SqsJob::class, $job);
+        static::assertSame('id1', $job->getId());
+        static::assertSame('http://sqs.com', $job->getUrl());
+        static::assertSame('handle1', $job->getReceiptHandle());
+        static::assertNull($job->getVisibilityTimeout());
+        static::assertSame(0, $job->getDelay());
     }
 
     public function testGetTimeout(): void
     {
-        $this->sqsClient->expects($this->once())
+        $this->sqsClient->expects(static::once())
             ->method('receiveMessage')
             ->with([
                 'QueueUrl' => 'http://sqs.com',
@@ -228,7 +228,7 @@ final class SqsRunnerCommandTest extends TestCase
             ])
         ;
 
-        $this->sqsClient->expects($this->once())
+        $this->sqsClient->expects(static::once())
             ->method('changeMessageVisibilityBatch')
             ->with([
                 'QueueUrl' => 'http://sqs.com',
@@ -244,30 +244,30 @@ final class SqsRunnerCommandTest extends TestCase
 
         $this->command->handleInput(new ArrayInput([], $this->command->getDefinition()));
         $batch = $this->command->getJobs();
-        $this->assertCount(2, $batch);
+        static::assertCount(2, $batch);
         $job = $batch->next();
-        $this->assertSame('job_name1', $job->getName());
-        $this->assertSame(['first1', 'second1'], $job->getArguments());
-        $this->assertInstanceOf(SqsJob::class, $job);
-        $this->assertSame('id1', $job->getId());
-        $this->assertSame('http://sqs.com', $job->getUrl());
-        $this->assertSame('handle1', $job->getReceiptHandle());
-        $this->assertNull($job->getVisibilityTimeout());
-        $this->assertSame(0, $job->getDelay());
+        static::assertSame('job_name1', $job->getName());
+        static::assertSame(['first1', 'second1'], $job->getArguments());
+        static::assertInstanceOf(SqsJob::class, $job);
+        static::assertSame('id1', $job->getId());
+        static::assertSame('http://sqs.com', $job->getUrl());
+        static::assertSame('handle1', $job->getReceiptHandle());
+        static::assertNull($job->getVisibilityTimeout());
+        static::assertSame(0, $job->getDelay());
         $job = $batch->next();
-        $this->assertSame('job_name2', $job->getName());
-        $this->assertSame(['first2', 'second2'], $job->getArguments());
-        $this->assertInstanceOf(SqsJob::class, $job);
-        $this->assertSame('id2', $job->getId());
-        $this->assertSame('http://sqs.com', $job->getUrl());
-        $this->assertSame('handle2', $job->getReceiptHandle());
-        $this->assertSame(60, $job->getVisibilityTimeout());
-        $this->assertSame(0, $job->getDelay());
+        static::assertSame('job_name2', $job->getName());
+        static::assertSame(['first2', 'second2'], $job->getArguments());
+        static::assertInstanceOf(SqsJob::class, $job);
+        static::assertSame('id2', $job->getId());
+        static::assertSame('http://sqs.com', $job->getUrl());
+        static::assertSame('handle2', $job->getReceiptHandle());
+        static::assertSame(60, $job->getVisibilityTimeout());
+        static::assertSame(0, $job->getDelay());
     }
 
     public function testFinishJobs(): void
     {
-        $this->sqsClient->expects($this->once())
+        $this->sqsClient->expects(static::once())
             ->method('deleteMessageBatch')
             ->with([
                 'QueueUrl' => 'http://sqs.com',
@@ -285,7 +285,7 @@ final class SqsRunnerCommandTest extends TestCase
 
     public function testFinishFailJobs(): void
     {
-        $this->sqsClient->expects($this->once())
+        $this->sqsClient->expects(static::once())
             ->method('deleteMessageBatch')
             ->with([
                 'QueueUrl' => 'http://sqs.com',
@@ -303,7 +303,7 @@ final class SqsRunnerCommandTest extends TestCase
 
     public function testFinishRetryJobs(): void
     {
-        $this->sqsClient->expects($this->once())
+        $this->sqsClient->expects(static::once())
             ->method('sendMessageBatch')
             ->with([
                 'QueueUrl' => 'http://sqs.com',
@@ -317,7 +317,7 @@ final class SqsRunnerCommandTest extends TestCase
             ])
         ;
 
-        $this->sqsClient->expects($this->once())
+        $this->sqsClient->expects(static::once())
             ->method('deleteMessageBatch')
             ->with([
                 'QueueUrl' => 'http://sqs.com',
@@ -335,7 +335,7 @@ final class SqsRunnerCommandTest extends TestCase
 
     public function testFinishLeftOverJobs(): void
     {
-        $this->sqsClient->expects($this->once())
+        $this->sqsClient->expects(static::once())
             ->method('changeMessageVisibilityBatch')
             ->with([
                 'QueueUrl' => 'http://sqs.com',

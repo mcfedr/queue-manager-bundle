@@ -12,6 +12,7 @@
     <php>
         <server name="KERNEL_DIR" value="tests" />
         <server name="KERNEL_CLASS" value="TestKernel" />
+        <env name="SYMFONY_DEPRECATIONS_HELPER" value="max[self]=3" />
     </php>
 
     <filter>

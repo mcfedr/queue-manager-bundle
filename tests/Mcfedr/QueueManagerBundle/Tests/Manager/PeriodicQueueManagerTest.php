@@ -46,11 +46,11 @@ final class PeriodicQueueManagerTest extends TestCase
     public function testPut(): void
     {
         $fakeJob = $this->getMockBuilder(Job::class)->getMock();
-        $this->registry->expects($this->once())
+        $this->registry->expects(static::once())
             ->method('put')
             ->with(
                 PeriodicWorker::class,
-                $this->callback(function ($arguments) {
+                static::callback(function ($arguments) {
                     $this->assertCount(6, $arguments);
                     $this->assertArrayHasKey('name', $arguments);
                     $this->assertSame('test_worker', $arguments['name']);
@@ -78,7 +78,7 @@ final class PeriodicQueueManagerTest extends TestCase
 
                     return true;
                 }),
-                $this->callback(function ($options) {
+                static::callback(function ($options) {
                     if (!\is_array($options)) {
                         return false;
                     }
@@ -100,14 +100,14 @@ final class PeriodicQueueManagerTest extends TestCase
             'argument_a' => 'a',
         ], ['period' => 3600]);
 
-        $this->assertInstanceOf(PeriodicJob::class, $job);
-        $this->assertNotEmpty($job->getJobToken());
+        static::assertInstanceOf(PeriodicJob::class, $job);
+        static::assertNotEmpty($job->getJobToken());
     }
 
     public function testNoPeriod(): void
     {
         $fakeJob = $this->getMockBuilder(Job::class)->getMock();
-        $this->registry->expects($this->once())
+        $this->registry->expects(static::once())
             ->method('put')
             ->with('test_worker', [
                 'argument_a' => 'a',
@@ -121,7 +121,7 @@ final class PeriodicQueueManagerTest extends TestCase
             'argument_a' => 'a',
         ]);
 
-        $this->assertSame($fakeJob, $job);
+        static::assertSame($fakeJob, $job);
     }
 
     public function testDelete(): void

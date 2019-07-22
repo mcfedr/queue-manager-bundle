@@ -52,7 +52,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
 
         foreach ($config['managers'] as $name => $manager) {
             if (!isset($config['drivers'][$manager['driver']])) {
-                throw new InvalidArgumentException("Manager '${name}' uses unknown driver '{$manager['driver']}'");
+                throw new InvalidArgumentException("Manager '{$name}' uses unknown driver '{$manager['driver']}'");
             }
 
             $managerClass = $config['drivers'][$manager['driver']]['class'];
@@ -65,7 +65,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
             $bindings = [
                 '$options' => $mergedOptions,
             ];
-            $managerServiceName = "mcfedr_queue_manager.${name}";
+            $managerServiceName = "mcfedr_queue_manager.{$name}";
 
             switch ($manager['driver']) {
                 case 'beanstalkd':
@@ -84,7 +84,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                         ]);
                         unset($mergedOptions['host'], $mergedOptions['port'], $mergedOptions['connection']);
 
-                        $pheanstalkName = "${managerServiceName}.pheanstalk";
+                        $pheanstalkName = "{$managerServiceName}.pheanstalk";
                         $container->setDefinition($pheanstalkName, $pheanstalk);
                         $bindings[PheanstalkInterface::class] = new Reference($pheanstalkName);
                     }
@@ -108,7 +108,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                             unset($mergedOptions['credentials']);
                         }
                         $sqsClient = new Definition(SqsClient::class, [$sqsOptions]);
-                        $sqsClientName = "${managerServiceName}.sqs_client";
+                        $sqsClientName = "{$managerServiceName}.sqs_client";
                         $container->setDefinition($sqsClientName, $sqsClient);
                         $bindings[SqsClient::class] = new Reference($sqsClientName);
                     }
@@ -122,7 +122,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                     break;
             }
 
-            $container->setParameter("mcfedr_queue_manager.${name}.options", $mergedOptions);
+            $container->setParameter("mcfedr_queue_manager.{$name}.options", $mergedOptions);
             $managerDefinition = new Definition($managerClass);
             $managerDefinition->setBindings($bindings);
             $managerDefinition->setAutoconfigured(true);
@@ -142,7 +142,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                 $commandClass = $config['drivers'][$manager['driver']]['command_class'];
                 $commandDefinition = new Definition($commandClass);
                 $commandBindings = array_merge([
-                    '$name' => "mcfedr:queue:${name}-runner",
+                    '$name' => "mcfedr:queue:{$name}-runner",
                 ], $bindings);
                 $commandDefinition->setBindings($commandBindings);
                 $commandDefinition->setAutoconfigured(true);
@@ -151,7 +151,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                 $commandDefinition->setTags(
                     ['console.command' => []]
                 );
-                $commandServiceName = "mcfedr_queue_manager.runner.${name}";
+                $commandServiceName = "mcfedr_queue_manager.runner.{$name}";
                 $container->setDefinition($commandServiceName, $commandDefinition);
                 if (!$container->has($commandClass)) {
                     $commandServiceAlias = $container->setAlias($commandClass, $commandServiceName);

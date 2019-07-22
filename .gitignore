@@ -1,4 +1,5 @@
-/var/
-/vendor/
 /.php_cs.cache
 .phpunit.result.cache
+/tests/.env.test.local
+/var/
+/vendor/

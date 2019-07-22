@@ -56,7 +56,7 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
             $orderDir = $this->reverse ? 'DESC' : 'ASC';
 
             $em->getConnection()->executeUpdate(
-                "UPDATE DoctrineDelayJob job SET job.processing = TRUE WHERE job.time < :now ORDER BY job.time ${orderDir} LIMIT :limit",
+                "UPDATE DoctrineDelayJob job SET job.processing = TRUE WHERE job.time < :now ORDER BY job.time {$orderDir} LIMIT :limit",
                 [
                     'now' => $now,
                     'limit' => $this->batchSize,

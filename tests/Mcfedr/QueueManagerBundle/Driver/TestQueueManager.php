@@ -47,7 +47,7 @@ class TestQueueManager implements QueueManager
 
     protected function info(string $message, array $context): void
     {
-        $this->logger->info("{$this->getLogName()}: ${message}", $context);
+        $this->logger->info("{$this->getLogName()}: {$message}", $context);
     }
 
     protected function getLogName()
