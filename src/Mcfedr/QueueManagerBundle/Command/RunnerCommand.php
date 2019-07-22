@@ -118,7 +118,8 @@ abstract class RunnerCommand extends Command
             pcntl_signal(SIGINT, $handle);
         }
 
-        $this->reservedMemory = str_repeat('x', 1024 * 10);
+        // Reserve 2MB
+        $this->reservedMemory = str_repeat('x', 1024 * 1024 * 2);
         register_shutdown_function([$this, 'shutdown']);
 
         do {
