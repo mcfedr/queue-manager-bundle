@@ -29,6 +29,8 @@ class CreateFakeJobsCommand extends Command
         $this->setName('test:create-jobs')
             ->setDescription('Create a bunch of jobs')
             ->addOption('jobs', 'j', InputOption::VALUE_REQUIRED, 'How many jobs to create', '1000')
+            ->addOption('manager', null, InputOption::VALUE_REQUIRED, 'Manager to put jobs into', 'delay')
+            ->addOption('job', null, InputOption::VALUE_REQUIRED, 'Type of job to create', 'test_worker')
         ;
     }
 
@@ -37,11 +39,11 @@ class CreateFakeJobsCommand extends Command
         $jobsCount = (int) $input->getOption('jobs');
 
         for ($i = 0; $i < $jobsCount; ++$i) {
-            $this->queueManagerRegistry->put('test_worker', [
+            $this->queueManagerRegistry->put($input->getOption('job'), [
                 'job' => $i,
             ], [
                 'delay' => 10,
-            ], 'delay');
+            ], $input->getOption('manager'));
             $output->writeln("Job ${i}");
         }
 

@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Mcfedr\QueueManagerBundle\Command;
+namespace Mcfedr\QueueManagerBundle\RunnerCommand;
 
+use Mcfedr\QueueManagerBundle\Command\RunnerCommand;
 use Mcfedr\QueueManagerBundle\Queue\JobBatch;
 use Mcfedr\QueueManagerBundle\Queue\TestJob;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;

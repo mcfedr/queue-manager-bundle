@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\Tests\DependencyInjection;
 
-use Mcfedr\QueueManagerBundle\Command\TestRunnerCommand;
+use Mcfedr\QueueManagerBundle\RunnerCommand\TestRunnerCommand;
 use Mcfedr\QueueManagerBundle\Driver\TestQueueManager;
 use Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry;
 use Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber;
