@@ -75,12 +75,12 @@ final class DoctrineDelayQueueManagerTest extends TestCase
     public function testPutWithSignificantDelay(): void
     {
         $this->entityManager
-            ->expects($this->once())
+            ->expects(static::once())
             ->method('persist')
         ;
 
         $this->entityManager
-            ->expects($this->once())
+            ->expects(static::once())
             ->method('flush')
         ;
 
@@ -88,8 +88,8 @@ final class DoctrineDelayQueueManagerTest extends TestCase
             'argument_a' => 'a',
         ], ['time' => new \DateTime('+1 minute')]);
 
-        $this->assertSame('test_worker', $job->getName());
-        $this->assertSame([
+        static::assertSame('test_worker', $job->getName());
+        static::assertSame([
             'argument_a' => 'a',
         ], $job->getArguments());
     }
@@ -102,7 +102,7 @@ final class DoctrineDelayQueueManagerTest extends TestCase
         $job = $this->getMockBuilder(Job::class)->getMock();
 
         $this->queueManagerRegistry
-            ->expects($this->once())
+            ->expects(static::once())
             ->method('put')
             ->with('test_worker', [
                 'argument_a' => 'a',
@@ -116,7 +116,7 @@ final class DoctrineDelayQueueManagerTest extends TestCase
             'argument_a' => 'a',
         ], ['time' => $jobTime]);
 
-        $this->assertSame($job, $putJob);
+        static::assertSame($job, $putJob);
     }
 
     public function getNotSignificantDelayAndTimeInPastJobTimes()
@@ -132,7 +132,7 @@ final class DoctrineDelayQueueManagerTest extends TestCase
         $job = $this->getMockBuilder(Job::class)->getMock();
 
         $this->queueManagerRegistry
-            ->expects($this->once())
+            ->expects(static::once())
             ->method('put')
             ->with('test_worker', [
                 'argument_a' => 'a',
@@ -146,7 +146,7 @@ final class DoctrineDelayQueueManagerTest extends TestCase
             'argument_a' => 'a',
         ]);
 
-        $this->assertSame($job, $putJob);
+        static::assertSame($job, $putJob);
     }
 
     public function testDelete(): void
@@ -155,7 +155,7 @@ final class DoctrineDelayQueueManagerTest extends TestCase
         $toDelete->method('getId')->willReturn(1);
 
         $this->entityManager
-            ->expects($this->once())
+            ->expects(static::once())
             ->method('contains')
             ->with($toDelete)
             ->willReturn(false)
@@ -164,19 +164,19 @@ final class DoctrineDelayQueueManagerTest extends TestCase
         $reference = 1;
 
         $this->entityManager
-            ->expects($this->once())
+            ->expects(static::once())
             ->method('getReference')
             ->willReturn($reference)
         ;
 
         $this->entityManager
-            ->expects($this->once())
+            ->expects(static::once())
             ->method('remove')
             ->with($reference)
         ;
 
         $this->entityManager
-            ->expects($this->once())
+            ->expects(static::once())
             ->method('flush')
             ->with($reference)
         ;
@@ -189,20 +189,20 @@ final class DoctrineDelayQueueManagerTest extends TestCase
         $toDelete = new DoctrineDelayJob('test_worker', [], [], 'default', new \DateTime());
 
         $this->entityManager
-            ->expects($this->once())
+            ->expects(static::once())
             ->method('contains')
             ->with($toDelete)
             ->willReturn(true)
         ;
 
         $this->entityManager
-            ->expects($this->once())
+            ->expects(static::once())
             ->method('remove')
             ->with($toDelete)
         ;
 
         $this->entityManager
-            ->expects($this->once())
+            ->expects(static::once())
             ->method('flush')
             ->with($toDelete)
         ;

@@ -44,7 +44,7 @@ class CreateFakeJobsCommand extends Command
             ], [
                 'delay' => 10,
             ], $input->getOption('manager'));
-            $output->writeln("Job ${i}");
+            $output->writeln("Job {$i}");
         }
 
         return 0;

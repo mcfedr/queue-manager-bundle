@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\Command;
 
-use Carbon\Carbon;
-use Mcfedr\QueueManagerBundle\Worker\PeriodicWorker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Stopwatch\Stopwatch;
-use function foo\func;
 
 class ProcessSpeedCommand extends Command
 {
@@ -33,10 +29,11 @@ class ProcessSpeedCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         if ($input->getOption('do-job')) {
             $this->job();
+
             return;
         }
 
@@ -51,28 +48,27 @@ class ProcessSpeedCommand extends Command
         }
     }
 
-    private function basic($count)
+    private function basic($count): void
     {
-        for ($i = 0; $i < $count; $i++) {
+        for ($i = 0; $i < $count; ++$i) {
             $this->job();
         }
     }
 
-    private function fork($count)
+    private function fork($count): void
     {
-        for ($i = 0; $i < $count; $i++) {
+        for ($i = 0; $i < $count; ++$i) {
             if (pcntl_fork() === 0) {
                 $this->job();
                 exit(0);
-            } else {
-                pcntl_wait($status);
             }
+            pcntl_wait($status);
         }
     }
 
-    private function process($count)
+    private function process($count): void
     {
-        for ($i = 0; $i < $count; $i++) {
+        for ($i = 0; $i < $count; ++$i) {
             $this->getProcess()->run();
         }
     }
@@ -89,7 +85,7 @@ class ProcessSpeedCommand extends Command
                 $this->getName(),
                 '--do-job',
                 '--no-interaction',
-                '--no-ansi'
+                '--no-ansi',
             ];
             $process = new Process($commandLine);
             $this->process = $process;
@@ -98,7 +94,7 @@ class ProcessSpeedCommand extends Command
         return $this->process;
     }
 
-    private function job()
+    private function job(): void
     {
         usleep(300 * 1000);
     }

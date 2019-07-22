@@ -21,14 +21,14 @@ final class DoctrineResetSubscriberTest extends TestCase
         $registry = $this->getMockBuilder(Registry::class)->disableOriginalConstructor()->getMock();
         $connection = $this->getMockBuilder(Connection::class)->disableOriginalConstructor()->getMock();
 
-        $registry->expects($this->once())
+        $registry->expects(static::once())
             ->method('getConnection')
             ->willReturn($connection)
         ;
-        $registry->expects($this->once())
+        $registry->expects(static::once())
             ->method('resetManager')
         ;
-        $connection->expects($this->once())
+        $connection->expects(static::once())
             ->method('close')
         ;
 
@@ -41,14 +41,14 @@ final class DoctrineResetSubscriberTest extends TestCase
         $registry = $this->getMockBuilder(Registry::class)->disableOriginalConstructor()->getMock();
         $connection = $this->getMockBuilder(Connection::class)->disableOriginalConstructor()->getMock();
 
-        $registry->expects($this->once())
+        $registry->expects(static::once())
             ->method('getConnection')
             ->willReturn($connection)
         ;
-        $registry->expects($this->once())
+        $registry->expects(static::once())
             ->method('resetManager')
         ;
-        $connection->expects($this->once())
+        $connection->expects(static::once())
             ->method('close')
         ;
 
@@ -61,6 +61,6 @@ final class DoctrineResetSubscriberTest extends TestCase
         $subscriber = new DoctrineResetSubscriber();
         $subscriber->onJobFailed($this->getMockBuilder(FailedJobEvent::class)->disableOriginalConstructor()->getMock());
         $subscriber->onJobFinished($this->getMockBuilder(FinishedJobEvent::class)->disableOriginalConstructor()->getMock());
-        $this->assertTrue(true);
+        static::assertTrue(true);
     }
 }

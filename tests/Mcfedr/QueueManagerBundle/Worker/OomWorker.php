@@ -8,11 +8,11 @@ use Mcfedr\QueueManagerBundle\Queue\Worker;
 
 class OomWorker implements Worker
 {
-    static $a = 0;
+    private static $a = 0;
 
     public function execute(array $arguments): void
     {
-        self::$a++;
+        ++self::$a;
         if (isset($arguments['nth']) && self::$a < $arguments['nth']) {
             return;
         }

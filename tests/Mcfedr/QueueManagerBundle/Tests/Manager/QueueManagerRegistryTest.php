@@ -45,8 +45,8 @@ final class QueueManagerRegistryTest extends TestCase
     public function testDelete(): void
     {
         $job = $this->getMockBuilder(Job::class)->getMock();
-        $this->default->expects($this->once())->method('delete')->with($job);
-        $this->delay->expects($this->never())->method('delete');
+        $this->default->expects(static::once())->method('delete')->with($job);
+        $this->delay->expects(static::never())->method('delete');
 
         $this->queueManagerRegistry->delete($job, 'default');
     }
@@ -54,8 +54,8 @@ final class QueueManagerRegistryTest extends TestCase
     public function testDeleteUnnamed(): void
     {
         $job = $this->getMockBuilder(Job::class)->getMock();
-        $this->default->expects($this->once())->method('delete')->with($job);
-        $this->delay->expects($this->never())->method('delete');
+        $this->default->expects(static::once())->method('delete')->with($job);
+        $this->delay->expects(static::never())->method('delete');
 
         $this->queueManagerRegistry->delete($job);
     }
@@ -63,8 +63,8 @@ final class QueueManagerRegistryTest extends TestCase
     public function testDeleteUnnamedWrong(): void
     {
         $job = $this->getMockBuilder(Job::class)->getMock();
-        $this->default->expects($this->once())->method('delete')->with($job)->willThrowException(new WrongJobException());
-        $this->delay->expects($this->once())->method('delete')->with($job);
+        $this->default->expects(static::once())->method('delete')->with($job)->willThrowException(new WrongJobException());
+        $this->delay->expects(static::once())->method('delete')->with($job);
 
         $this->queueManagerRegistry->delete($job);
     }
@@ -72,8 +72,8 @@ final class QueueManagerRegistryTest extends TestCase
     public function testDeleteNoMatch(): void
     {
         $job = $this->getMockBuilder(Job::class)->getMock();
-        $this->default->expects($this->once())->method('delete')->with($job)->willThrowException(new WrongJobException());
-        $this->delay->expects($this->once())->method('delete')->with($job)->willThrowException(new WrongJobException());
+        $this->default->expects(static::once())->method('delete')->with($job)->willThrowException(new WrongJobException());
+        $this->delay->expects(static::once())->method('delete')->with($job)->willThrowException(new WrongJobException());
         $this->expectException(WrongJobException::class);
 
         $this->queueManagerRegistry->delete($job);
@@ -81,16 +81,16 @@ final class QueueManagerRegistryTest extends TestCase
 
     public function testPut(): void
     {
-        $this->default->expects($this->once())->method('put')->with('name', ['args'], ['options']);
-        $this->delay->expects($this->never())->method('put');
+        $this->default->expects(static::once())->method('put')->with('name', ['args'], ['options']);
+        $this->delay->expects(static::never())->method('put');
 
         $this->queueManagerRegistry->put('name', ['args'], ['options']);
     }
 
     public function testPutNamed(): void
     {
-        $this->default->expects($this->never())->method('put');
-        $this->delay->expects($this->once())->method('put')->with('name', ['args'], ['options']);
+        $this->default->expects(static::never())->method('put');
+        $this->delay->expects(static::once())->method('put')->with('name', ['args'], ['options']);
 
         $this->queueManagerRegistry->put('name', ['args'], ['options'], 'delay');
     }
