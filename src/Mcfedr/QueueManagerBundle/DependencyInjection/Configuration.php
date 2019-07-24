@@ -69,6 +69,18 @@ class Configuration implements ConfigurationInterface
             ->scalarNode('region')->end()
             ->variableNode('credentials')->end()
             ->scalarNode('sqs_client')->end()
+            //GCP
+            ->arrayNode('topics')
+            ->arrayPrototype()
+            ->scalarPrototype()->end()
+            ->end()
+            ->end()
+            ->variableNode('projectId')->end()
+            ->scalarNode('pubsub_client')->end()
+            ->scalarNode('default_subscription')->end()
+            ->scalarNode('default_topic')->end()
+            ->scalarNode('pubsub_client')->end()
+            ->scalarNode('keyFilePath')->end()
             // Periodic
             ->scalarNode('delay_manager')->end()
             ->variableNode('delay_manager_options')->end()
