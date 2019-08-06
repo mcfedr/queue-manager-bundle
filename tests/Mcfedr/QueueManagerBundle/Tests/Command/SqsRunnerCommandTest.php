@@ -349,7 +349,7 @@ final class SqsRunnerCommandTest extends TestCase
             ])
         ;
 
-        $this->command->finishJobs(new JobBatch([new SqsJob('job_name1', ['first1', 'second1'], 0, 'http://sqs.com', null, 0, 'handle2')]));
+        $this->command->finishJobs(new JobBatch([new SqsJob('job_name1', ['first1', 'second1'], 0, 'http://sqs.com', null, 0, 'handle2')], [], [], [], ['url' => 'http://sqs.com']));
     }
 }
 

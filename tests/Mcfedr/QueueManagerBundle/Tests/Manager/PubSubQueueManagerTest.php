@@ -57,13 +57,13 @@ final class PubSubQueueManagerTest extends TestCase
         $this->manager = new PubSubQueueManager($this->pubSubClient, [
             'default_subscription' => 'test_sub',
             'default_topic' => 'projects/project/topics/test-topic',
-            'topics' => [],
+            'pub_sub_queues' => [],
         ]);
     }
 
     public function testPut(): void
     {
-        $job = new PubSubJob('test_worker', [], null, null, 0);
+        $job = new PubSubJob('test_worker', [], null, 0);
 
         $this->pubSubClientTopic
             ->expects(static::once())
@@ -79,7 +79,7 @@ final class PubSubQueueManagerTest extends TestCase
 
     public function testDelete(): void
     {
-        $job = new PubSubJob('test_worker', [], null, null, 0);
+        $job = new PubSubJob('test_worker', [], null, 0);
         $this->expectException(NoSuchJobException::class);
         $this->manager->delete($job);
     }

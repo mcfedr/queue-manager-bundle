@@ -11,20 +11,12 @@ use Mcfedr\QueueManagerBundle\Queue\PubSubJob;
 
 class PubSubQueueManager implements QueueManager
 {
+    use PubSubClientTrait;
+
     /**
      * @var PubSubClient
      */
     private $pubSub;
-
-    /**
-     * @var string
-     */
-    private $defaultTopic;
-
-    /**
-     * @var array
-     */
-    private $topics;
 
     public function __construct(PubSubClient $pubSubClient, array $options)
     {
@@ -35,14 +27,14 @@ class PubSubQueueManager implements QueueManager
     public function put(string $name, array $arguments = [], array $options = []): Job
     {
         if (\array_key_exists('queue', $options)) {
-            $topicName = $this->topics[$options['queue']];
+            $topicName = reset($this->queues[$options['queue']]);
         } else {
-            $topicName = $this->defaultTopic;
+            $topicName = reset($this->defaultQueue);
         }
 
         $topic = $this->pubSub->topic($topicName);
 
-        $job = new PubSubJob($name, $arguments, null, null, 0);
+        $job = new PubSubJob($name, $arguments, null, 0);
 
         $result = $topic->publish(['data' => $job->getMessageBody()]);
 
@@ -54,16 +46,5 @@ class PubSubQueueManager implements QueueManager
     public function delete(Job $job): void
     {
         throw new NoSuchJobException('Pub\Sub queue manager cannot delete jobs');
-    }
-
-    private function setOptions(array $options): void
-    {
-        $this->defaultTopic = $options['default_topic'];
-        $this->topics = array_map(function ($topic) {
-            return $topic['topic'];
-        }, $options['topics']);
-        if (!\array_key_exists('default', $this->topics)) {
-            $this->topics['default'] = $this->defaultTopic;
-        }
     }
 }

@@ -72,7 +72,7 @@ final class PubSubRunnerCommandTest extends TestCase
         $this->command = new PubSubRunnerMock($this->pubSubClient, 'gcp', [
             'default_subscription' => 'test_sub',
             'default_topic' => 'projects/project/topics/test-topic',
-            'topics' => [],
+            'pub_sub_queues' => [],
         ], $this->jobExecutor);
     }
 
@@ -97,14 +97,14 @@ final class PubSubRunnerCommandTest extends TestCase
         static::assertSame(['job' => 0], $job->getArguments());
         static::assertInstanceOf(PubSubJob::class, $job);
         static::assertSame('1', $job->getId());
-        static::assertSame('test_sub', $job->getSubscription());
+        static::assertSame('test_sub', $batch->getOption('subscription'));
         static::assertSame('1', $job->getAckId());
         $job = $batch->next();
         static::assertSame('job_name2', $job->getName());
         static::assertSame(['job' => 1], $job->getArguments());
         static::assertInstanceOf(PubSubJob::class, $job);
         static::assertSame('2', $job->getId());
-        static::assertSame('test_sub', $job->getSubscription());
+        static::assertSame('test_sub', $batch->getOption('subscription'));
         static::assertSame('2', $job->getAckId());
     }
 
@@ -127,7 +127,6 @@ final class PubSubRunnerCommandTest extends TestCase
         $job = new PubSubJob(
             'job_name1',
             ['first1', 'second1'],
-            'test_sub',
             1,
             0,
             2
@@ -137,7 +136,7 @@ final class PubSubRunnerCommandTest extends TestCase
             ->with([$pubSubMessage])
         ;
 
-        $this->command->finishJobs(new JobBatch([], [$job]));
+        $this->command->finishJobs(new JobBatch([], [$job], [], [], ['subscription' => 'test_sub']));
     }
 }
 

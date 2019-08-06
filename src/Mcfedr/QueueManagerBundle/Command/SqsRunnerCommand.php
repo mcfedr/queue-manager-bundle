@@ -117,7 +117,7 @@ class SqsRunnerCommand extends RunnerCommand
         if (\count($remainingJobs)) {
             $count = 0;
             $this->sqs->changeMessageVisibilityBatch([
-                'QueueUrl' => $remainingJobs[0]->getUrl(),
+                'QueueUrl' => $batch->getOption('url'),
                 'Entries' => array_map(function (SqsJob $job) use (&$count) {
                     ++$count;
                     $job->incrementRetryCount();
@@ -247,7 +247,7 @@ class SqsRunnerCommand extends RunnerCommand
             }
 
             if (\count($jobs)) {
-                return new JobBatch($jobs);
+                return new JobBatch($jobs, [], [], [], ['url' => $url]);
             }
         }
 

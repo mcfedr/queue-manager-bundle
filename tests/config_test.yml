@@ -76,19 +76,19 @@ mcfedr_queue_manager:
             options:
                 default_subscription: 'test_sub'
                 default_topic: 'projects/project/topics/test-topic'
-                topics:
+                pub_sub_queues:
                     default:
                         topic: 'projects/project/topics/test-topic'
-                        subscribtion: 'test_sub'
+                        subscription: 'test_sub'
         realgcp:
             driver: gcp
             options:
                 default_subscription: '%env(TEST_SUB)%'
                 default_topic: '%env(TEST_TOPIC)%'
-                topics:
+                pub_sub_queues:
                     default:
                         topic: '%env(TEST_TOPIC)%'
-                        subscribtion: '%env(TEST_SUB)%'
+                        subscription: '%env(TEST_SUB)%'
 
 monolog:
     handlers:

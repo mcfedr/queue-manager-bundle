@@ -12,20 +12,14 @@ class PubSubJob extends AbstractRetryableJob
     private $id;
 
     /**
-     * @var string
-     */
-    private $subscription;
-
-    /**
      * @var null|string
      */
     private $ackId;
 
-    public function __construct(string $name, array $arguments, ?string $subscription = null, $id = null, int $retryCount = 0, $ackId = null)
+    public function __construct(string $name, array $arguments, $id = null, int $retryCount = 0, $ackId = null)
     {
         parent::__construct($name, $arguments, $retryCount);
         $this->id = $id;
-        $this->subscription = $subscription;
         $this->ackId = $ackId;
     }
 
@@ -39,11 +33,6 @@ class PubSubJob extends AbstractRetryableJob
         $this->id = $id;
 
         return $this;
-    }
-
-    public function getSubscription(): string
-    {
-        return $this->subscription;
     }
 
     public function getAckId()

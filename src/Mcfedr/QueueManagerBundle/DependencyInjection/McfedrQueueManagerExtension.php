@@ -127,14 +127,14 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                     if (!class_exists(PubSubClient::class)) {
                         throw new \LogicException('"gcp" require google/cloud-pubsub');
                     }
-                    if (isset($mergedOptions['pubsub_client'])) {
-                        $bindings[PubSubClient::class] = new Reference($mergedOptions['pubsub_client']);
-                        unset($mergedOptions['pubsub_client']);
+                    if (isset($mergedOptions['pub_sub_client'])) {
+                        $bindings[PubSubClient::class] = new Reference($mergedOptions['pub_sub_client']);
+                        unset($mergedOptions['pub_sub_client']);
                     } else {
                         $pubSubOptions = [];
-                        if (\array_key_exists('keyFilePath', $mergedOptions)) {
-                            $pubSubOptions['keyFilePath'] = $mergedOptions['keyFilePath'];
-                            unset($mergedOptions['keyFilePath']);
+                        if (\array_key_exists('key_file_path', $mergedOptions)) {
+                            $pubSubOptions['keyFilePath'] = $mergedOptions['key_file_path'];
+                            unset($mergedOptions['key_file_path']);
                         }
                         $pubSubClient = new Definition(PubSubClient::class, [$pubSubOptions]);
                         $pubSubClientName = "{$managerServiceName}.pub_sub_client";
@@ -272,10 +272,11 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                             'queues' => [],
                         ],
                         'command_class' => SqsRunnerCommand::class,
-                    ], 'gcp' => [
+                    ],
+                    'gcp' => [
                         'class' => PubSubQueueManager::class,
                         'options' => [
-                            'topics' => [],
+                            'pub_sub_queues' => [],
                         ],
                         'command_class' => PubSubRunnerCommand::class,
                     ],
