@@ -17,18 +17,16 @@ trait PubSubClientTrait
     /**
      * @var array[]
      */
-    private $queues;
+    private $pubSubQueues;
 
     private function setOptions(array $options): void
     {
-        $this->defaultQueue = [$options['default_subscription'] => $options['default_topic']];
+        $this->defaultQueue = ['subscription' => $options['default_subscription'], 'topic' => $options['default_topic']];
 
-        $this->queues = array_map(function ($topic) {
-            return [$topic['subscription'] => $topic['topic']];
-        }, $options['pub_sub_queues']);
+        $this->pubSubQueues = $options['pub_sub_queues'];
 
-        if (!\array_key_exists('default', $this->queues)) {
-            $this->queues['default'] = $this->defaultQueue;
+        if (!\array_key_exists('default', $this->pubSubQueues)) {
+            $this->pubSubQueues['default'] = $this->defaultQueue;
         }
     }
 }

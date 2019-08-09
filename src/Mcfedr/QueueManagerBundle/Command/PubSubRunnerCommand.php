@@ -40,7 +40,6 @@ class PubSubRunnerCommand extends RunnerCommand
     {
         parent::configure();
         $this
-            ->addOption('subscriptions', null, InputOption::VALUE_REQUIRED, 'The subscriptions of Pub/Sub to run, can be a comma separated list')
             ->addOption('queue', null, InputOption::VALUE_REQUIRED, 'The name of a queue in the config, can be a comma separated list')
             ->addOption('batch-size', null, InputOption::VALUE_REQUIRED, 'Number of messages to fetch at once', 10)
         ;
@@ -48,10 +47,8 @@ class PubSubRunnerCommand extends RunnerCommand
 
     protected function getJobs(): ?JobBatch
     {
-        foreach ($this->queues as $queue) {
-            $topic = reset($queue);
-            $subscription = key($queue);
-            $jobs = $this->getJobsFromSubscription($subscription, $topic);
+        foreach ($this->pubSubQueues as $queue) {
+            $jobs = $this->getJobsFromSubscription($queue['subscription'], $queue['topic']);
             if ($jobs) {
                 return $jobs;
             }
@@ -89,16 +86,14 @@ class PubSubRunnerCommand extends RunnerCommand
 
     protected function handleInput(InputInterface $input): void
     {
-        if (($subscriptions = $input->getOption('subscriptions'))) {
-            $this->queues = explode(',', $subscriptions);
-        } elseif ($input->getOption('queue')) {
+        if ($input->getOption('queue')) {
             $queues = [];
             foreach (explode(',', $input->getOption('queue')) as $queue) {
-                $queues[$queue] = $this->queues[$queue];
+                $queues[$queue] = $this->pubSubQueues[$queue];
             }
-            $this->queues = $queues;
+            $this->pubSubQueues = $queues;
         } else {
-            $this->queues = [$this->defaultQueue];
+            $this->pubSubQueues = ['default' => $this->defaultQueue];
         }
 
         if (($batch = $input->getOption('batch-size'))) {

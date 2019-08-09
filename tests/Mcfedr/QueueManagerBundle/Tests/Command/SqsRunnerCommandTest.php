@@ -280,7 +280,7 @@ final class SqsRunnerCommandTest extends TestCase
             ])
         ;
 
-        $this->command->finishJobs(new JobBatch([], [new SqsJob('job_name1', ['first1', 'second1'], 0, 'http://sqs.com', null, 0, 'handle2')]));
+        $this->command->finishJobs(new JobBatch([], [new SqsJob('job_name1', ['first1', 'second1'], 0, 'http://sqs.com', null, 0, 'handle2')], [], [], ['url' => 'http://sqs.com']));
     }
 
     public function testFinishFailJobs(): void
@@ -298,7 +298,7 @@ final class SqsRunnerCommandTest extends TestCase
             ])
         ;
 
-        $this->command->finishJobs(new JobBatch([], [], [new SqsJob('job_name1', ['first1', 'second1'], 0, 'http://sqs.com', null, 0, 'handle2')]));
+        $this->command->finishJobs(new JobBatch([], [], [new SqsJob('job_name1', ['first1', 'second1'], 0, 'http://sqs.com', null, 0, 'handle2')], [], ['url' => 'http://sqs.com']));
     }
 
     public function testFinishRetryJobs(): void
@@ -330,7 +330,7 @@ final class SqsRunnerCommandTest extends TestCase
             ])
         ;
 
-        $this->command->finishJobs(new JobBatch([], [], [], [new SqsJob('job_name1', ['first1', 'second1'], 0, 'http://sqs.com', null, 0, 'handle2')]));
+        $this->command->finishJobs(new JobBatch([], [], [], [new SqsJob('job_name1', ['first1', 'second1'], 0, 'http://sqs.com', null, 0, 'handle2')], ['url' => 'http://sqs.com']));
     }
 
     public function testFinishLeftOverJobs(): void

@@ -100,7 +100,7 @@ class SqsRunnerCommand extends RunnerCommand
         if (\count($toDelete)) {
             $count = 0;
             $this->sqs->deleteMessageBatch([
-                'QueueUrl' => $toDelete[0]->getUrl(),
+                'QueueUrl' => $batch->getOption('url'),
                 'Entries' => array_map(function (SqsJob $job) use (&$count) {
                     ++$count;
 
