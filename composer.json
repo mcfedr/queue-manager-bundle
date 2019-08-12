@@ -2,7 +2,7 @@
     "name": "mcfedr/queue-manager-bundle",
     "type": "symfony-bundle",
     "description": "A bundle for managing job queues",
-    "keywords": ["queue", "job", "schedule", "task", "beanstalkd", "doctrine", "sqs", "aws"],
+    "keywords": ["queue", "job", "schedule", "task", "beanstalkd", "doctrine", "sqs", "aws", "pub/sub", "gcp"],
     "autoload": {
         "psr-4": { "Mcfedr\\QueueManagerBundle\\": "src/Mcfedr/QueueManagerBundle/" }
     },
@@ -42,7 +42,8 @@
         "pda/pheanstalk": "Required to use beanstalkd driver",
         "doctrine/doctrine-bundle": "Required to use doctrine driver",
         "symfony/proxy-manager-bridge": "Required to use doctrine driver",
-        "aws/aws-sdk-php": "Required to use SQS driver"
+        "aws/aws-sdk-php": "Required to use SQS driver",
+        "google/cloud-pubsub": "Required to use Pub/Sub driver"
     },
     "license": "MIT",
     "authors": [

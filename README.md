@@ -11,6 +11,7 @@ different queue types:
 
 - [Beanstalkd](https://beanstalkd.github.io/)
 - [Amazon SQS](https://aws.amazon.com/sqs/)
+- [Google Cloud Pub/Sub](https://cloud.google.com/pubsub)
 
 There are also a number of 'helper' plugins:
 
@@ -91,7 +92,7 @@ mcfedr_queue_manager:
 * `time` - A `\DateTime` object of when to schedule this job.
 * `delay` - Number of seconds from now to schedule this job.
 
-### SQS
+### AWS SQS
 
 #### Usage
 
@@ -136,6 +137,49 @@ mcfedr_queue_manager:
 * `time` - A `\DateTime` object of when to schedule this job. **Note:** SQS can delay jobs up to 15 minutes. 
 * `delay` - Number of seconds from now to schedule this job. **Note:** SQS can delay jobs up to 15 minutes.
 * `ttr` - Number of seconds during which Amazon SQS prevents other consumers from receiving and processing the message (SQS Visibility Timeout).
+
+### GCP Pub/Sub
+
+#### Usage
+
+The pub/sub runner is a Symfony command. You can runner multiple instances if you need to
+handle higher numbers of jobs.
+
+```bash
+./bin/console mcfedr:queue:{name}-runner
+```
+
+Where `{name}` is what you used in the config. Add `-v` or more to get detailed logs.
+
+#### Config
+
+```yaml
+mcfedr_queue_manager:
+    managers:
+        default:
+            driver: pub_sub
+            options:
+                default_subscription: 'test_sub'
+                default_topic: 'projects/project/topics/test-topic'
+                pub_sub_queues:
+                    name1:
+                        topic: 'projects/project/topics/test-topic'
+                        subscription: 'test_sub'
+```
+
+* `default_subscription` - Default Pub/Sub subscription to listen to.
+* `default_topic` - Default Pub/Sub topic to push to.
+* `key_file_path` *optional* - Specify your key file. This is optional because
+  the SDK can pick up your credentials from a [variety of places](https://googleapis.github.io/google-cloud-php/#/docs/google-cloud/v0.107.1/guides/authentication).
+* `pub_sub_client` - Name of `PubSubClient` service to use.
+* `pub_sub_queues` *optional* - Allows you to setup a mapping of short names for queues,
+   this makes it easier to use multiple queues and keep the config in one place.
+   Each queue should have a `topic` and `subscription`.
+
+#### Supported options to `QueueManager::put`
+
+* `topic` - A `string` with the url of a queue.
+* `queue` - A `string` with the name of a queue in the config.
 
 ### Periodic
 

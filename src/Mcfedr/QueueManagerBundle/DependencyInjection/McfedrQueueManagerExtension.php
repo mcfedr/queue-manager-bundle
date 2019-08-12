@@ -123,9 +123,9 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                     }
 
                     break;
-                case 'gcp':
+                case 'pub_sub':
                     if (!class_exists(PubSubClient::class)) {
-                        throw new \LogicException('"gcp" require google/cloud-pubsub');
+                        throw new \LogicException('"pub_sub" requires google/cloud-pubsub to be installed.');
                     }
                     if (isset($mergedOptions['pub_sub_client'])) {
                         $bindings[PubSubClient::class] = new Reference($mergedOptions['pub_sub_client']);
@@ -273,7 +273,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                         ],
                         'command_class' => SqsRunnerCommand::class,
                     ],
-                    'gcp' => [
+                    'pub_sub' => [
                         'class' => PubSubQueueManager::class,
                         'options' => [
                             'pub_sub_queues' => [],

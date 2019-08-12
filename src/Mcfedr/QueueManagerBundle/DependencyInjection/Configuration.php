@@ -69,7 +69,7 @@ class Configuration implements ConfigurationInterface
             ->scalarNode('region')->end()
             ->variableNode('credentials')->end()
             ->scalarNode('sqs_client')->end()
-            //GCP
+            //Pub/Sub
             ->arrayNode('pub_sub_queues')
             ->arrayPrototype()
             ->children()
