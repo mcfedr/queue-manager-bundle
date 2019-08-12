@@ -34,17 +34,23 @@ class JobBatch implements \Countable
     private $currentJob;
 
     /**
+     * @var array
+     */
+    private $options = [];
+
+    /**
      * @param Job[] $jobs
      * @param Job[] $oks
      * @param Job[] $fails
      * @param Job[] $retries
      */
-    public function __construct(array $jobs = [], array $oks = [], array $fails = [], array $retries = [])
+    public function __construct(array $jobs = [], array $oks = [], array $fails = [], array $retries = [], array $options = [])
     {
         $this->jobs = $jobs;
         $this->oks = $oks;
         $this->fails = $fails;
         $this->retries = $retries;
+        $this->options = $options;
     }
 
     public function next(): ?Job
@@ -110,5 +116,13 @@ class JobBatch implements \Countable
     public function getRetries(): array
     {
         return $this->retries;
+    }
+
+    /**
+     * @param $option
+     */
+    public function getOption($option): ?string
+    {
+        return isset($this->options[$option]) ? $this->options[$option] : null;
     }
 }

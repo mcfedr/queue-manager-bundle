@@ -71,6 +71,24 @@ mcfedr_queue_manager:
             options:
                 default_url: '%env(TEST_SQS_URL)%'
                 region: '%env(TEST_SQS_REGION)%'
+        gcp:
+            driver: gcp
+            options:
+                default_subscription: 'test_sub'
+                default_topic: 'projects/project/topics/test-topic'
+                pub_sub_queues:
+                    default:
+                        topic: 'projects/project/topics/test-topic'
+                        subscription: 'test_sub'
+        realgcp:
+            driver: gcp
+            options:
+                default_subscription: '%env(TEST_SUB)%'
+                default_topic: '%env(TEST_TOPIC)%'
+                pub_sub_queues:
+                    default:
+                        topic: '%env(TEST_TOPIC)%'
+                        subscription: '%env(TEST_SUB)%'
 
 monolog:
     handlers:

@@ -6,12 +6,15 @@ namespace Mcfedr\QueueManagerBundle\DependencyInjection;
 
 use Aws\Sqs\SqsClient;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Google\Cloud\PubSub\PubSubClient;
 use Mcfedr\QueueManagerBundle\Command\BeanstalkCommand;
 use Mcfedr\QueueManagerBundle\Command\DoctrineDelayRunnerCommand;
+use Mcfedr\QueueManagerBundle\Command\PubSubRunnerCommand;
 use Mcfedr\QueueManagerBundle\Command\SqsRunnerCommand;
 use Mcfedr\QueueManagerBundle\Manager\BeanstalkQueueManager;
 use Mcfedr\QueueManagerBundle\Manager\DoctrineDelayQueueManager;
 use Mcfedr\QueueManagerBundle\Manager\PeriodicQueueManager;
+use Mcfedr\QueueManagerBundle\Manager\PubSubQueueManager;
 use Mcfedr\QueueManagerBundle\Manager\QueueManager;
 use Mcfedr\QueueManagerBundle\Manager\SqsQueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Worker;
@@ -117,6 +120,26 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                 case 'doctrine_delay':
                     if (!interface_exists(ManagerRegistry::class)) {
                         throw new \LogicException('"doctrine_delay" requires doctrine/doctrine-bundle to be installed.');
+                    }
+
+                    break;
+                case 'gcp':
+                    if (!class_exists(PubSubClient::class)) {
+                        throw new \LogicException('"gcp" require google/cloud-pubsub');
+                    }
+                    if (isset($mergedOptions['pub_sub_client'])) {
+                        $bindings[PubSubClient::class] = new Reference($mergedOptions['pub_sub_client']);
+                        unset($mergedOptions['pub_sub_client']);
+                    } else {
+                        $pubSubOptions = [];
+                        if (\array_key_exists('key_file_path', $mergedOptions)) {
+                            $pubSubOptions['keyFilePath'] = $mergedOptions['key_file_path'];
+                            unset($mergedOptions['key_file_path']);
+                        }
+                        $pubSubClient = new Definition(PubSubClient::class, [$pubSubOptions]);
+                        $pubSubClientName = "{$managerServiceName}.pub_sub_client";
+                        $container->setDefinition($pubSubClientName, $pubSubClient);
+                        $bindings[PubSubClient::class] = new Reference($pubSubClientName);
                     }
 
                     break;
@@ -249,6 +272,13 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                             'queues' => [],
                         ],
                         'command_class' => SqsRunnerCommand::class,
+                    ],
+                    'gcp' => [
+                        'class' => PubSubQueueManager::class,
+                        'options' => [
+                            'pub_sub_queues' => [],
+                        ],
+                        'command_class' => PubSubRunnerCommand::class,
                     ],
                 ],
             ]);
