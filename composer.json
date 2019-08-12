@@ -2,7 +2,7 @@
     "name": "mcfedr/queue-manager-bundle",
     "type": "symfony-bundle",
     "description": "A bundle for managing job queues",
-    "keywords": ["queue", "job", "schedule", "task", "beanstalkd", "doctrine", "sqs", "aws", "pub/sub", "gcp"],
+    "keywords": ["queue", "job", "schedule", "task", "beanstalkd", "doctrine", "sqs", "aws", "pub_sub", "gcp"],
     "autoload": {
         "psr-4": { "Mcfedr\\QueueManagerBundle\\": "src/Mcfedr/QueueManagerBundle/" }
     },
