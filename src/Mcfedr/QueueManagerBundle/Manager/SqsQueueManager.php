@@ -6,6 +6,7 @@ namespace Mcfedr\QueueManagerBundle\Manager;
 
 use Aws\Sqs\SqsClient;
 use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
+use Mcfedr\QueueManagerBundle\Exception\NoSuchQueueException;
 use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\SqsJob;
@@ -30,6 +31,9 @@ class SqsQueueManager implements QueueManager
         if (\array_key_exists('url', $options)) {
             $url = $options['url'];
         } elseif (\array_key_exists('queue', $options)) {
+            if (!\array_key_exists($options['queue'], $this->queues)) {
+                throw new NoSuchQueueException();
+            }
             $url = $this->queues[$options['queue']];
         } else {
             $url = $this->defaultUrl;

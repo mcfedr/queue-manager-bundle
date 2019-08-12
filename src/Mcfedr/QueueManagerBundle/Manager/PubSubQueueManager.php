@@ -6,7 +6,7 @@ namespace Mcfedr\QueueManagerBundle\Manager;
 
 use Google\Cloud\PubSub\PubSubClient;
 use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
-use Mcfedr\QueueManagerBundle\Exception\NoSuchTopicException;
+use Mcfedr\QueueManagerBundle\Exception\NoSuchQueueException;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\PubSubJob;
 
@@ -28,8 +28,8 @@ class PubSubQueueManager implements QueueManager
     public function put(string $name, array $arguments = [], array $options = []): Job
     {
         if (\array_key_exists('queue', $options)) {
-            if (!isset($this->pubSubQueues[$options['queue']]['topic'])) {
-                throw new NoSuchTopicException();
+            if (!\array_key_exists($options['queue'], $this->pubSubQueues)) {
+                throw new NoSuchQueueException();
             }
             $topicName = $this->pubSubQueues[$options['queue']]['topic'];
         } else {
