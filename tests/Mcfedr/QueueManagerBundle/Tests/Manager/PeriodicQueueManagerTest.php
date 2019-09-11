@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\Tests\Manager;
 
+use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
 use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Manager\PeriodicQueueManager;
 use Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry;
@@ -125,6 +126,13 @@ final class PeriodicQueueManagerTest extends TestCase
     }
 
     public function testDelete(): void
+    {
+        $job = new PeriodicJob('test_worker', [], []);
+        $this->expectException(NoSuchJobException::class);
+        $this->manager->delete($job);
+    }
+
+    public function testDeleteOther(): void
     {
         $this->expectException(WrongJobException::class);
         $this->manager->delete($this->getMockBuilder(Job::class)->getMock());

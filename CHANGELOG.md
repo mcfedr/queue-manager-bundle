@@ -1,5 +1,13 @@
 # Changelog
 
+### 6.4.4
+
+- Fix Periodic throwing wrong delete exception.
+
+### 6.4.3
+
+- Fix Pub/Sub throwing wrong delete exception.
+
 ### 6.4.1
 
 - Add support for Google Cloud Pub/Sub.

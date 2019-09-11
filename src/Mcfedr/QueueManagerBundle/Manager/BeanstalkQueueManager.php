@@ -40,7 +40,7 @@ class BeanstalkQueueManager implements QueueManager
         $ttr = $options['ttr'] ?? PheanstalkInterface::DEFAULT_TTR;
 
         $job = new BeanstalkJob($name, $arguments, $priority, $ttr);
-        $id = $this->pheanstalk->useTube($queue)->put($job->getData(), $priority, $seconds, $ttr);
+        $id = $this->pheanstalk->putInTube($queue, $job->getData(), $priority, $seconds, $ttr);
         $job->setId($id);
 
         return $job;

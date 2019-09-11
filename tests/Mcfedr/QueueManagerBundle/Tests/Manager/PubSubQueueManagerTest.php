@@ -7,7 +7,9 @@ namespace Mcfedr\QueueManagerBundle\Tests\Manager;
 use Google\Cloud\PubSub\PubSubClient;
 use Google\Cloud\PubSub\Topic;
 use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
+use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Manager\PubSubQueueManager;
+use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\PubSubJob;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -82,5 +84,11 @@ final class PubSubQueueManagerTest extends TestCase
         $job = new PubSubJob('test_worker', [], null, 0);
         $this->expectException(NoSuchJobException::class);
         $this->manager->delete($job);
+    }
+
+    public function testDeleteOther(): void
+    {
+        $this->expectException(WrongJobException::class);
+        $this->manager->delete($this->getMockBuilder(Job::class)->getMock());
     }
 }

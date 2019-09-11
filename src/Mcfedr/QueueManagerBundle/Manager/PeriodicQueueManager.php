@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\Manager;
 
+use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
 use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\PeriodicJob;
@@ -71,6 +72,10 @@ class PeriodicQueueManager implements QueueManager
 
     public function delete(Job $job): void
     {
-        throw new WrongJobException('Periodic queue manager cannot delete jobs');
+        if (!$job instanceof PeriodicJob) {
+            throw new WrongJobException('Periodic queue manager can only delete Periodic jobs');
+        }
+
+        throw new NoSuchJobException('Periodic queue manager cannot delete jobs');
     }
 }
