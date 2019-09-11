@@ -7,6 +7,7 @@ namespace Mcfedr\QueueManagerBundle\Manager;
 use Google\Cloud\PubSub\PubSubClient;
 use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
 use Mcfedr\QueueManagerBundle\Exception\NoSuchQueueException;
+use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\PubSubJob;
 
@@ -49,6 +50,10 @@ class PubSubQueueManager implements QueueManager
 
     public function delete(Job $job): void
     {
+        if (!$job instanceof PubSubJob) {
+            throw new WrongJobException('Pub\Sub queue manager can only delete Pub\Sub jobs');
+        }
+
         throw new NoSuchJobException('Pub\Sub queue manager cannot delete jobs');
     }
 }
