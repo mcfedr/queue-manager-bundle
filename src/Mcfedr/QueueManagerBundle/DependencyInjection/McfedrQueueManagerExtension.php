@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Mcfedr\QueueManagerBundle\DependencyInjection;
 
 use Aws\Sqs\SqsClient;
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Google\Cloud\PubSub\PubSubClient;
 use Mcfedr\QueueManagerBundle\Command\BeanstalkCommand;
 use Mcfedr\QueueManagerBundle\Command\DoctrineDelayRunnerCommand;
@@ -18,7 +17,9 @@ use Mcfedr\QueueManagerBundle\Manager\PubSubQueueManager;
 use Mcfedr\QueueManagerBundle\Manager\QueueManager;
 use Mcfedr\QueueManagerBundle\Manager\SqsQueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Worker;
+use Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber;
 use Mcfedr\QueueManagerBundle\Subscriber\MemoryReportSubscriber;
+use Mcfedr\QueueManagerBundle\Subscriber\SwiftMailerSubscriber;
 use Pheanstalk\Pheanstalk;
 use Pheanstalk\PheanstalkInterface;
 use Symfony\Component\Config\FileLocator;
@@ -52,135 +53,9 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
         $loader->load('services.yml');
 
         $queueManagers = [];
-
         foreach ($config['managers'] as $name => $manager) {
-            if (!isset($config['drivers'][$manager['driver']])) {
-                throw new InvalidArgumentException("Manager '{$name}' uses unknown driver '{$manager['driver']}'");
-            }
-
-            $managerClass = $config['drivers'][$manager['driver']]['class'];
-            $defaultOptions = $config['drivers'][$manager['driver']]['options'] ?? [];
-            $options = $manager['options'] ?? [];
-            $mergedOptions = array_merge([
-                'retry_limit' => $config['retry_limit'],
-                'sleep_seconds' => $config['sleep_seconds'],
-            ], $defaultOptions, $options);
-            $bindings = [
-                '$options' => $mergedOptions,
-            ];
-            $managerServiceName = "mcfedr_queue_manager.{$name}";
-
-            switch ($manager['driver']) {
-                case 'beanstalkd':
-                    if (!interface_exists(PheanstalkInterface::class)) {
-                        throw new \LogicException('"pheanstalk" requires pda/pheanstalk to be installed.');
-                    }
-                    if (isset($mergedOptions['pheanstalk'])) {
-                        $bindings[PheanstalkInterface::class] = new Reference($mergedOptions['pheanstalk']);
-                        unset($mergedOptions['pheanstalk']);
-                    } else {
-                        $pheanstalk = new Definition(Pheanstalk::class, [
-                            $mergedOptions['host'],
-                            $mergedOptions['port'],
-                            $mergedOptions['connection']['timeout'],
-                            $mergedOptions['connection']['persistent'],
-                        ]);
-                        unset($mergedOptions['host'], $mergedOptions['port'], $mergedOptions['connection']);
-
-                        $pheanstalkName = "{$managerServiceName}.pheanstalk";
-                        $container->setDefinition($pheanstalkName, $pheanstalk);
-                        $bindings[PheanstalkInterface::class] = new Reference($pheanstalkName);
-                    }
-
-                    break;
-                case 'sqs':
-                    if (!class_exists(SqsClient::class)) {
-                        throw new \LogicException('"sqs" requires aws/aws-sdk-php to be installed.');
-                    }
-                    if (isset($mergedOptions['sqs_client'])) {
-                        $bindings[SqsClient::class] = new Reference($mergedOptions['sqs_client']);
-                        unset($mergedOptions['sqs_client']);
-                    } else {
-                        $sqsOptions = [
-                            'region' => $mergedOptions['region'],
-                            'version' => '2012-11-05',
-                        ];
-                        unset($mergedOptions['region']);
-                        if (\array_key_exists('credentials', $mergedOptions)) {
-                            $sqsOptions['credentials'] = $mergedOptions['credentials'];
-                            unset($mergedOptions['credentials']);
-                        }
-                        $sqsClient = new Definition(SqsClient::class, [$sqsOptions]);
-                        $sqsClientName = "{$managerServiceName}.sqs_client";
-                        $container->setDefinition($sqsClientName, $sqsClient);
-                        $bindings[SqsClient::class] = new Reference($sqsClientName);
-                    }
-
-                    break;
-                case 'doctrine_delay':
-                    if (!interface_exists(ManagerRegistry::class)) {
-                        throw new \LogicException('"doctrine_delay" requires doctrine/doctrine-bundle to be installed.');
-                    }
-
-                    break;
-                case 'pub_sub':
-                    if (!class_exists(PubSubClient::class)) {
-                        throw new \LogicException('"pub_sub" requires google/cloud-pubsub to be installed.');
-                    }
-                    if (isset($mergedOptions['pub_sub_client'])) {
-                        $bindings[PubSubClient::class] = new Reference($mergedOptions['pub_sub_client']);
-                        unset($mergedOptions['pub_sub_client']);
-                    } else {
-                        $pubSubOptions = [];
-                        if (\array_key_exists('key_file_path', $mergedOptions)) {
-                            $pubSubOptions['keyFilePath'] = $mergedOptions['key_file_path'];
-                            unset($mergedOptions['key_file_path']);
-                        }
-                        $pubSubClient = new Definition(PubSubClient::class, [$pubSubOptions]);
-                        $pubSubClientName = "{$managerServiceName}.pub_sub_client";
-                        $container->setDefinition($pubSubClientName, $pubSubClient);
-                        $bindings[PubSubClient::class] = new Reference($pubSubClientName);
-                    }
-
-                    break;
-            }
-
-            $container->setParameter("mcfedr_queue_manager.{$name}.options", $mergedOptions);
-            $managerDefinition = new Definition($managerClass);
-            $managerDefinition->setBindings($bindings);
-            $managerDefinition->setAutoconfigured(true);
-            $managerDefinition->setAutowired(true);
-            $managerDefinition->setPublic(true);
-            $managerDefinition->addTag('mcfedr_queue_manager.manager', ['id' => $name]);
-
-            $container->setDefinition($managerServiceName, $managerDefinition);
-            if (!$container->has($managerClass)) {
-                $managerServiceAlias = $container->setAlias($managerClass, $managerServiceName);
-                $managerServiceAlias->setPublic(true);
-            }
-
+            $this->createManager($container, $config, $name, $manager);
             $queueManagers[$name] = true;
-
-            if (isset($config['drivers'][$manager['driver']]['command_class'])) {
-                $commandClass = $config['drivers'][$manager['driver']]['command_class'];
-                $commandDefinition = new Definition($commandClass);
-                $commandBindings = array_merge([
-                    '$name' => "mcfedr:queue:{$name}-runner",
-                ], $bindings);
-                $commandDefinition->setBindings($commandBindings);
-                $commandDefinition->setAutoconfigured(true);
-                $commandDefinition->setAutowired(true);
-                $commandDefinition->setPublic(true);
-                $commandDefinition->setTags(
-                    ['console.command' => []]
-                );
-                $commandServiceName = "mcfedr_queue_manager.runner.{$name}";
-                $container->setDefinition($commandServiceName, $commandDefinition);
-                if (!$container->has($commandClass)) {
-                    $commandServiceAlias = $container->setAlias($commandClass, $commandServiceName);
-                    $commandServiceAlias->setPublic(true);
-                }
-            }
         }
 
         if (\array_key_exists('default', $queueManagers)) {
@@ -199,21 +74,19 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
             $container->setDefinition(MemoryReportSubscriber::class, $memoryListener);
         }
 
-        // Only referring to the classes as strings so as not to load them when not needed
-        // This means there is no hard dependancy on Doctrine or SwiftMailer
-        if ($config['doctrine_reset'] && class_exists('Doctrine\Bundle\DoctrineBundle\Registry')) {
-            $doctrineListener = new Definition('Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber', [
+        if ($config['doctrine_reset'] && \array_key_exists('DoctrineBundle', $container->getParameter('kernel.bundles'))) {
+            $doctrineListener = new Definition(DoctrineResetSubscriber::class, [
                 new Reference('doctrine', ContainerInterface::NULL_ON_INVALID_REFERENCE),
             ]);
             $doctrineListener->setPublic(true);
             $doctrineListener->setTags([
                 'kernel.event_subscriber' => [],
             ]);
-            $container->setDefinition('Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber', $doctrineListener);
+            $container->setDefinition(DoctrineResetSubscriber::class, $doctrineListener);
         }
 
-        if ($config['swift_mailer_batch_size'] >= 0 && class_exists('Symfony\Bundle\SwiftmailerBundle\EventListener\EmailSenderListener')) {
-            $swiftListener = new Definition('Mcfedr\QueueManagerBundle\Subscriber\SwiftMailerSubscriber', [
+        if ($config['swift_mailer_batch_size'] >= 0 && \array_key_exists('SwiftmailerBundle', $container->getParameter('kernel.bundles'))) {
+            $swiftListener = new Definition(SwiftMailerSubscriber::class, [
                 $config['swift_mailer_batch_size'],
                 new Reference('service_container'),
                 new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE),
@@ -222,7 +95,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
             $swiftListener->setTags([
                 'kernel.event_subscriber' => [],
             ]);
-            $container->setDefinition('Mcfedr\QueueManagerBundle\Subscriber\SwiftMailerSubscriber', $swiftListener);
+            $container->setDefinition(SwiftMailerSubscriber::class, $swiftListener);
         }
     }
 
@@ -234,7 +107,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
         // get all Bundles
         $bundles = $container->getParameter('kernel.bundles');
         // determine if McfedrQueueManagerBundle is registered
-        if (isset($bundles['McfedrQueueManagerBundle'])) {
+        if (\array_key_exists('McfedrQueueManagerBundle', $bundles)) {
             $container->prependExtensionConfig('mcfedr_queue_manager', [
                 'drivers' => [
                     'periodic' => [
@@ -282,6 +155,161 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                     ],
                 ],
             ]);
+
+            if (\array_key_exists('DoctrineBundle', $container->getParameter('kernel.bundles'))) {
+                $container->prependExtensionConfig('mcfedr_queue_manager', [
+                    'managers' => [
+                        'delay' => [
+                            'driver' => 'doctrine_delay',
+                        ],
+                        'periodic' => [
+                            'driver' => 'periodic',
+                            'options' => [
+                                'delay_manager' => 'delay',
+                            ],
+                        ],
+                    ],
+                ]);
+            }
+        }
+    }
+
+    private function createManager(ContainerBuilder $container, array $config, string $name, array $managerConfig): void
+    {
+        if (!isset($config['drivers'][$managerConfig['driver']])) {
+            throw new InvalidArgumentException("Manager '{$name}' uses unknown driver '{$managerConfig['driver']}'");
+        }
+
+        $managerClass = $config['drivers'][$managerConfig['driver']]['class'];
+        $defaultOptions = $config['drivers'][$managerConfig['driver']]['options'] ?? [];
+        $options = $managerConfig['options'] ?? [];
+        $mergedOptions = array_merge(
+            [
+                'retry_limit' => $config['retry_limit'],
+                'sleep_seconds' => $config['sleep_seconds'],
+            ],
+            $defaultOptions,
+            $options
+        );
+        $bindings = [
+            '$options' => $mergedOptions,
+        ];
+        $managerServiceName = "mcfedr_queue_manager.{$name}";
+
+        switch ($managerConfig['driver']) {
+            case 'beanstalkd':
+                if (!interface_exists(PheanstalkInterface::class)) {
+                    throw new \LogicException('"pheanstalk" requires pda/pheanstalk to be installed.');
+                }
+                if (isset($mergedOptions['pheanstalk'])) {
+                    $bindings[PheanstalkInterface::class] = new Reference($mergedOptions['pheanstalk']);
+                    unset($mergedOptions['pheanstalk']);
+                } else {
+                    $pheanstalk = new Definition(
+                        Pheanstalk::class,
+                        [
+                            $mergedOptions['host'],
+                            $mergedOptions['port'],
+                            $mergedOptions['connection']['timeout'],
+                            $mergedOptions['connection']['persistent'],
+                        ]
+                    );
+                    unset($mergedOptions['host'], $mergedOptions['port'], $mergedOptions['connection']);
+
+                    $pheanstalkName = "{$managerServiceName}.pheanstalk";
+                    $container->setDefinition($pheanstalkName, $pheanstalk);
+                    $bindings[PheanstalkInterface::class] = new Reference($pheanstalkName);
+                }
+
+                break;
+            case 'sqs':
+                if (!class_exists(SqsClient::class)) {
+                    throw new \LogicException('"sqs" requires aws/aws-sdk-php to be installed.');
+                }
+                if (isset($mergedOptions['sqs_client'])) {
+                    $bindings[SqsClient::class] = new Reference($mergedOptions['sqs_client']);
+                    unset($mergedOptions['sqs_client']);
+                } else {
+                    $sqsOptions = [
+                        'region' => $mergedOptions['region'],
+                        'version' => '2012-11-05',
+                    ];
+                    unset($mergedOptions['region']);
+                    if (\array_key_exists('credentials', $mergedOptions)) {
+                        $sqsOptions['credentials'] = $mergedOptions['credentials'];
+                        unset($mergedOptions['credentials']);
+                    }
+                    $sqsClient = new Definition(SqsClient::class, [$sqsOptions]);
+                    $sqsClientName = "{$managerServiceName}.sqs_client";
+                    $container->setDefinition($sqsClientName, $sqsClient);
+                    $bindings[SqsClient::class] = new Reference($sqsClientName);
+                }
+
+                break;
+            case 'doctrine_delay':
+                if (!isset(($container->getParameter('kernel.bundles'))['DoctrineBundle'])) {
+                    throw new \LogicException('"doctrine_delay" requires doctrine/doctrine-bundle to be installed.');
+                }
+
+                break;
+            case 'pub_sub':
+                if (!class_exists(PubSubClient::class)) {
+                    throw new \LogicException('"pub_sub" requires google/cloud-pubsub to be installed.');
+                }
+                if (isset($mergedOptions['pub_sub_client'])) {
+                    $bindings[PubSubClient::class] = new Reference($mergedOptions['pub_sub_client']);
+                    unset($mergedOptions['pub_sub_client']);
+                } else {
+                    $pubSubOptions = [];
+                    if (\array_key_exists('key_file_path', $mergedOptions)) {
+                        $pubSubOptions['keyFilePath'] = $mergedOptions['key_file_path'];
+                        unset($mergedOptions['key_file_path']);
+                    }
+                    $pubSubClient = new Definition(PubSubClient::class, [$pubSubOptions]);
+                    $pubSubClientName = "{$managerServiceName}.pub_sub_client";
+                    $container->setDefinition($pubSubClientName, $pubSubClient);
+                    $bindings[PubSubClient::class] = new Reference($pubSubClientName);
+                }
+
+                break;
+        }
+
+        $container->setParameter("mcfedr_queue_manager.{$name}.options", $mergedOptions);
+        $managerDefinition = new Definition($managerClass);
+        $managerDefinition->setBindings($bindings);
+        $managerDefinition->setAutoconfigured(true);
+        $managerDefinition->setAutowired(true);
+        $managerDefinition->setPublic(true);
+        $managerDefinition->addTag('mcfedr_queue_manager.manager', ['id' => $name]);
+
+        $container->setDefinition($managerServiceName, $managerDefinition);
+        if (!$container->has($managerClass)) {
+            $managerServiceAlias = $container->setAlias($managerClass, $managerServiceName);
+            $managerServiceAlias->setPublic(true);
+        }
+
+        if (isset($config['drivers'][$managerConfig['driver']]['command_class'])) {
+            $commandClass = $config['drivers'][$managerConfig['driver']]['command_class'];
+            $commandDefinition = new Definition($commandClass);
+            $commandBindings = array_merge(
+                [
+                    '$name' => "mcfedr:queue:{$name}-runner",
+                ],
+                $bindings
+            );
+            $commandDefinition->setBindings($commandBindings);
+            $commandDefinition->setAutoconfigured(true);
+            $commandDefinition->setAutowired(true);
+            $commandDefinition->setPublic(true);
+            $commandDefinition->setTags(
+                ['console.command' => []]
+            );
+            $commandServiceName = "mcfedr_queue_manager.runner.{$name}";
+            $container->setDefinition($commandServiceName, $commandDefinition);
+            if (!$container->has($commandClass)) {
+                $commandServiceAlias = $container->setAlias($commandClass, $commandServiceName);
+                $commandServiceAlias->setPublic(true);
+            }
         }
     }
 }

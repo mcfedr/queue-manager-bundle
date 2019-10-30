@@ -1,5 +1,9 @@
 # Changelog
 
+### 6.5.0
+
+- Add default period and delay managers.
+
 ### 6.4.4
 
 - Fix Periodic throwing wrong delete exception.
