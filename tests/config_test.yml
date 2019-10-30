@@ -117,6 +117,10 @@ services:
         arguments:
         - "@logger"
 
+    Mcfedr\QueueManagerBundle\Worker\WorkerWithANameWorker:
+        autowire: true
+        autoconfigure: true
+
     Mcfedr\QueueManagerBundle\Command\:
         resource: 'Mcfedr/QueueManagerBundle/Command/*'
         autowire: true

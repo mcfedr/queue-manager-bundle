@@ -17,7 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
-use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
@@ -314,10 +314,9 @@ final class RunnerCommandTest extends TestCase
 
     private function getJobExecutor($worker, EventDispatcher $eventDispatcher = null): JobExecutor
     {
-        $container = new Container();
-        $container->set('worker', $worker);
-
-        return new JobExecutor($container, $eventDispatcher);
+        return new JobExecutor(new ServiceLocator([
+            'worker' => function () use ($worker) { return $worker; },
+        ]), $eventDispatcher);
     }
 
     private function executeCommand(Command $command): void

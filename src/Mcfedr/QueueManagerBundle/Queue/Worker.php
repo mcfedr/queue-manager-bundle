@@ -15,4 +15,7 @@ interface Worker
      * @throws UnrecoverableJobExceptionInterface This job should not be retried
      */
     public function execute(array $arguments): void;
+
+    // Optional method that replaces the default worker name
+    // public static function getName(): string
 }

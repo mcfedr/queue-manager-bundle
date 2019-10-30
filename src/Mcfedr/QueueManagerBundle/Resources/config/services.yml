@@ -7,9 +7,9 @@ services:
         public: true
         autowire: true
         autoconfigure: true
-        bind:
-            $defaultManager: '%mcfedr_queue_manager.default_manager%'
-            $managerIds: '%mcfedr_queue_manager.manager_ids%'
+        arguments:
+            - ~
+            - '%mcfedr_queue_manager.default_manager%'
 
     mcfedr_queue_manager.registry:
         alias: Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry
@@ -19,6 +19,8 @@ services:
         public: true
         autowire: true
         autoconfigure: true
+        arguments:
+            - ~
 
     Mcfedr\QueueManagerBundle\Worker\DoctrineDelayWorker:
         public: true
