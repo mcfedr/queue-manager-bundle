@@ -57,8 +57,25 @@ final class McfedrQueueManagerExtensionTest extends WebTestCase
         //Backwards compatibility
         static::assertTrue($client->getContainer()->has('mcfedr_queue_manager.registry'));
 
+        // Default subscribers added
         static::assertTrue($client->getContainer()->has(DoctrineResetSubscriber::class));
-
         static::assertTrue($client->getContainer()->has(SwiftMailerSubscriber::class));
+
+        // Default managers added
+        static::assertTrue($client->getContainer()->has('mcfedr_queue_manager.delay'));
+        static::assertTrue($client->getContainer()->has('mcfedr_queue_manager.periodic'));
+    }
+
+    public function testExtensionNoDoctrine(): void
+    {
+        $client = static::createClient([
+            'environment' => 'test_no_doctrine',
+        ]);
+        // Default subscribers not added
+        static::assertFalse($client->getContainer()->has(DoctrineResetSubscriber::class));
+        static::assertFalse($client->getContainer()->has(SwiftMailerSubscriber::class));
+        // Default managers not added
+        static::assertFalse($client->getContainer()->has('mcfedr_queue_manager.delay'));
+        static::assertFalse($client->getContainer()->has('mcfedr_queue_manager.periodic'));
     }
 }

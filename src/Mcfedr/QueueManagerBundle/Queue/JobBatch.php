@@ -118,10 +118,7 @@ class JobBatch implements \Countable
         return $this->retries;
     }
 
-    /**
-     * @param $option
-     */
-    public function getOption($option): ?string
+    public function getOption(string $option): ?string
     {
         return isset($this->options[$option]) ? $this->options[$option] : null;
     }
