@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Mcfedr\QueueManagerBundle\Tests\Command;
 
 use Mcfedr\QueueManagerBundle\Command\RunnerCommand;
+use Mcfedr\QueueManagerBundle\Event\FinishedJobBatchEvent;
+use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
+use Mcfedr\QueueManagerBundle\Event\StartJobBatchEvent;
+use Mcfedr\QueueManagerBundle\Event\StartJobEvent;
 use Mcfedr\QueueManagerBundle\Exception\TestException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
 use Mcfedr\QueueManagerBundle\Queue\Job;
@@ -237,17 +241,32 @@ final class RunnerCommandTest extends TestCase
             ->getMock()
         ;
 
-        $eventDispatcher->expects(static::exactly(6))
-            ->method('dispatch')
-            ->withConsecutive(
-                [JobExecutor::JOB_BATCH_START_EVENT],
-                [JobExecutor::JOB_START_EVENT],
-                [JobExecutor::JOB_FINISHED_EVENT],
-                [JobExecutor::JOB_START_EVENT],
-                [JobExecutor::JOB_FINISHED_EVENT],
-                [JobExecutor::JOB_BATCH_FINISHED_EVENT]
-            )
-        ;
+        $r = new \ReflectionClass(EventDispatcher::class);
+        if (\count($r->getMethod('dispatch')->getParameters()) === 1) {
+            $eventDispatcher->expects(static::exactly(6))
+                ->method('dispatch')
+                ->withConsecutive(
+                    [static::isInstanceOf(StartJobBatchEvent::class), JobExecutor::JOB_BATCH_START_EVENT],
+                    [static::isInstanceOf(StartJobEvent::class), JobExecutor::JOB_START_EVENT],
+                    [static::isInstanceOf(FinishedJobEvent::class), JobExecutor::JOB_FINISHED_EVENT],
+                    [static::isInstanceOf(StartJobEvent::class), JobExecutor::JOB_START_EVENT],
+                    [static::isInstanceOf(FinishedJobEvent::class), JobExecutor::JOB_FINISHED_EVENT],
+                    [static::isInstanceOf(FinishedJobBatchEvent::class), JobExecutor::JOB_BATCH_FINISHED_EVENT]
+                )
+            ;
+        } else {
+            $eventDispatcher->expects(static::exactly(6))
+                ->method('dispatch')
+                ->withConsecutive(
+                    [JobExecutor::JOB_BATCH_START_EVENT, static::isInstanceOf(StartJobBatchEvent::class)],
+                    [JobExecutor::JOB_START_EVENT, static::isInstanceOf(StartJobEvent::class)],
+                    [JobExecutor::JOB_FINISHED_EVENT, static::isInstanceOf(FinishedJobEvent::class)],
+                    [JobExecutor::JOB_START_EVENT, static::isInstanceOf(StartJobEvent::class)],
+                    [JobExecutor::JOB_FINISHED_EVENT, static::isInstanceOf(FinishedJobEvent::class)],
+                    [JobExecutor::JOB_BATCH_FINISHED_EVENT, static::isInstanceOf(FinishedJobBatchEvent::class)]
+                )
+            ;
+        }
 
         $methods = ['getJobs', 'finishJobs'];
         $command = $this->getMockCommand($methods, new JobBatch($jobs), $this->getJobExecutor($worker, $eventDispatcher));

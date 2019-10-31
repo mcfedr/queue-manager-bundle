@@ -58,18 +58,14 @@ class JobExecutor
 
     public function startBatch(JobBatch $batch): void
     {
-        if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch(self::JOB_BATCH_START_EVENT, new StartJobBatchEvent($batch->getJobs()));
-        }
+        $this->dispatch(self::JOB_BATCH_START_EVENT, new StartJobBatchEvent($batch->getJobs()));
         $this->batchStarted = true;
     }
 
     public function finishBatch(JobBatch $batch): void
     {
         $this->batchStarted = false;
-        if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch(self::JOB_BATCH_FINISHED_EVENT, new FinishedJobBatchEvent($batch->getOks(), $batch->getRetries(), $batch->getFails(), $batch->getJobs()));
-        }
+        $this->dispatch(self::JOB_BATCH_FINISHED_EVENT, new FinishedJobBatchEvent($batch->getOks(), $batch->getRetries(), $batch->getFails(), $batch->getJobs()));
     }
 
     /**
@@ -101,9 +97,7 @@ class JobExecutor
                 throw new InvalidWorkerException("The worker {$job->getName()} is not an instance of ".Worker::class);
             }
             $internal = $worker instanceof InternalWorker;
-            if ($this->eventDispatcher) {
-                $this->eventDispatcher->dispatch(self::JOB_START_EVENT, new StartJobEvent($job, $internal));
-            }
+            $this->dispatch(self::JOB_START_EVENT, new StartJobEvent($job, $internal));
             $worker->execute($job->getArguments());
         } catch (NotFoundExceptionInterface $e) {
             $unrecoverable = new UnrecoverableJobException("Missing worker {$job->getName()}", 0, $e);
@@ -147,9 +141,7 @@ class JobExecutor
                 'arguments' => $job->getArguments(),
             ]);
         }
-        if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch(self::JOB_FINISHED_EVENT, new FinishedJobEvent($job, $internal));
-        }
+        $this->dispatch(self::JOB_FINISHED_EVENT, new FinishedJobEvent($job, $internal));
         if ($this->triggerBatchEvents) {
             $this->finishBatch(new JobBatch([], [$job]));
         }
@@ -173,14 +165,29 @@ class JobExecutor
             }
             $this->logger->error('Job failed.', $context);
         }
-        if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch(self::JOB_FAILED_EVENT, new FailedJobEvent($job, $exception, $internal));
-        }
+        $this->dispatch(self::JOB_FAILED_EVENT, new FailedJobEvent($job, $exception, $internal));
         if ($this->triggerBatchEvents) {
             $batch = new JobBatch([$job]);
             $batch->next();
             $batch->result($exception);
             $this->finishBatch($batch);
+        }
+    }
+
+    /**
+     * Provide a BC way to dispatch events.
+     *
+     * @param $event
+     */
+    private function dispatch(string $eventName, $event): void
+    {
+        if ($this->eventDispatcher) {
+            $r = new \ReflectionClass(\get_class($this->eventDispatcher));
+            if (\count($r->getMethod('dispatch')->getParameters()) === 1) {
+                $this->eventDispatcher->dispatch($event, $eventName);
+            } else {
+                $this->eventDispatcher->dispatch($eventName, $event);
+            }
         }
     }
 }
