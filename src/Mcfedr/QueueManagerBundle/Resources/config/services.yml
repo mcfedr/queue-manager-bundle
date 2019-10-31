@@ -9,6 +9,7 @@ services:
         autoconfigure: true
         arguments:
             - ~
+            - ~
             - '%mcfedr_queue_manager.default_manager%'
 
     mcfedr_queue_manager.registry:

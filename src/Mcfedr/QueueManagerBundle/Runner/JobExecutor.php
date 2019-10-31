@@ -17,10 +17,10 @@ use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\JobBatch;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
 use Mcfedr\QueueManagerBundle\Queue\Worker;
+use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Contracts\Service\ServiceProviderInterface;
 
 class JobExecutor
 {
@@ -37,7 +37,7 @@ class JobExecutor
     protected $logger;
 
     /**
-     * @var ServiceProviderInterface
+     * @var ContainerInterface
      */
     private $workersMap;
 
@@ -49,7 +49,7 @@ class JobExecutor
     private $batchStarted = false;
     private $triggerBatchEvents = false;
 
-    public function __construct(ServiceProviderInterface $workersMap, ?EventDispatcherInterface $eventDispatcher = null, ?LoggerInterface $logger = null)
+    public function __construct(ContainerInterface $workersMap, ?EventDispatcherInterface $eventDispatcher = null, ?LoggerInterface $logger = null)
     {
         $this->workersMap = $workersMap;
         $this->logger = $logger;

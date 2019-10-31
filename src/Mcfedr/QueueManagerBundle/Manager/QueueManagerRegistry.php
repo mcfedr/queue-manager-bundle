@@ -6,30 +6,30 @@ namespace Mcfedr\QueueManagerBundle\Manager;
 
 use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Queue\Job;
-use Symfony\Contracts\Service\ServiceProviderInterface;
+use Psr\Container\ContainerInterface;
 
 class QueueManagerRegistry
 {
     /**
-     * @var ServiceProviderInterface
+     * @var ContainerInterface
      */
     private $queueManagers;
-
-    /**
-     * @var string
-     */
-    private $defaultManager;
 
     /**
      * @var string[]
      */
     private $managerIds;
 
-    public function __construct(ServiceProviderInterface $queueManagers, string $defaultManager)
+    /**
+     * @var string
+     */
+    private $defaultManager;
+
+    public function __construct(ContainerInterface $queueManagers, array $managerIds, string $defaultManager)
     {
         $this->queueManagers = $queueManagers;
+        $this->managerIds = $managerIds;
         $this->defaultManager = $defaultManager;
-        $this->managerIds = array_keys($queueManagers->getProvidedServices());
     }
 
     public function put(string $name, array $arguments = [], array $options = [], ?string $manager = null): Job

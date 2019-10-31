@@ -43,7 +43,7 @@ final class QueueManagerRegistryTest extends TestCase
             'delay' => function () {
                 return $this->delay;
             },
-        ]), 'default');
+        ]), ['default', 'delay'], 'default');
     }
 
     public function testDelete(): void

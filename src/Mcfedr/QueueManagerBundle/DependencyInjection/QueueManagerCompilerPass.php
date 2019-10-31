@@ -16,10 +16,10 @@ class QueueManagerCompilerPass implements CompilerPassInterface
     public function process(ContainerBuilder $container): void
     {
         $this->createMap($container, JobExecutor::class, 0, 'mcfedr_queue_manager.worker', 'getName');
-        $this->createMap($container, QueueManagerRegistry::class, 0, 'mcfedr_queue_manager.manager');
+        $this->createMap($container, QueueManagerRegistry::class, 0, 'mcfedr_queue_manager.manager', null, 1);
     }
 
-    private function createMap(ContainerBuilder $container, string $callerId, int $argument, string $tag, ?string $method = null): void
+    private function createMap(ContainerBuilder $container, string $callerId, int $argument, string $tag, ?string $method = null, ?int $idsArgument = null): void
     {
         $serviceIds = $container->findTaggedServiceIds($tag);
 
@@ -42,9 +42,11 @@ class QueueManagerCompilerPass implements CompilerPassInterface
             }
         }
 
-        $container
-            ->getDefinition($callerId)
-            ->replaceArgument($argument, ServiceLocatorTagPass::register($container, $serviceMap, $callerId))
-        ;
+        $definition = $container->getDefinition($callerId);
+        $definition->replaceArgument($argument, ServiceLocatorTagPass::register($container, $serviceMap, $callerId));
+
+        if ($idsArgument !== null) {
+            $definition->replaceArgument($idsArgument, array_keys($serviceMap));
+        }
     }
 }
