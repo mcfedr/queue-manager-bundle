@@ -49,11 +49,27 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
     {
         $now = new Carbon(null, new \DateTimeZone('UTC'));
         $em = $this->getEntityManager();
+        $connection = $em->getConnection();
 
         try {
             $em->getConnection()->beginTransaction();
             $repo = $em->getRepository(DoctrineDelayJob::class);
-            $orderDir = $this->reverse ? 'DESC' : 'ASC';
+            $query = $repo->createQueryBuilder('job')
+                ->andWhere('job.time < :now')
+                ->setParameter('now', $now, Type::DATETIME)
+                ->orderBy('job.time', $this->reverse ? 'DESC' : 'ASC')
+                ->setMaxResults($this->batchSize)
+                ->getQuery()
+                ->getResult()
+            ;
+
+            $result = $connection->executeQuery(
+                $query->getSQL().' '.$connection->getDatabasePlatform()->getWriteLockSQL(),
+                $query->getParameters()->toArray()
+            )->fetch();
+
+
+            $orderDir = ;
 
             $em->getConnection()->executeUpdate(
                 "UPDATE DoctrineDelayJob job SET job.processing = TRUE WHERE job.time < :now ORDER BY job.time {$orderDir} LIMIT :limit",
