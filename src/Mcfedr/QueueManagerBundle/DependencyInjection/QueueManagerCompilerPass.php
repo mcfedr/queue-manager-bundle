@@ -15,11 +15,11 @@ class QueueManagerCompilerPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
-        $this->createMap($container, JobExecutor::class, 'mcfedr_queue_manager.worker');
-        $this->createMap($container, QueueManagerRegistry::class, 'mcfedr_queue_manager.manager', 'mcfedr_queue_manager.manager_ids');
+        $this->createMap($container, JobExecutor::class, 0, 'mcfedr_queue_manager.worker', 'getName');
+        $this->createMap($container, QueueManagerRegistry::class, 0, 'mcfedr_queue_manager.manager', null, 1);
     }
 
-    private function createMap(ContainerBuilder $container, string $callerId, string $tag, ?string $parameter = null): void
+    private function createMap(ContainerBuilder $container, string $callerId, int $argument, string $tag, ?string $method = null, ?int $idsArgument = null): void
     {
         $serviceIds = $container->findTaggedServiceIds($tag);
 
@@ -28,14 +28,12 @@ class QueueManagerCompilerPass implements CompilerPassInterface
             foreach ($tags as $attributes) {
                 if (isset($attributes['id'])) {
                     $serviceMap[$attributes['id']] = new Reference($id);
+                } elseif ($method && method_exists(($class = $container->getDefinition($id)->getClass()), $method)) {
+                    $serviceMap[$class::$method()] = new Reference($id);
                 } else {
                     $serviceMap[$id] = new Reference($id);
                 }
             }
-        }
-
-        if ($parameter) {
-            $container->setParameter($parameter, array_keys($serviceMap));
         }
 
         foreach ($container->getAliases() as $alias => $id) {
@@ -44,9 +42,11 @@ class QueueManagerCompilerPass implements CompilerPassInterface
             }
         }
 
-        $container
-            ->getDefinition($callerId)
-            ->addTag('container.service_subscriber.locator', ['id' => (string) ServiceLocatorTagPass::register($container, $serviceMap, $callerId)])
-        ;
+        $definition = $container->getDefinition($callerId);
+        $definition->replaceArgument($argument, ServiceLocatorTagPass::register($container, $serviceMap, $callerId));
+
+        if ($idsArgument !== null) {
+            $definition->replaceArgument($idsArgument, array_keys($serviceMap));
+        }
     }
 }

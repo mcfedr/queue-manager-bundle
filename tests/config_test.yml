@@ -55,10 +55,6 @@ mcfedr_queue_manager:
                 host: 127.0.0.1
                 port: 1234
                 default_queue: mcfedr_queue
-        delay:
-            driver: doctrine_delay
-        periodic:
-            driver: periodic
         sqs:
             driver: sqs
             options:
@@ -120,6 +116,10 @@ services:
         class: Mcfedr\QueueManagerBundle\Worker\DoctrineTestWorker
         arguments:
         - "@logger"
+
+    Mcfedr\QueueManagerBundle\Worker\WorkerWithANameWorker:
+        autowire: true
+        autoconfigure: true
 
     Mcfedr\QueueManagerBundle\Command\:
         resource: 'Mcfedr/QueueManagerBundle/Command/*'

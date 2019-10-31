@@ -16,20 +16,20 @@ class QueueManagerRegistry
     private $queueManagers;
 
     /**
-     * @var string
-     */
-    private $defaultManager;
-
-    /**
      * @var string[]
      */
     private $managerIds;
 
-    public function __construct(ContainerInterface $queueManagers, string $defaultManager, array $managerIds)
+    /**
+     * @var string
+     */
+    private $defaultManager;
+
+    public function __construct(ContainerInterface $queueManagers, array $managerIds, string $defaultManager)
     {
         $this->queueManagers = $queueManagers;
-        $this->defaultManager = $defaultManager;
         $this->managerIds = $managerIds;
+        $this->defaultManager = $defaultManager;
     }
 
     public function put(string $name, array $arguments = [], array $options = [], ?string $manager = null): Job

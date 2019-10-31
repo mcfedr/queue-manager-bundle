@@ -10,7 +10,7 @@ use Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry;
 use Mcfedr\QueueManagerBundle\Queue\Job;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 
 /**
  * @internal
@@ -34,12 +34,16 @@ final class QueueManagerRegistryTest extends TestCase
 
     protected function setUp(): void
     {
-        $c = new Container();
         $this->default = $this->getMockBuilder(QueueManager::class)->getMock();
-        $c->set('default', $this->default);
         $this->delay = $this->getMockBuilder(QueueManager::class)->getMock();
-        $c->set('delay', $this->delay);
-        $this->queueManagerRegistry = new QueueManagerRegistry($c, 'default', ['default', 'delay']);
+        $this->queueManagerRegistry = new QueueManagerRegistry(new ServiceLocator([
+            'default' => function () {
+                return $this->default;
+            },
+            'delay' => function () {
+                return $this->delay;
+            },
+        ]), ['default', 'delay'], 'default');
     }
 
     public function testDelete(): void

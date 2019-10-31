@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\Subscriber;
 
-use Doctrine\Bundle\DoctrineBundle\Registry;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
 use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
 use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
@@ -14,14 +14,11 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class DoctrineResetSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var ?Registry
+     * @var ?ManagerRegistry
      */
     private $doctrine;
 
-    /**
-     * @param Registry $doctrine
-     */
-    public function __construct(?Registry $doctrine = null)
+    public function __construct(?ManagerRegistry $doctrine = null)
     {
         $this->doctrine = $doctrine;
     }
