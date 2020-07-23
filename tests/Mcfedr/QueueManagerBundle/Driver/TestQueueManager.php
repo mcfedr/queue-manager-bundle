@@ -36,6 +36,8 @@ class TestQueueManager implements QueueManager
         $this->info('Putting new job', [
             'name' => $name,
         ]);
+
+        return null;
     }
 
     public function delete(Job $job): void

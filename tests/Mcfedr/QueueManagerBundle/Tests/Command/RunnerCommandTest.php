@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Mcfedr\QueueManagerBundle\Tests\Command;
 
 use Mcfedr\QueueManagerBundle\Command\RunnerCommand;
+use Mcfedr\QueueManagerBundle\Event\FinishedJobBatchEvent;
+use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
+use Mcfedr\QueueManagerBundle\Event\StartJobBatchEvent;
+use Mcfedr\QueueManagerBundle\Event\StartJobEvent;
 use Mcfedr\QueueManagerBundle\Exception\TestException;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
 use Mcfedr\QueueManagerBundle\Queue\Job;
@@ -240,12 +244,12 @@ final class RunnerCommandTest extends TestCase
         $eventDispatcher->expects(static::exactly(6))
             ->method('dispatch')
             ->withConsecutive(
-                [JobExecutor::JOB_BATCH_START_EVENT],
-                [JobExecutor::JOB_START_EVENT],
-                [JobExecutor::JOB_FINISHED_EVENT],
-                [JobExecutor::JOB_START_EVENT],
-                [JobExecutor::JOB_FINISHED_EVENT],
-                [JobExecutor::JOB_BATCH_FINISHED_EVENT]
+                [new StartJobBatchEvent($jobs), JobExecutor::JOB_BATCH_START_EVENT],
+                [new StartJobEvent($jobs[0], false), JobExecutor::JOB_START_EVENT],
+                [new FinishedJobEvent($jobs[0], false), JobExecutor::JOB_FINISHED_EVENT],
+                [new StartJobEvent($jobs[0], false), JobExecutor::JOB_START_EVENT],
+                [new FinishedJobEvent($jobs[0], false), JobExecutor::JOB_FINISHED_EVENT],
+                [new FinishedJobBatchEvent($jobs, [], [], []), JobExecutor::JOB_BATCH_FINISHED_EVENT]
             )
         ;
 

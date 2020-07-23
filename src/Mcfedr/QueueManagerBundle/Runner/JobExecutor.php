@@ -59,7 +59,7 @@ class JobExecutor
     public function startBatch(JobBatch $batch): void
     {
         if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch(self::JOB_BATCH_START_EVENT, new StartJobBatchEvent($batch->getJobs()));
+            $this->eventDispatcher->dispatch(new StartJobBatchEvent($batch->getJobs()), self::JOB_BATCH_START_EVENT);
         }
         $this->batchStarted = true;
     }
@@ -68,7 +68,7 @@ class JobExecutor
     {
         $this->batchStarted = false;
         if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch(self::JOB_BATCH_FINISHED_EVENT, new FinishedJobBatchEvent($batch->getOks(), $batch->getRetries(), $batch->getFails(), $batch->getJobs()));
+            $this->eventDispatcher->dispatch(new FinishedJobBatchEvent($batch->getOks(), $batch->getRetries(), $batch->getFails(), $batch->getJobs()), self::JOB_BATCH_FINISHED_EVENT);
         }
     }
 
@@ -102,7 +102,7 @@ class JobExecutor
             }
             $internal = $worker instanceof InternalWorker;
             if ($this->eventDispatcher) {
-                $this->eventDispatcher->dispatch(self::JOB_START_EVENT, new StartJobEvent($job, $internal));
+                $this->eventDispatcher->dispatch(new StartJobEvent($job, $internal), self::JOB_START_EVENT);
             }
             $worker->execute($job->getArguments());
         } catch (NotFoundExceptionInterface $e) {
@@ -148,7 +148,7 @@ class JobExecutor
             ]);
         }
         if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch(self::JOB_FINISHED_EVENT, new FinishedJobEvent($job, $internal));
+            $this->eventDispatcher->dispatch(new FinishedJobEvent($job, $internal), self::JOB_FINISHED_EVENT);
         }
         if ($this->triggerBatchEvents) {
             $this->finishBatch(new JobBatch([], [$job]));
@@ -174,7 +174,7 @@ class JobExecutor
             $this->logger->error('Job failed.', $context);
         }
         if ($this->eventDispatcher) {
-            $this->eventDispatcher->dispatch(self::JOB_FAILED_EVENT, new FailedJobEvent($job, $exception, $internal));
+            $this->eventDispatcher->dispatch(new FailedJobEvent($job, $exception, $internal), self::JOB_FAILED_EVENT);
         }
         if ($this->triggerBatchEvents) {
             $batch = new JobBatch([$job]);
