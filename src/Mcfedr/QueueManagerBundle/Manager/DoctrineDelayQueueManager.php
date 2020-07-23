@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Mcfedr\QueueManagerBundle\Manager;
 
 use Carbon\Carbon;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use Mcfedr\QueueManagerBundle\Entity\DoctrineDelayJob;
 use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
 use Mcfedr\QueueManagerBundle\Exception\WrongJobException;

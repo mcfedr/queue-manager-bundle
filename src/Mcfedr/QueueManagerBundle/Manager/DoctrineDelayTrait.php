@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\Manager;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManager;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @internal
