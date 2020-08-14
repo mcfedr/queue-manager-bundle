@@ -1,18 +1,19 @@
 language: php
 
-dist: trusty
-sudo: false
-
 matrix:
   include:
     - php: 7.2.5
       env: SYMFONY_VERSION='^5.0'
     - php: 7.2.5
-      env: SYMFONY_VERSION='^4.2'
+      env:
+        - SYMFONY_VERSION='^4.2'
+        - STAN='-sym4'
     - php: 7.3
       env: SYMFONY_VERSION='^5.0'
     - php: 7.3
-      env: SYMFONY_VERSION='^4.2'
+      env:
+        - SYMFONY_VERSION='^4.2'
+        - STAN='-sym4'
   fast_finish: true
 
 before_script:
@@ -23,5 +24,5 @@ before_script:
 script:
   - ./vendor/bin/php-cs-fixer fix --dry-run --diff
   - ./tests/console cache:clear
-  - ./vendor/bin/phpstan analyse
+  - ./vendor/bin/phpstan analyse -c phpstan$STAN.neon
   - ./vendor/bin/phpunit

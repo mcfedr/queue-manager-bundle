@@ -4,7 +4,7 @@ includes:
     - vendor/phpstan/phpstan-doctrine/extension.neon
 parameters:
     symfony:
-        container_xml_path: %rootDir%/../../../var/cache/test/TestKernelTestDebugContainer.xml
+        container_xml_path: %rootDir%/../../../var/cache/test/testsTestKernelTestDebugContainer.xml
         console_application_loader: %rootDir%/../../../tests/console_application_loader.php
     level: 3
     paths:
