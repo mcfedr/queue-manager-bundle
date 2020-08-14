@@ -140,6 +140,29 @@ abstract class RunnerCommand extends Command
         return 0;
     }
 
+    /**
+     * @throws UnexpectedJobDataException
+     */
+    abstract protected function getJobs(): ?JobBatch;
+
+    /**
+     * Called after a batch of jobs finishes.
+     */
+    abstract protected function finishJobs(JobBatch $batch): void;
+
+    protected function handleInput(InputInterface $input): void
+    {
+        // Allows overriding
+    }
+
+    /**
+     * Get the number of seconds to delay a try.
+     */
+    protected function getRetryDelaySeconds(int $count): int
+    {
+        return $count * $count * 30;
+    }
+
     private function executeBatch(): void
     {
         try {
@@ -190,29 +213,6 @@ abstract class RunnerCommand extends Command
         }
 
         return null;
-    }
-
-    /**
-     * @throws UnexpectedJobDataException
-     */
-    abstract protected function getJobs(): ?JobBatch;
-
-    /**
-     * Called after a batch of jobs finishes.
-     */
-    abstract protected function finishJobs(JobBatch $batch): void;
-
-    protected function handleInput(InputInterface $input): void
-    {
-        // Allows overriding
-    }
-
-    /**
-     * Get the number of seconds to delay a try.
-     */
-    protected function getRetryDelaySeconds(int $count): int
-    {
-        return $count * $count * 30;
     }
 
     private function getProcess(InputInterface $input): Process
