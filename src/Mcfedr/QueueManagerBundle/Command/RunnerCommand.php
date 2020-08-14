@@ -140,7 +140,7 @@ abstract class RunnerCommand extends Command
         return 0;
     }
 
-    protected function executeBatch(): void
+    private function executeBatch(): void
     {
         try {
             $this->jobs = $this->getJobs();
@@ -169,7 +169,7 @@ abstract class RunnerCommand extends Command
         }
     }
 
-    protected function executeBatchWithProcess(InputInterface $input, OutputInterface $output): void
+    private function executeBatchWithProcess(InputInterface $input, OutputInterface $output): void
     {
         $process = $this->getProcess($input);
 
@@ -181,7 +181,7 @@ abstract class RunnerCommand extends Command
     /**
      * Executes a single job.
      */
-    protected function executeJob(Job $job): ?\Throwable
+    private function executeJob(Job $job): ?\Throwable
     {
         try {
             $this->jobExecutor->executeJob($job, $this->retryLimit);
