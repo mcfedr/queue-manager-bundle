@@ -13,4 +13,5 @@ parameters:
         -
             message: '#Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\NodeDefinition::children\(\)#'
             path: %rootDir%/../../../src/Mcfedr/QueueManagerBundle/DependencyInjection/Configuration.php
+        - '#Class Pheanstalk\\PheanstalkInterface not found#'
     reportUnmatchedIgnoredErrors: false

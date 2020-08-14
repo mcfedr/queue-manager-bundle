@@ -26,7 +26,7 @@
         "symfony/browser-kit": "^4.0|^5",
         "phpstan/phpstan": "^0.12",
         "symfony/yaml": "^4|^5",
-        "pda/pheanstalk": "^3.1",
+        "pda/pheanstalk": "^3.1|^v4",
         "doctrine/orm": "^2.5",
         "symfony/proxy-manager-bridge": "^4.0|^5",
         "aws/aws-sdk-php": "^3.15",

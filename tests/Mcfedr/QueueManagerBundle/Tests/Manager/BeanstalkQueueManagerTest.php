@@ -8,9 +8,13 @@ use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Manager\BeanstalkQueueManager;
 use Mcfedr\QueueManagerBundle\Queue\BeanstalkJob;
 use Mcfedr\QueueManagerBundle\Queue\Job;
-use Pheanstalk\PheanstalkInterface;
+use Pheanstalk\Contract\PheanstalkInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+
+if (!interface_exists(\Pheanstalk\Contract\PheanstalkInterface::class)) {
+    class_alias(\Pheanstalk\PheanstalkInterface::class, \Pheanstalk\Contract\PheanstalkInterface::class);
+}
 
 /**
  * @internal
@@ -46,9 +50,16 @@ final class BeanstalkQueueManagerTest extends TestCase
 
         $this->pheanstalk
             ->expects(static::once())
-            ->method('putInTube')
-            ->with('test_queue', $job->getData(), PheanstalkInterface::DEFAULT_PRIORITY, PheanstalkInterface::DEFAULT_DELAY, PheanstalkInterface::DEFAULT_TTR)
-            ->willReturn(1)
+            ->method('useTube')
+            ->with('test_queue')
+            ->willReturn($this->pheanstalk)
+        ;
+
+        $this->pheanstalk
+            ->expects(static::once())
+            ->method('put')
+            ->with($job->getData(), PheanstalkInterface::DEFAULT_PRIORITY, PheanstalkInterface::DEFAULT_DELAY, PheanstalkInterface::DEFAULT_TTR)
+            ->willReturn(interface_exists(\Pheanstalk\PheanstalkInterface::class) ? 0 : new \Pheanstalk\Job(0, 'data'))
         ;
 
         $job = $this->manager->put('test_worker');
