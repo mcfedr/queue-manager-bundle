@@ -12,7 +12,7 @@ set_time_limit(0);
 require __DIR__.'/../vendor/autoload.php';
 
 $dotenv = new Dotenv(false);
-$dotenv->bootEnv(__DIR__.'/.env', 'test');
+$dotenv->loadEnv(__DIR__.'/.env', 'test');
 
 // This makes the GOOGLE_APPLICATION_CREDENTIALS an absolute path
 if (isset($_ENV['GOOGLE_APPLICATION_CREDENTIALS']) && 0 !== strpos($_ENV['GOOGLE_APPLICATION_CREDENTIALS'], '/')) {
