@@ -11,15 +11,8 @@ use Symfony\Component\ErrorHandler\Debug;
 set_time_limit(0);
 require __DIR__.'/../vendor/autoload.php';
 
-$dotenv = new Dotenv();
-if (\method_exists($dotenv, 'loadEnv')) {
-    $dotenv->loadEnv(__DIR__.'/.env', 'APP_ENV', 'test');
-} else {
-    $dotenv->load(__DIR__.'/.env');
-    if (file_exists($p =__DIR__.'/.env.test.local')) {
-        $dotenv->load($p);
-    }
-}
+$dotenv = new Dotenv(false);
+$dotenv->loadEnv(__DIR__.'/.env', 'APP_ENV', 'test');
 
 $input = new ArgvInput();
 Debug::enable();
