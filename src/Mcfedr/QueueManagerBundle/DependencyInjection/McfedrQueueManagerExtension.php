@@ -192,7 +192,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
             $options
         );
         $bindings = [
-            '$options' => $mergedOptions,
+            'array $options' => $mergedOptions,
         ];
         $managerServiceName = "mcfedr_queue_manager.{$name}";
 
@@ -202,7 +202,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                     throw new \LogicException('"pheanstalk" requires pda/pheanstalk to be installed.');
                 }
                 if (isset($mergedOptions['pheanstalk'])) {
-                    $bindings[PheanstalkInterface::class] = new Reference($mergedOptions['pheanstalk']);
+                    $bindings[PheanstalkInterface::class.' $pheanstalk'] = new Reference($mergedOptions['pheanstalk']);
                     unset($mergedOptions['pheanstalk']);
                 } else {
                     $pheanstalk = new Definition(
@@ -218,7 +218,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
 
                     $pheanstalkName = "{$managerServiceName}.pheanstalk";
                     $container->setDefinition($pheanstalkName, $pheanstalk);
-                    $bindings[PheanstalkInterface::class] = new Reference($pheanstalkName);
+                    $bindings[PheanstalkInterface::class.' $pheanstalk'] = new Reference($pheanstalkName);
                 }
 
                 break;
@@ -227,7 +227,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                     throw new \LogicException('"sqs" requires aws/aws-sdk-php to be installed.');
                 }
                 if (isset($mergedOptions['sqs_client'])) {
-                    $bindings[SqsClient::class] = new Reference($mergedOptions['sqs_client']);
+                    $bindings[SqsClient::class.' $sqsClient'] = new Reference($mergedOptions['sqs_client']);
                     unset($mergedOptions['sqs_client']);
                 } else {
                     $sqsOptions = [
@@ -242,7 +242,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                     $sqsClient = new Definition(SqsClient::class, [$sqsOptions]);
                     $sqsClientName = "{$managerServiceName}.sqs_client";
                     $container->setDefinition($sqsClientName, $sqsClient);
-                    $bindings[SqsClient::class] = new Reference($sqsClientName);
+                    $bindings[SqsClient::class.' $sqsClient'] = new Reference($sqsClientName);
                 }
 
                 break;
@@ -257,7 +257,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                     throw new \LogicException('"pub_sub" requires google/cloud-pubsub to be installed.');
                 }
                 if (isset($mergedOptions['pub_sub_client'])) {
-                    $bindings[PubSubClient::class] = new Reference($mergedOptions['pub_sub_client']);
+                    $bindings[PubSubClient::class.' $pubSubClient'] = new Reference($mergedOptions['pub_sub_client']);
                     unset($mergedOptions['pub_sub_client']);
                 } else {
                     $pubSubOptions = [];
@@ -268,7 +268,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                     $pubSubClient = new Definition(PubSubClient::class, [$pubSubOptions]);
                     $pubSubClientName = "{$managerServiceName}.pub_sub_client";
                     $container->setDefinition($pubSubClientName, $pubSubClient);
-                    $bindings[PubSubClient::class] = new Reference($pubSubClientName);
+                    $bindings[PubSubClient::class.' $pubSubClient'] = new Reference($pubSubClientName);
                 }
 
                 break;
