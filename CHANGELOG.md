@@ -1,5 +1,13 @@
 # Changelog
 
+### 6.6.0
+
+- Add Symfony 5 support
+- Drop Symfony 3 support
+- Allow use of Doctrine 2
+- Allow use of Uuid 4
+- Add Pheanstalk 4 support
+
 ### 6.5.0
 
 - Add default period and delay managers.

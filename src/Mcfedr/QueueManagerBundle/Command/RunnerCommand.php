@@ -140,7 +140,30 @@ abstract class RunnerCommand extends Command
         return 0;
     }
 
-    protected function executeBatch(): void
+    /**
+     * @throws UnexpectedJobDataException
+     */
+    abstract protected function getJobs(): ?JobBatch;
+
+    /**
+     * Called after a batch of jobs finishes.
+     */
+    abstract protected function finishJobs(JobBatch $batch): void;
+
+    protected function handleInput(InputInterface $input): void
+    {
+        // Allows overriding
+    }
+
+    /**
+     * Get the number of seconds to delay a try.
+     */
+    protected function getRetryDelaySeconds(int $count): int
+    {
+        return $count * $count * 30;
+    }
+
+    private function executeBatch(): void
     {
         try {
             $this->jobs = $this->getJobs();
@@ -169,7 +192,7 @@ abstract class RunnerCommand extends Command
         }
     }
 
-    protected function executeBatchWithProcess(InputInterface $input, OutputInterface $output): void
+    private function executeBatchWithProcess(InputInterface $input, OutputInterface $output): void
     {
         $process = $this->getProcess($input);
 
@@ -181,7 +204,7 @@ abstract class RunnerCommand extends Command
     /**
      * Executes a single job.
      */
-    protected function executeJob(Job $job): ?\Throwable
+    private function executeJob(Job $job): ?\Throwable
     {
         try {
             $this->jobExecutor->executeJob($job, $this->retryLimit);
@@ -190,29 +213,6 @@ abstract class RunnerCommand extends Command
         }
 
         return null;
-    }
-
-    /**
-     * @throws UnexpectedJobDataException
-     */
-    abstract protected function getJobs(): ?JobBatch;
-
-    /**
-     * Called after a batch of jobs finishes.
-     */
-    abstract protected function finishJobs(JobBatch $batch): void;
-
-    protected function handleInput(InputInterface $input): void
-    {
-        // Allows overriding
-    }
-
-    /**
-     * Get the number of seconds to delay a try.
-     */
-    protected function getRetryDelaySeconds(int $count): int
-    {
-        return $count * $count * 30;
     }
 
     private function getProcess(InputInterface $input): Process

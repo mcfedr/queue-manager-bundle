@@ -1,16 +1,19 @@
 includes:
     - vendor/phpstan/phpstan-phpunit/extension.neon
-#    - vendor/phpstan/phpstan-symfony/extension.neon
+    - vendor/phpstan/phpstan-symfony/extension.neon
     - vendor/phpstan/phpstan-doctrine/extension.neon
 parameters:
-#    symfony:
-#        container_xml_path: %rootDir%/../../../var/cache/test/testsTestKernelTestDebugContainer.xml
-    level: 1
+    symfony:
+        container_xml_path: %rootDir%/../../../var/cache/test/TestKernelTestDebugContainer.xml
+        console_application_loader: %rootDir%/../../../tests/console_application_loader.php
+    level: 3
     paths:
         - src/
         - tests/
     ignoreErrors:
         -
-            message: '#Class Symfony\\Component\\Config\\Definition\\Builder\\TreeBuilder does not have a constructor and must be instantiated without any parameters#'
+            message: '#Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\NodeDefinition::children\(\)\.#'
             path: %rootDir%/../../../src/Mcfedr/QueueManagerBundle/DependencyInjection/Configuration.php
+        - '#Class Pheanstalk\\PheanstalkInterface not found\.#'
+        - '#Method Mcfedr\\QueueManagerBundle\\.+?::getEntityManager\(\) should return Doctrine\\ORM\\EntityManager but returns Doctrine\\Persistence\\ObjectManager\.#'
     reportUnmatchedIgnoredErrors: false

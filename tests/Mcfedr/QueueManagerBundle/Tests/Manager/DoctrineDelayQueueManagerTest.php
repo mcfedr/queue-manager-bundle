@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\Tests\Manager;
 
-use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Mcfedr\QueueManagerBundle\Entity\DoctrineDelayJob;
 use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
 use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
@@ -52,7 +52,7 @@ final class DoctrineDelayQueueManagerTest extends TestCase
             ->willReturn($this->repo)
         ;
 
-        $doctrine = $this->getMockBuilder(Registry::class)->disableOriginalConstructor()->getMock();
+        $doctrine = $this->getMockBuilder(ManagerRegistry::class)->disableOriginalConstructor()->getMock();
         $doctrine->method('getManager')
             ->with(null)
             ->willReturn($this->entityManager)

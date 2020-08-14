@@ -9,10 +9,14 @@ use Mcfedr\QueueManagerBundle\Manager\PheanstalkClientTrait;
 use Mcfedr\QueueManagerBundle\Queue\BeanstalkJob;
 use Mcfedr\QueueManagerBundle\Queue\JobBatch;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
-use Pheanstalk\PheanstalkInterface;
+use Pheanstalk\Contract\PheanstalkInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+
+if (!interface_exists(\Pheanstalk\Contract\PheanstalkInterface::class)) {
+    class_alias(\Pheanstalk\PheanstalkInterface::class, \Pheanstalk\Contract\PheanstalkInterface::class);
+}
 
 class BeanstalkCommand extends RunnerCommand
 {

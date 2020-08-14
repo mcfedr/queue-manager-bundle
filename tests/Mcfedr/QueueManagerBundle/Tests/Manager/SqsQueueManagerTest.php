@@ -52,11 +52,14 @@ final class SqsQueueManagerTest extends TestCase
                 'QueueUrl' => 'http://sqs.com',
                 'MessageBody' => '{"name":"test_worker","arguments":[],"retryCount":0,"visibilityTimeout":null}',
             ])
+            ->willReturn(['MessageId' => 'test_id'])
         ;
 
         $job = $this->manager->put('test_worker');
 
         static::assertSame('test_worker', $job->getName());
+        static::assertInstanceOf(SqsJob::class, $job);
+        static::assertSame('test_id', $job->getId());
     }
 
     public function testDelete(): void

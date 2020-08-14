@@ -6,6 +6,7 @@ namespace Mcfedr\QueueManagerBundle\Driver;
 
 use Mcfedr\QueueManagerBundle\Manager\QueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Job;
+use Mcfedr\QueueManagerBundle\Queue\TestJob;
 use Psr\Log\LoggerInterface;
 
 class TestQueueManager implements QueueManager
@@ -36,6 +37,8 @@ class TestQueueManager implements QueueManager
         $this->info('Putting new job', [
             'name' => $name,
         ]);
+
+        return new TestJob($name, $arguments);
     }
 
     public function delete(Job $job): void

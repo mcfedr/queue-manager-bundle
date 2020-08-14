@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\Tests\Subscriber;
 
-use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\DBAL\Connection;
+use Doctrine\Persistence\ManagerRegistry;
 use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
 use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
 use Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber;
@@ -18,7 +18,7 @@ final class DoctrineResetSubscriberTest extends TestCase
 {
     public function testOnJobFailed(): void
     {
-        $registry = $this->getMockBuilder(Registry::class)->disableOriginalConstructor()->getMock();
+        $registry = $this->getMockBuilder(ManagerRegistry::class)->disableOriginalConstructor()->getMock();
         $connection = $this->getMockBuilder(Connection::class)->disableOriginalConstructor()->getMock();
 
         $registry->expects(static::once())
@@ -38,7 +38,7 @@ final class DoctrineResetSubscriberTest extends TestCase
 
     public function testOnJobFinished(): void
     {
-        $registry = $this->getMockBuilder(Registry::class)->disableOriginalConstructor()->getMock();
+        $registry = $this->getMockBuilder(ManagerRegistry::class)->disableOriginalConstructor()->getMock();
         $connection = $this->getMockBuilder(Connection::class)->disableOriginalConstructor()->getMock();
 
         $registry->expects(static::once())

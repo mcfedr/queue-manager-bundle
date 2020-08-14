@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\Subscriber;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Connection;
+use Doctrine\Persistence\ManagerRegistry;
 use Mcfedr\QueueManagerBundle\Event\FailedJobEvent;
 use Mcfedr\QueueManagerBundle\Event\FinishedJobEvent;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;

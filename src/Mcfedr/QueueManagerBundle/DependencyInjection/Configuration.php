@@ -12,12 +12,7 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('mcfedr_queue_manager');
-        if (method_exists($treeBuilder, 'getRootNode')) {
-            $rootNode = $treeBuilder->getRootNode();
-        } else {
-            // BC layer for symfony/config 4.1 and older
-            $rootNode = $treeBuilder->root('mcfedr_queue_manager');
-        }
+        $rootNode = $treeBuilder->getRootNode();
         $rootNode
             ->children()
             ->integerNode('retry_limit')->defaultValue(3)->end()

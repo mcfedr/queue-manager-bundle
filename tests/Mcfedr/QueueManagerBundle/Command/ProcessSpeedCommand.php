@@ -29,12 +29,12 @@ class ProcessSpeedCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->getOption('do-job')) {
             $this->job();
 
-            return;
+            return 0;
         }
 
         $count = 10;
@@ -46,6 +46,8 @@ class ProcessSpeedCommand extends Command
             $event = $stopwatch->stop($kind[1]);
             $output->writeln("{$kind[1]}: {$event->getDuration()}m");
         }
+
+        return 0;
     }
 
     private function basic($count): void

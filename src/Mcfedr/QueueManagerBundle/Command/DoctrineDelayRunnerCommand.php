@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Mcfedr\QueueManagerBundle\Command;
 
 use Carbon\Carbon;
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Types\Type;
+use Doctrine\Persistence\ManagerRegistry;
 use Mcfedr\QueueManagerBundle\Entity\DoctrineDelayJob;
 use Mcfedr\QueueManagerBundle\Manager\DoctrineDelayTrait;
 use Mcfedr\QueueManagerBundle\Queue\DoctrineDelayWorkerJob;
-use Mcfedr\QueueManagerBundle\Queue\Job;
 use Mcfedr\QueueManagerBundle\Queue\JobBatch;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
 use Psr\Log\LoggerInterface;

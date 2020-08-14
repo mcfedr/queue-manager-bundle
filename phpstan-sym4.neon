@@ -1,0 +1,7 @@
+includes:
+    - phpstan.neon
+parameters:
+    symfony:
+        container_xml_path: %rootDir%/../../../var/cache/test/testsTestKernelTestDebugContainer.xml
+    ignoreErrors:
+        - '#Method Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface::dispatch\(\) invoked with 2 parameters, 1 required\.#'

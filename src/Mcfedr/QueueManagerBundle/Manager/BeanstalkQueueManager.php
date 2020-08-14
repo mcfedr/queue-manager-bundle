@@ -8,8 +8,12 @@ use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
 use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Queue\BeanstalkJob;
 use Mcfedr\QueueManagerBundle\Queue\Job;
+use Pheanstalk\Contract\PheanstalkInterface;
 use Pheanstalk\Exception\ServerException;
-use Pheanstalk\PheanstalkInterface;
+
+if (!interface_exists(\Pheanstalk\Contract\PheanstalkInterface::class)) {
+    class_alias(\Pheanstalk\PheanstalkInterface::class, \Pheanstalk\Contract\PheanstalkInterface::class);
+}
 
 class BeanstalkQueueManager implements QueueManager
 {
@@ -40,8 +44,12 @@ class BeanstalkQueueManager implements QueueManager
         $ttr = $options['ttr'] ?? PheanstalkInterface::DEFAULT_TTR;
 
         $job = new BeanstalkJob($name, $arguments, $priority, $ttr);
-        $id = $this->pheanstalk->putInTube($queue, $job->getData(), $priority, $seconds, $ttr);
-        $job->setId($id);
+        $id = $this
+            ->pheanstalk
+            ->useTube($queue)
+            ->put($job->getData(), $priority, $seconds, $ttr)
+        ;
+        $job->setId($id instanceof \Pheanstalk\Job ? $id->getId() : $id);
 
         return $job;
     }
