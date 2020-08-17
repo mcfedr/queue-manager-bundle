@@ -33,7 +33,7 @@ use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
-if (!interface_exists(\Pheanstalk\Contract\PheanstalkInterface::class)) {
+if (!interface_exists(\Pheanstalk\Contract\PheanstalkInterface::class) && interface_exists(\Pheanstalk\PheanstalkInterface::class)) {
     class_alias(\Pheanstalk\PheanstalkInterface::class, \Pheanstalk\Contract\PheanstalkInterface::class);
 }
 
