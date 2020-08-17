@@ -1,5 +1,9 @@
 # Changelog
 
+### 6.6.1
+
+- Fix for when pheanstalk not installed
+
 ### 6.6.0
 
 - Add Symfony 5 support
