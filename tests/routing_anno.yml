@@ -1,0 +1,4 @@
+mcfedr_queue_manager:
+    resource: "@McfedrQueueManagerBundle/Controller/"
+    type:     annotation
+    prefix:   /

@@ -40,3 +40,10 @@ services:
     mcfedr_periodic_queue_driver.worker:
         public: true
         alias: Mcfedr\QueueManagerBundle\Worker\PeriodicWorker
+
+    Mcfedr\QueueManagerBundle\Controller\PubSubController:
+        public: true
+        autowire: true
+        calls:
+            - setContainer: [ '@Psr\Container\ContainerInterface' ]
+        tags: [ 'container.service_subscriber' ]

@@ -1,0 +1,3 @@
+mcfedr_queue_manager:
+    resource: '@McfedrQueueManagerBundle/Resources/config/routes.xml'
+

@@ -6,6 +6,10 @@ framework:
     session:
         storage_id: session.storage.mock_file
     secret: 'fake_secret'
+    router:
+        resource: "%kernel.project_dir%/tests/routing.yml"
+        strict_requirements: ~
+        utf8: true
 
 doctrine:
     dbal:
