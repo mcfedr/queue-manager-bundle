@@ -41,9 +41,14 @@ services:
         public: true
         alias: Mcfedr\QueueManagerBundle\Worker\PeriodicWorker
 
+    Google\Auth\AccessToken:
+        public: true
+
     Mcfedr\QueueManagerBundle\Controller\PubSubController:
         public: true
         autowire: true
+        arguments:
+            $accessToken: '@Google\Auth\AccessToken'
         calls:
             - setContainer: [ '@Psr\Container\ContainerInterface' ]
         tags: [ 'container.service_subscriber' ]

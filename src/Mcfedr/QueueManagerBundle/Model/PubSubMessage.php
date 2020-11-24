@@ -7,17 +7,19 @@ namespace Mcfedr\QueueManagerBundle\Model;
 class PubSubMessage
 {
     /**
-     * @var string
+     * @var array
      */
     private $message;
 
-    public function getMessage(): string
+    public function getMessage(): array
     {
         return $this->message;
     }
 
-    public function setMessage(string $message): void
+    public function setMessage(array $message): self
     {
         $this->message = $message;
+
+        return $this;
     }
 }

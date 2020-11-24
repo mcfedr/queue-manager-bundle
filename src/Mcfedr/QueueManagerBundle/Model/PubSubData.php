@@ -9,15 +9,45 @@ class PubSubData
     /**
      * @var string
      */
-    private $data;
+    private $name;
 
-    public function getData(): string
+    /**
+     * @var array
+     */
+    private $arguments;
+
+    /**
+     * @var int
+     */
+    private $retryCount;
+
+    public function getName(): string
     {
-        return base64_decode($this->data, true);
+        return $this->name;
     }
 
-    public function setData(string $data): void
+    public function setName(string $name): void
     {
-        $this->data = $data;
+        $this->name = $name;
+    }
+
+    public function getArguments(): array
+    {
+        return $this->arguments;
+    }
+
+    public function setArguments(array $arguments): void
+    {
+        $this->arguments = $arguments;
+    }
+
+    public function getRetryCount(): int
+    {
+        return $this->retryCount;
+    }
+
+    public function setRetryCount(int $retryCount): void
+    {
+        $this->retryCount = $retryCount;
     }
 }

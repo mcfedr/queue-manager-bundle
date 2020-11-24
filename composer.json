@@ -15,7 +15,9 @@
         "ext-json": "*",
         "symfony/framework-bundle": "^4|^5",
         "nesbot/carbon": "^1|^2",
-        "ramsey/uuid": "^3.7|^4.1"
+        "ramsey/uuid": "^3.7|^4.1",
+        "symfony/serializer": "^5.1",
+        "symfony/property-access": "^5.1"
     },
     "require-dev": {
         "phpunit/phpunit": "^8",
