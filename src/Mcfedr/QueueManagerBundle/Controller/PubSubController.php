@@ -45,6 +45,8 @@ class PubSubController extends AbstractController
      */
     public function pubsub(Request $request, string $queue)
     {
+        set_time_limit(0);
+
         $headers = getallheaders();
         if (!($auth = $request->headers->get('Authorization')) && isset($headers['Authorization'])) {
             $auth = $headers['Authorization'];
