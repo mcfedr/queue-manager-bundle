@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\DependencyInjection;
 
+use Mcfedr\QueueManagerBundle\Controller\PubSubController;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -70,6 +71,7 @@ class Configuration implements ConfigurationInterface
             ->children()
             ->scalarNode('topic')->end()
             ->scalarNode('subscription')->end()
+            ->scalarNode('audience')->defaultValue(PubSubController::DEFAULT_AUDIENCE)->end()
             ->end()
             ->end()
             ->end()

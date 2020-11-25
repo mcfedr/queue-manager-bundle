@@ -294,6 +294,9 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                     $container->setDefinition($pubSubClientName, $pubSubClient);
                     $bindings[PubSubClient::class.' $pubSubClient'] = new Reference($pubSubClientName);
                 }
+                foreach ($mergedOptions['pub_sub_queues'] as $queueName => $pub_sub_queue) {
+                    $container->setParameter("mcfedr_queue_manager.{$queueName}.audience", $pub_sub_queue['audience'] ?? null);
+                }
 
                 break;
         }
