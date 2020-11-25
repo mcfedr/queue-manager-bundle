@@ -19,6 +19,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class PubSubController extends AbstractController
 {
+    public const DEFAULT_AUDIENCE = 'default_audience';
     /**
      * @var JobExecutor
      */
@@ -40,9 +41,9 @@ class PubSubController extends AbstractController
     }
 
     /**
-     * @Route("/pubsub", name="pubsub", methods={"POST"})
+     * @Route("/pubsub/{queue}", name="pubsub", methods={"POST"})
      */
-    public function pubsub(Request $request)
+    public function pubsub(Request $request, string $queue)
     {
         $headers = getallheaders();
         if (!($auth = $request->headers->get('Authorization')) && isset($headers['Authorization'])) {
@@ -52,10 +53,11 @@ class PubSubController extends AbstractController
         if (!$auth) {
             throw new AccessDeniedHttpException('Authorization header not provided.');
         }
-        $jwt = explode(' ', $auth)[1];
+        $jwt = str_replace('Bearer ', '', $auth);
 
         $payload = $this->accessToken->verify($jwt);
-        if (!$payload) {
+        $audience = $this->getParameter("mcfedr_queue_manager.{$queue}.audience");
+        if (!$payload || !isset($payload['aud']) || ($payload['aud'] !== $audience && self::DEFAULT_AUDIENCE !== $audience)) {
             throw new AccessDeniedHttpException('Could not verify token!');
         }
 

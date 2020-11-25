@@ -4,7 +4,7 @@
         xsi:schemaLocation="http://symfony.com/schema/routing
         https://symfony.com/schema/routing/routing-1.0.xsd">
 
-    <route id="pubsub" path="/pubsub"
+    <route id="pubsub" path="/pubsub/{queue}"
            controller="Mcfedr\QueueManagerBundle\Controller\PubSubController::pubsub"
            methods="POST"/>
 </routes>

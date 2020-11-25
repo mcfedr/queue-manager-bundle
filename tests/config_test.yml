@@ -78,6 +78,14 @@ mcfedr_queue_manager:
                 default_topic: 'projects/project/topics/test-topic'
                 pub_sub_queues:
                     default:
+                        audience: 'audience'
+                        topic: 'projects/project/topics/test-topic'
+                        subscription: 'test_sub'
+                    other_queue:
+                        audience: 'audience1'
+                        topic: 'projects/project/topics/test-topic'
+                        subscription: 'test_sub'
+                    no_audience_queue:
                         topic: 'projects/project/topics/test-topic'
                         subscription: 'test_sub'
         realgcp:
@@ -87,6 +95,7 @@ mcfedr_queue_manager:
                 default_topic: '%env(TEST_TOPIC)%'
                 pub_sub_queues:
                     default:
+                        audience: 'audience'
                         topic: '%env(TEST_TOPIC)%'
                         subscription: '%env(TEST_SUB)%'
 
