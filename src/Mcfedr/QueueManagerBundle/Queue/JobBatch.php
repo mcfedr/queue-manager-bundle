@@ -120,6 +120,6 @@ class JobBatch implements \Countable
 
     public function getOption(string $option): ?string
     {
-        return isset($this->options[$option]) ? $this->options[$option] : null;
+        return $this->options[$option] ?? null;
     }
 }

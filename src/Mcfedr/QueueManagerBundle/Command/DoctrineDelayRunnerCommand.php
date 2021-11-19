@@ -7,6 +7,7 @@ namespace Mcfedr\QueueManagerBundle\Command;
 use Carbon\Carbon;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 use Mcfedr\QueueManagerBundle\Entity\DoctrineDelayJob;
 use Mcfedr\QueueManagerBundle\Manager\DoctrineDelayTrait;
@@ -54,15 +55,15 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
             $repo = $em->getRepository(DoctrineDelayJob::class);
             $orderDir = $this->reverse ? 'DESC' : 'ASC';
 
-            $em->getConnection()->executeUpdate(
+            $em->getConnection()->executeStatement(
                 "UPDATE DoctrineDelayJob job SET job.processing = TRUE WHERE job.time < :now ORDER BY job.time {$orderDir} LIMIT :limit",
                 [
                     'now' => $now,
                     'limit' => $this->batchSize,
                 ],
                 [
-                    'now' => Type::getType(Type::DATETIME),
-                    'limit' => Type::getType(Type::INTEGER),
+                    'now' => Type::getType(Types::DATETIME_MUTABLE),
+                    'limit' => Type::getType(Types::INTEGER),
                 ]
             );
 

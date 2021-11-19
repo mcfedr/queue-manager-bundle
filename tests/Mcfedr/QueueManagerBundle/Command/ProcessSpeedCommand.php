@@ -62,6 +62,7 @@ class ProcessSpeedCommand extends Command
         for ($i = 0; $i < $count; ++$i) {
             if (pcntl_fork() === 0) {
                 $this->job();
+
                 exit(0);
             }
             pcntl_wait($status);
