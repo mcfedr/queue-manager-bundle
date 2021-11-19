@@ -246,6 +246,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                 }
 
                 break;
+
             case 'sqs':
                 if (!class_exists(SqsClient::class)) {
                     throw new \LogicException('"sqs" requires aws/aws-sdk-php to be installed.');
@@ -270,12 +271,14 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                 }
 
                 break;
+
             case 'doctrine_delay':
                 if (!isset(($container->getParameter('kernel.bundles'))['DoctrineBundle'])) {
                     throw new \LogicException('"doctrine_delay" requires doctrine/doctrine-bundle to be installed.');
                 }
 
                 break;
+
             case 'pub_sub':
                 if (!class_exists(PubSubClient::class)) {
                     throw new \LogicException('"pub_sub" requires google/cloud-pubsub to be installed.');

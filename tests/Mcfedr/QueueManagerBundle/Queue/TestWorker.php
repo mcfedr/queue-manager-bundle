@@ -31,9 +31,11 @@ class TestWorker implements Worker
             'arguments' => $arguments,
         ]);
         sleep(1);
+
         switch (random_int(1, 3)) {
             case 1:
                 throw new UnrecoverableJobException('job is going to fail forever');
+
             case 2:
                 throw new \Exception('job is failing for unknown reasons');
         }
