@@ -13,15 +13,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class SwiftMailerSubscriber extends EmailSenderListener
 {
-    /**
-     * @var int
-     */
-    private $batchSize;
-
-    /**
-     * @var int
-     */
-    private $i = 0;
+    private int $batchSize;
+    private int $i = 0;
 
     public function __construct(int $batchSize, ContainerInterface $container, ?LoggerInterface $logger = null)
     {
@@ -51,7 +44,7 @@ class SwiftMailerSubscriber extends EmailSenderListener
         }
     }
 
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             JobExecutor::JOB_FINISHED_EVENT => 'onJobFinished',

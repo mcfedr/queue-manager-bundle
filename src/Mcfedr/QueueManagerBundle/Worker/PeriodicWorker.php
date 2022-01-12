@@ -13,15 +13,8 @@ use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
 
 class PeriodicWorker implements InternalWorker
 {
-    /**
-     * @var QueueManagerRegistry
-     */
-    private $queueManagerRegistry;
-
-    /**
-     * @var JobExecutor
-     */
-    private $jobExecutor;
+    private QueueManagerRegistry $queueManagerRegistry;
+    private JobExecutor $jobExecutor;
 
     public function __construct(QueueManagerRegistry $queueManagerRegistry, JobExecutor $jobExecutor)
     {
@@ -29,6 +22,13 @@ class PeriodicWorker implements InternalWorker
         $this->jobExecutor = $jobExecutor;
     }
 
+    /**
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws \Throwable
+     * @throws UnrecoverableJobException
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobExceptionInterface
+     */
     public function execute(array $arguments): void
     {
         if (!isset($arguments['name']) || !isset($arguments['arguments']) || !isset($arguments['period']) || !isset($arguments['delay_options']) || !isset($arguments['delay_manager'])) {
@@ -52,6 +52,9 @@ class PeriodicWorker implements InternalWorker
         ], $arguments['delay_options']), $arguments['delay_manager']);
     }
 
+    /**
+     * @throws \Exception
+     */
     public static function nextRun(int $periodLength): \DateTime
     {
         [$startOfNextPeriod, $endOfNextPeriod] = self::nextPeriod($periodLength);

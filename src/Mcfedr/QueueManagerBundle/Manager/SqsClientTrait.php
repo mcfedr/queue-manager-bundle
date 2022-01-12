@@ -9,15 +9,12 @@ namespace Mcfedr\QueueManagerBundle\Manager;
  */
 trait SqsClientTrait
 {
-    /**
-     * @var string
-     */
-    private $defaultUrl;
+    private string $defaultUrl;
 
     /**
      * @var string[]
      */
-    private $queues;
+    private array $queues;
 
     private function setOptions(array $options): void
     {

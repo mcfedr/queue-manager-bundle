@@ -14,18 +14,11 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 
-if (!interface_exists(\Pheanstalk\Contract\PheanstalkInterface::class)) {
-    class_alias(\Pheanstalk\PheanstalkInterface::class, \Pheanstalk\Contract\PheanstalkInterface::class);
-}
-
 class BeanstalkCommand extends RunnerCommand
 {
     use PheanstalkClientTrait;
 
-    /**
-     * @var PheanstalkInterface
-     */
-    private $pheanstalk;
+    private PheanstalkInterface $pheanstalk;
 
     public function __construct(PheanstalkInterface $pheanstalk, string $name, array $options, JobExecutor $jobExecutor, ?LoggerInterface $logger = null)
     {

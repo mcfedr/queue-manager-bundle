@@ -10,20 +10,14 @@ use Psr\Container\ContainerInterface;
 
 class QueueManagerRegistry
 {
-    /**
-     * @var ContainerInterface
-     */
-    private $queueManagers;
+    private ContainerInterface $queueManagers;
 
     /**
      * @var string[]
      */
-    private $managerIds;
+    private array $managerIds;
 
-    /**
-     * @var string
-     */
-    private $defaultManager;
+    private string $defaultManager;
 
     public function __construct(ContainerInterface $queueManagers, array $managerIds, string $defaultManager)
     {
@@ -32,11 +26,20 @@ class QueueManagerRegistry
         $this->defaultManager = $defaultManager;
     }
 
+    /**
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
     public function put(string $name, array $arguments = [], array $options = [], ?string $manager = null): Job
     {
         return $this->queueManagers->get($manager ?: $this->defaultManager)->put($name, $arguments, $options);
     }
 
+    /**
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws WrongJobException
+     */
     public function delete(Job $job, ?string $manager = null): void
     {
         if ($manager) {

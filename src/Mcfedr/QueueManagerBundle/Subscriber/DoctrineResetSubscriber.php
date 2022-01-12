@@ -13,10 +13,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class DoctrineResetSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var ?ManagerRegistry
-     */
-    private $doctrine;
+    private ?ManagerRegistry $doctrine;
 
     public function __construct(?ManagerRegistry $doctrine = null)
     {
@@ -33,7 +30,7 @@ class DoctrineResetSubscriber implements EventSubscriberInterface
         $this->reset();
     }
 
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             JobExecutor::JOB_FINISHED_EVENT => 'onJobFinished',

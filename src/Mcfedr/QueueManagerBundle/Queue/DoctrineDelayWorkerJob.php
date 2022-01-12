@@ -9,10 +9,7 @@ use Mcfedr\QueueManagerBundle\Worker\DoctrineDelayWorker;
 
 class DoctrineDelayWorkerJob implements RetryableJob
 {
-    /**
-     * @var DoctrineDelayJob
-     */
-    private $delayJob;
+    private DoctrineDelayJob $delayJob;
 
     public function __construct(DoctrineDelayJob $delayJob)
     {

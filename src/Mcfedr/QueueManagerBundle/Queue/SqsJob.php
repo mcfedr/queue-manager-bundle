@@ -6,30 +6,11 @@ namespace Mcfedr\QueueManagerBundle\Queue;
 
 class SqsJob extends AbstractRetryableJob
 {
-    /**
-     * @var ?string
-     */
-    private $id;
-
-    /**
-     * @var ?int
-     */
-    private $delay;
-
-    /**
-     * @var ?string
-     */
-    private $url;
-
-    /**
-     * @var ?string
-     */
-    private $receiptHandle;
-
-    /**
-     * @var ?int
-     */
-    private $visibilityTimeout;
+    private ?string $id;
+    private ?int $delay;
+    private ?string $url;
+    private ?string $receiptHandle;
+    private ?int $visibilityTimeout;
 
     public function __construct(string $name, array $arguments, ?int $delay, string $url, ?string $id = null, int $retryCount = 0, ?string $receiptHandle = null, ?int $visibilityTimeout = null)
     {
@@ -46,7 +27,7 @@ class SqsJob extends AbstractRetryableJob
         return $this->id;
     }
 
-    public function setId(?string $id)
+    public function setId(?string $id): static
     {
         $this->id = $id;
 

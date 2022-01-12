@@ -15,10 +15,7 @@ class SqsQueueManager implements QueueManager
 {
     use SqsClientTrait;
 
-    /**
-     * @var SqsClient
-     */
-    private $sqs;
+    private SqsClient $sqs;
 
     public function __construct(SqsClient $sqsClient, array $options)
     {
@@ -26,6 +23,9 @@ class SqsQueueManager implements QueueManager
         $this->setOptions($options);
     }
 
+    /**
+     * @throws NoSuchQueueException
+     */
     public function put(string $name, array $arguments = [], array $options = []): Job
     {
         if (\array_key_exists('url', $options)) {

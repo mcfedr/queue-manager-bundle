@@ -6,10 +6,7 @@ namespace Mcfedr\QueueManagerBundle\Queue;
 
 abstract class AbstractRetryableJob extends AbstractJob implements RetryableJob
 {
-    /**
-     * @var int
-     */
-    private $retryCount;
+    private int $retryCount;
 
     public function __construct(string $name, array $arguments, int $retryCount = 0)
     {

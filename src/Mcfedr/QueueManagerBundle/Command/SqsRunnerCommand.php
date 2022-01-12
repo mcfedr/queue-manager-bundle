@@ -18,30 +18,15 @@ class SqsRunnerCommand extends RunnerCommand
 {
     use SqsClientTrait;
 
-    /**
-     * @var SqsClient
-     */
-    private $sqs;
-
-    /**
-     * @var int
-     */
-    private $visibilityTimeout = 30;
-
-    /**
-     * @var int
-     */
-    private $batchSize = 10;
-
-    /**
-     * @var int
-     */
-    private $waitTime = 20;
+    private SqsClient $sqs;
+    private int $visibilityTimeout = 30;
+    private int $batchSize = 10;
+    private int $waitTime = 20;
 
     /**
      * @var string[]
      */
-    private $urls;
+    private array $urls;
 
     public function __construct(SqsClient $sqsClient, string $name, array $options, JobExecutor $jobExecutor, ?LoggerInterface $logger = null)
     {
@@ -161,6 +146,9 @@ class SqsRunnerCommand extends RunnerCommand
         }
     }
 
+    /**
+     * @throws UnexpectedJobDataException
+     */
     private function getJobsFromUrl($url): ?JobBatch
     {
         $response = $this->sqs->receiveMessage([
@@ -236,11 +224,9 @@ class SqsRunnerCommand extends RunnerCommand
 
             if ($exception) {
                 if (\count($jobs)) {
-                    if ($this->logger) {
-                        $this->logger->error('Found unexpected job data in the queue.', [
-                            'message' => $exception->getMessage(),
-                        ]);
-                    }
+                    $this->logger?->error('Found unexpected job data in the queue.', [
+                        'message' => $exception->getMessage(),
+                    ]);
                 } else {
                     throw $exception;
                 }

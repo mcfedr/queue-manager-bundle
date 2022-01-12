@@ -11,15 +11,8 @@ use Psr\Log\LoggerInterface;
 
 class TestQueueManager implements QueueManager
 {
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var array
-     */
-    private $options;
+    private LoggerInterface $logger;
+    private array $options;
 
     public function __construct(LoggerInterface $logger, array $options)
     {
@@ -53,7 +46,7 @@ class TestQueueManager implements QueueManager
         $this->logger->info("{$this->getLogName()}: {$message}", $context);
     }
 
-    protected function getLogName()
+    protected function getLogName(): string
     {
         return 'QueueManager';
     }

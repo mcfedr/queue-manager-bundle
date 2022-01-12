@@ -19,15 +19,8 @@ class PubSubRunnerCommand extends RunnerCommand
 {
     use PubSubClientTrait;
 
-    /**
-     * @var PubSubClient
-     */
-    private $pubSub;
-
-    /**
-     * @var int
-     */
-    private $batchSize = 10;
+    private PubSubClient $pubSub;
+    private int $batchSize = 10;
 
     public function __construct(PubSubClient $pubSubClient, string $name, array $options, JobExecutor $jobExecutor, ?LoggerInterface $logger = null)
     {
@@ -101,7 +94,10 @@ class PubSubRunnerCommand extends RunnerCommand
         }
     }
 
-    private function getJobsFromSubscription($subscription, $topic)
+    /**
+     * @throws UnexpectedJobDataException
+     */
+    private function getJobsFromSubscription($subscription, $topic): ?JobBatch
     {
         $response = $this->pubSub->subscription($subscription)->pull(['maxMessages' => $this->batchSize]);
 
@@ -110,7 +106,6 @@ class PubSubRunnerCommand extends RunnerCommand
             $exception = null;
 
             $toAcknowledge = [];
-            /** @var Message $message */
             foreach ($response as $message) {
                 if ($message->data() === null || (!\is_array($data = json_decode($message->data(), true))) || !isset($data['name']) || !isset($data['arguments']) || !isset($data['retryCount'])) {
                     $exception = new UnexpectedJobDataException('Sqs message(s) missing data fields name, arguments and retryCount');
@@ -137,11 +132,9 @@ class PubSubRunnerCommand extends RunnerCommand
 
             if ($exception) {
                 if (\count($jobs)) {
-                    if ($this->logger) {
-                        $this->logger->error('Found unexpected job data in the queue.', [
-                            'message' => $exception->getMessage(),
-                        ]);
-                    }
+                    $this->logger?->error('Found unexpected job data in the queue.', [
+                        'message' => $exception->getMessage(),
+                    ]);
                 } else {
                     throw $exception;
                 }

@@ -20,9 +20,8 @@ use Mcfedr\QueueManagerBundle\Queue\Worker;
 use Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber;
 use Mcfedr\QueueManagerBundle\Subscriber\MemoryReportSubscriber;
 use Mcfedr\QueueManagerBundle\Subscriber\SwiftMailerSubscriber;
-use Pheanstalk\Contract\PheanstalkInterface as PheanstalkInterfacev4;
+use Pheanstalk\Contract\PheanstalkInterface;
 use Pheanstalk\Pheanstalk;
-use Pheanstalk\PheanstalkInterface as PheanstalkInterfacev3;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -32,10 +31,6 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
-
-if (!interface_exists(\Pheanstalk\Contract\PheanstalkInterface::class) && interface_exists(\Pheanstalk\PheanstalkInterface::class)) {
-    class_alias(\Pheanstalk\PheanstalkInterface::class, \Pheanstalk\Contract\PheanstalkInterface::class);
-}
 
 class McfedrQueueManagerExtension extends Extension implements PrependExtensionInterface
 {
@@ -203,46 +198,22 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
 
         switch ($managerConfig['driver']) {
             case 'beanstalkd':
-                if (interface_exists(PheanstalkInterfacev3::class)) {
-                    if (isset($mergedOptions['pheanstalk'])) {
-                        $bindings[PheanstalkInterfacev4::class.' $pheanstalk'] = new Reference($mergedOptions['pheanstalk']);
-                        unset($mergedOptions['pheanstalk']);
-                    } else {
-                        $pheanstalk = new Definition(
-                            Pheanstalk::class,
-                            [
-                                $mergedOptions['host'],
-                                $mergedOptions['port'],
-                                $mergedOptions['connection']['timeout'],
-                                $mergedOptions['connection']['persistent'],
-                            ]
-                        );
-                        unset($mergedOptions['host'], $mergedOptions['port'], $mergedOptions['connection']);
-
-                        $pheanstalkName = "{$managerServiceName}.pheanstalk";
-                        $container->setDefinition($pheanstalkName, $pheanstalk);
-                        $bindings[PheanstalkInterfacev4::class.' $pheanstalk'] = new Reference($pheanstalkName);
-                    }
-                } elseif (interface_exists(PheanstalkInterfacev4::class)) {
-                    if (isset($mergedOptions['pheanstalk'])) {
-                        $bindings[PheanstalkInterfacev4::class.' $pheanstalk'] = new Reference($mergedOptions['pheanstalk']);
-                        unset($mergedOptions['pheanstalk']);
-                    } else {
-                        $pheanstalk = (new Definition(Pheanstalk::class, [
-                            $mergedOptions['host'],
-                            $mergedOptions['port'],
-                            $mergedOptions['connection']['timeout'],
-                        ]))
-                            ->setFactory(Pheanstalk::class.'::create')
-                        ;
-                        unset($mergedOptions['host'], $mergedOptions['port'], $mergedOptions['connection']);
-
-                        $pheanstalkName = "{$managerServiceName}.pheanstalk";
-                        $container->setDefinition($pheanstalkName, $pheanstalk);
-                        $bindings[PheanstalkInterfacev4::class.' $pheanstalk'] = new Reference($pheanstalkName);
-                    }
+                if (isset($mergedOptions['pheanstalk'])) {
+                    $bindings[PheanstalkInterface::class.' $pheanstalk'] = new Reference($mergedOptions['pheanstalk']);
+                    unset($mergedOptions['pheanstalk']);
                 } else {
-                    throw new \LogicException('"pheanstalk" requires pda/pheanstalk to be installed.');
+                    $pheanstalk = (new Definition(Pheanstalk::class, [
+                        $mergedOptions['host'],
+                        $mergedOptions['port'],
+                        $mergedOptions['connection']['timeout'],
+                    ]))
+                        ->setFactory(Pheanstalk::class.'::create')
+                    ;
+                    unset($mergedOptions['host'], $mergedOptions['port'], $mergedOptions['connection']);
+
+                    $pheanstalkName = "{$managerServiceName}.pheanstalk";
+                    $container->setDefinition($pheanstalkName, $pheanstalk);
+                    $bindings[PheanstalkInterface::class.' $pheanstalk'] = new Reference($pheanstalkName);
                 }
 
                 break;

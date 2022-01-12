@@ -15,10 +15,7 @@ class DoctrineDelayQueueManager implements QueueManager
 {
     use DoctrineDelayTrait;
 
-    /**
-     * @var QueueManagerRegistry
-     */
-    private $queueManagerRegistry;
+    private QueueManagerRegistry $queueManagerRegistry;
 
     public function __construct(QueueManagerRegistry $queueManagerRegistry, ManagerRegistry $doctrine, array $options)
     {
@@ -27,6 +24,11 @@ class DoctrineDelayQueueManager implements QueueManager
         $this->setOptions($options);
     }
 
+    /**
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Exception
+     */
     public function put(string $name, array $arguments = [], array $options = []): Job
     {
         if (\array_key_exists('manager_options', $options)) {
@@ -65,6 +67,12 @@ class DoctrineDelayQueueManager implements QueueManager
         return $job;
     }
 
+    /**
+     * @throws NoSuchJobException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\ORMException
+     * @throws WrongJobException
+     */
     public function delete(Job $job): void
     {
         if (!$job instanceof DoctrineDelayJob) {

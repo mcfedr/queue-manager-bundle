@@ -11,18 +11,11 @@ use Mcfedr\QueueManagerBundle\Queue\Job;
 use Pheanstalk\Contract\PheanstalkInterface;
 use Pheanstalk\Exception\ServerException;
 
-if (!interface_exists(\Pheanstalk\Contract\PheanstalkInterface::class)) {
-    class_alias(\Pheanstalk\PheanstalkInterface::class, \Pheanstalk\Contract\PheanstalkInterface::class);
-}
-
 class BeanstalkQueueManager implements QueueManager
 {
     use PheanstalkClientTrait;
 
-    /**
-     * @var PheanstalkInterface
-     */
-    private $pheanstalk;
+    private PheanstalkInterface $pheanstalk;
 
     public function __construct(PheanstalkInterface $pheanstalk, array $options)
     {

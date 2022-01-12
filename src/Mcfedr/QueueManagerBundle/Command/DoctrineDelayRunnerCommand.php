@@ -22,12 +22,8 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
 {
     use DoctrineDelayTrait;
 
-    /**
-     * @var int
-     */
-    private $batchSize = 20;
-
-    private $reverse = false;
+    private int $batchSize = 20;
+    private bool $reverse = false;
 
     public function __construct(ManagerRegistry $doctrine, string $name, array $options, JobExecutor $jobExecutor, ?LoggerInterface $logger = null)
     {
@@ -103,6 +99,10 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
         return null;
     }
 
+    /**
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\ORMException
+     */
     protected function finishJobs(JobBatch $batch): void
     {
         $retryJobs = $batch->getRetries();

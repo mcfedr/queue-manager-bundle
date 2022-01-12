@@ -12,22 +12,22 @@ class FinishedJobBatchEvent extends Event
     /**
      * @var Job[]
      */
-    private $oks;
+    private array $oks;
 
     /**
      * @var Job[]
      */
-    private $retries;
+    private array $retries;
 
     /**
      * @var Job[]
      */
-    private $fails;
+    private array $fails;
 
     /**
      * @var Job[]
      */
-    private $outstandingJobs;
+    private array $outstandingJobs;
 
     /**
      * FinishedJobBatchEvent constructor.

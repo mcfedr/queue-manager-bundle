@@ -15,10 +15,7 @@ class PubSubQueueManager implements QueueManager
 {
     use PubSubClientTrait;
 
-    /**
-     * @var PubSubClient
-     */
-    private $pubSub;
+    private PubSubClient $pubSub;
 
     public function __construct(PubSubClient $pubSubClient, array $options)
     {
@@ -26,6 +23,9 @@ class PubSubQueueManager implements QueueManager
         $this->setOptions($options);
     }
 
+    /**
+     * @throws NoSuchQueueException
+     */
     public function put(string $name, array $arguments = [], array $options = []): Job
     {
         if (\array_key_exists('queue', $options)) {

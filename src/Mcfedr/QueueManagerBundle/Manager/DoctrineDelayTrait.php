@@ -4,35 +4,20 @@ declare(strict_types=1);
 
 namespace Mcfedr\QueueManagerBundle\Manager;
 
-use Doctrine\ORM\EntityManager;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ObjectManager;
 
 /**
  * @internal
  */
 trait DoctrineDelayTrait
 {
-    /**
-     * @var ManagerRegistry
-     */
-    private $doctrine;
+    private ManagerRegistry $doctrine;
+    private ?string $entityManagerName;
+    private string $defaultManager;
+    private array $defaultManagerOptions = [];
 
-    /**
-     * @var string
-     */
-    private $entityManagerName;
-
-    /**
-     * @var string
-     */
-    private $defaultManager;
-
-    /**
-     * @var array
-     */
-    private $defaultManagerOptions = [];
-
-    private function getEntityManager(): EntityManager
+    private function getEntityManager(): ObjectManager
     {
         return $this->doctrine->getManager($this->entityManagerName);
     }
