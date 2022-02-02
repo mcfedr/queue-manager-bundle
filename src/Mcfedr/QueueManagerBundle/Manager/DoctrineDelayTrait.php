@@ -14,7 +14,7 @@ trait DoctrineDelayTrait
 {
     private ManagerRegistry $doctrine;
     private ?string $entityManagerName;
-    private string $defaultManager;
+    private ?string $defaultManager;
     private array $defaultManagerOptions = [];
 
     private function getEntityManager(): ObjectManager
