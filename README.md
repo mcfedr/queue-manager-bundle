@@ -275,7 +275,6 @@ mcfedr_queue_manager:
     sleep_seconds: 5
     report_memory: false
     doctrine_reset: true
-    swift_mailer_batch_size: 10
 ```
 
 | Option | Means |
@@ -284,7 +283,6 @@ mcfedr_queue_manager:
 | `sleep_seconds` | When a queue doesnt have any jobs it will wait this long before checking again |
 | `report_memory` | Enable a listener that reports current memory usage between each job, useful for debugging leaks |
 | `doctrine_reset` | This listener will reset doctrine connect between jobs. Be careful with your memory usage if disabled. | 
-| `swift_mailer_batch_size` | Listener to clear the swift mailer queue every X jobs. Set to -1 to disable. |
 
 ### Doctrine
 
