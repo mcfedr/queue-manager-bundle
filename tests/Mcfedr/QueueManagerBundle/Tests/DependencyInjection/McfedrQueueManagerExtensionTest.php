@@ -8,7 +8,6 @@ use Mcfedr\QueueManagerBundle\Driver\TestQueueManager;
 use Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry;
 use Mcfedr\QueueManagerBundle\RunnerCommand\TestRunnerCommand;
 use Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber;
-use Mcfedr\QueueManagerBundle\Subscriber\SwiftMailerSubscriber;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
@@ -42,6 +41,7 @@ final class McfedrQueueManagerExtensionTest extends WebTestCase
         static::assertSame(5, $parameterOptions['sleep_seconds']);
 
         static::assertTrue($client->getContainer()->has(TestRunnerCommand::class));
+
         /** @var TestRunnerCommand $command */
         $command = $client->getContainer()->get(TestRunnerCommand::class);
         static::assertInstanceOf(TestRunnerCommand::class, $command);
@@ -59,7 +59,6 @@ final class McfedrQueueManagerExtensionTest extends WebTestCase
 
         // Default subscribers added
         static::assertTrue($client->getContainer()->has(DoctrineResetSubscriber::class));
-        static::assertTrue($client->getContainer()->has(SwiftMailerSubscriber::class));
 
         // Default managers added
         static::assertTrue($client->getContainer()->has('mcfedr_queue_manager.delay'));
@@ -73,7 +72,6 @@ final class McfedrQueueManagerExtensionTest extends WebTestCase
         ]);
         // Default subscribers not added
         static::assertFalse($client->getContainer()->has(DoctrineResetSubscriber::class));
-        static::assertFalse($client->getContainer()->has(SwiftMailerSubscriber::class));
         // Default managers not added
         static::assertFalse($client->getContainer()->has('mcfedr_queue_manager.delay'));
         static::assertFalse($client->getContainer()->has('mcfedr_queue_manager.periodic'));

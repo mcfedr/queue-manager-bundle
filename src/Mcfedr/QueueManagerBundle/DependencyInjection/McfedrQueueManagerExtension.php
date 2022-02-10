@@ -19,7 +19,6 @@ use Mcfedr\QueueManagerBundle\Manager\SqsQueueManager;
 use Mcfedr\QueueManagerBundle\Queue\Worker;
 use Mcfedr\QueueManagerBundle\Subscriber\DoctrineResetSubscriber;
 use Mcfedr\QueueManagerBundle\Subscriber\MemoryReportSubscriber;
-use Mcfedr\QueueManagerBundle\Subscriber\SwiftMailerSubscriber;
 use Pheanstalk\Contract\PheanstalkInterface;
 use Pheanstalk\Pheanstalk;
 use Symfony\Component\Config\FileLocator;
@@ -83,19 +82,6 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                 'kernel.event_subscriber' => [],
             ]);
             $container->setDefinition(DoctrineResetSubscriber::class, $doctrineListener);
-        }
-
-        if ($config['swift_mailer_batch_size'] >= 0 && \array_key_exists('SwiftmailerBundle', $container->getParameter('kernel.bundles'))) {
-            $swiftListener = new Definition(SwiftMailerSubscriber::class, [
-                $config['swift_mailer_batch_size'],
-                new Reference('service_container'),
-                new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE),
-            ]);
-            $swiftListener->setPublic(true);
-            $swiftListener->setTags([
-                'kernel.event_subscriber' => [],
-            ]);
-            $container->setDefinition(SwiftMailerSubscriber::class, $swiftListener);
         }
     }
 

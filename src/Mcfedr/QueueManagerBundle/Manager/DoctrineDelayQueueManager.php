@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mcfedr\QueueManagerBundle\Manager;
 
 use Carbon\Carbon;
+use Doctrine\ORM\EntityManager;
 use Doctrine\Persistence\ManagerRegistry;
 use Mcfedr\QueueManagerBundle\Entity\DoctrineDelayJob;
 use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
@@ -60,6 +61,7 @@ class DoctrineDelayQueueManager implements QueueManager
 
         $job = new DoctrineDelayJob($name, $arguments, $jobOptions, $jobManager, $jobTime);
 
+        /** @var EntityManager $em */
         $em = $this->getEntityManager();
         $em->persist($job);
         $em->flush($job);
@@ -79,6 +81,7 @@ class DoctrineDelayQueueManager implements QueueManager
             throw new WrongJobException('Doctrine delay queue manager can only delete doctrine delay jobs');
         }
 
+        /** @var EntityManager $em */
         $em = $this->getEntityManager();
         if (!$em->contains($job)) {
             if (!$job->getId()) {

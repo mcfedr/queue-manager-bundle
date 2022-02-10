@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\EntityManager;
 use Doctrine\Persistence\ManagerRegistry;
 use Mcfedr\QueueManagerBundle\Entity\DoctrineDelayJob;
 use Mcfedr\QueueManagerBundle\Manager\DoctrineDelayTrait;
@@ -44,6 +45,8 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
     protected function getJobs(): ?JobBatch
     {
         $now = new Carbon(null, new \DateTimeZone('UTC'));
+
+        /** @var EntityManager $em */
         $em = $this->getEntityManager();
 
         try {
@@ -84,15 +87,13 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
                 }, $jobs));
             }
         } catch (DriverException $e) {
-            if (1213 === $e->getErrorCode()) { //Deadlock found when trying to get lock;
+            if (1213 === $e->getCode()) { //Deadlock found when trying to get lock;
                 $em->rollback();
 
                 // Just return an empty batch so that the runner sleeps
-                if ($this->logger) {
-                    $this->logger->warning('Deadlock trying to lock table.', [
-                        'exception' => $e,
-                    ]);
-                }
+                $this->logger?->warning('Deadlock trying to lock table.', [
+                    'exception' => $e,
+                ]);
             }
         }
 
