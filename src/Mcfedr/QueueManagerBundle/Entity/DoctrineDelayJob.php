@@ -18,69 +18,51 @@ use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
 class DoctrineDelayJob implements RetryableJob
 {
     /**
-     * @var ?int
-     *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
-    private $id;
+    private ?int $id = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(type="string", length=255)
      */
-    private $name;
+    private string $name;
 
     /**
-     * @var array
-     *
      * @ORM\Column(type="json")
      */
-    private $arguments;
+    private array $arguments;
 
     /**
-     * @var array
-     *
      * @ORM\Column(type="json")
      */
-    private $options;
+    private array $options;
 
     /**
-     * @var ?string
-     *
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $manager;
+    private ?string $manager;
 
     /**
-     * @var \DateTime
-     *
      * @ORM\Column(name="time", type="datetime")
      */
-    private $time;
+    private \DateTime $time;
 
     /**
-     * @var \DateTime
-     *
      * @ORM\Column(type="datetime")
      */
-    private $createdAt;
+    private \DateTime $createdAt;
 
     /**
-     * @var bool
-     *
      * @ORM\Column(name="processing", type="boolean")
      */
-    private $processing = false;
+    private bool $processing = false;
 
     /**
-     * @var int
-     *
      * @ORM\Column(type="integer")
      */
-    private $retryCount;
+    private int $retryCount;
 
     public function __construct(string $name, array $arguments, array $options, ?string $manager, \DateTime $time, int $retryCount = 0)
     {

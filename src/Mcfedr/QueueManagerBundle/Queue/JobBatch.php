@@ -11,32 +11,26 @@ class JobBatch implements \Countable
     /**
      * @var Job[]
      */
-    private $jobs;
+    private array $jobs;
 
     /**
      * @var Job[]
      */
-    private $oks;
+    private array $oks;
 
     /**
      * @var Job[]
      */
-    private $fails;
+    private array $fails;
 
     /**
      * @var Job[]
      */
-    private $retries;
+    private array $retries;
 
-    /**
-     * @var ?Job
-     */
-    private $currentJob;
+    private ?Job $currentJob;
 
-    /**
-     * @var array
-     */
-    private $options = [];
+    private array $options = [];
 
     /**
      * @param Job[] $jobs

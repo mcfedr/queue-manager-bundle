@@ -12,7 +12,7 @@ class StartJobBatchEvent extends Event
     /**
      * @var Job[]
      */
-    private $jobs;
+    private array $jobs;
 
     /**
      * StartJobBatchEvent constructor.

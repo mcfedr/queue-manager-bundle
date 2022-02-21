@@ -11,10 +11,7 @@ use Mcfedr\QueueManagerBundle\Queue\InternalWorker;
 
 class DoctrineDelayWorker implements InternalWorker
 {
-    /**
-     * @var QueueManagerRegistry
-     */
-    private $queueManagerRegistry;
+    private QueueManagerRegistry $queueManagerRegistry;
 
     public function __construct(QueueManagerRegistry $queueManagerRegistry)
     {
@@ -26,6 +23,8 @@ class DoctrineDelayWorker implements InternalWorker
      *
      * @throws \Exception
      * @throws UnrecoverableJobException
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
      */
     public function execute(array $arguments): void
     {

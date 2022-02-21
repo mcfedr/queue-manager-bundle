@@ -8,10 +8,7 @@ use Mcfedr\QueueManagerBundle\Queue\Job;
 
 class FailedJobEvent extends JobEvent
 {
-    /**
-     * @var \Throwable
-     */
-    private $exception;
+    private \Throwable $exception;
 
     public function __construct(Job $job, \Throwable $exception, bool $internal)
     {

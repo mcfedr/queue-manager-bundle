@@ -9,10 +9,7 @@ namespace Mcfedr\QueueManagerBundle\Manager;
  */
 trait PheanstalkClientTrait
 {
-    /**
-     * @var string
-     */
-    private $defaultQueue;
+    private string $defaultQueue;
 
     private function setOptions(array $options): void
     {

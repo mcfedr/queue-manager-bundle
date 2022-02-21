@@ -12,10 +12,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class MemoryReportSubscriber implements EventSubscriberInterface
 {
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private LoggerInterface $logger;
 
     public function __construct(LoggerInterface $logger)
     {
@@ -35,7 +32,7 @@ class MemoryReportSubscriber implements EventSubscriberInterface
         $this->report();
     }
 
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             JobExecutor::JOB_FINISHED_EVENT => 'onJobFinished',

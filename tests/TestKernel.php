@@ -6,7 +6,7 @@ use Symfony\Component\Config\Loader\LoaderInterface;
 
 class TestKernel extends Symfony\Component\HttpKernel\Kernel
 {
-    public function registerBundles()
+    public function registerBundles(): array
     {
         $bundles = [
             new Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
@@ -16,7 +16,6 @@ class TestKernel extends Symfony\Component\HttpKernel\Kernel
 
         if ($this->environment !== 'test_no_doctrine') {
             $bundles[] = new Doctrine\Bundle\DoctrineBundle\DoctrineBundle();
-            $bundles[] = new \Symfony\Bundle\SwiftmailerBundle\SwiftmailerBundle();
         }
 
         return $bundles;
@@ -27,12 +26,12 @@ class TestKernel extends Symfony\Component\HttpKernel\Kernel
         $loader->load(__DIR__.'/config_'.$this->environment.'.yml');
     }
 
-    public function getCacheDir()
+    public function getCacheDir(): string
     {
         return $this->getProjectDir().'/var/cache/'.$this->environment;
     }
 
-    public function getLogDir()
+    public function getLogDir(): string
     {
         return $this->getProjectDir().'/var/log';
     }

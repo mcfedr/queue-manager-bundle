@@ -8,10 +8,7 @@ use Ramsey\Uuid\Uuid;
 
 class PeriodicJob extends AbstractJob
 {
-    /**
-     * @var array
-     */
-    private $jobTokens;
+    private array $jobTokens;
 
     public function __construct(string $name, array $arguments, array $jobTokens)
     {

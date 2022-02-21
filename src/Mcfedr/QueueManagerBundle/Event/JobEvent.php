@@ -9,15 +9,8 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 abstract class JobEvent extends Event
 {
-    /**
-     * @var Job
-     */
-    private $job;
-
-    /**
-     * @var bool
-     */
-    private $internal;
+    private Job $job;
+    private bool $internal;
 
     public function __construct(Job $job, bool $internal)
     {

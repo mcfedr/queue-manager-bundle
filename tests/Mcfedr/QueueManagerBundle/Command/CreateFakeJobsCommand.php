@@ -34,6 +34,10 @@ class CreateFakeJobsCommand extends Command
         ;
     }
 
+    /**
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
     public function execute(InputInterface $input, OutputInterface $output): int
     {
         $jobsCount = (int) $input->getOption('jobs');

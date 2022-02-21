@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Mcfedr\QueueManagerBundle\Manager;
 
 use Carbon\Carbon;
+use Doctrine\ORM\EntityManager;
 use Doctrine\Persistence\ManagerRegistry;
 use Mcfedr\QueueManagerBundle\Entity\DoctrineDelayJob;
 use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
@@ -15,10 +16,7 @@ class DoctrineDelayQueueManager implements QueueManager
 {
     use DoctrineDelayTrait;
 
-    /**
-     * @var QueueManagerRegistry
-     */
-    private $queueManagerRegistry;
+    private QueueManagerRegistry $queueManagerRegistry;
 
     public function __construct(QueueManagerRegistry $queueManagerRegistry, ManagerRegistry $doctrine, array $options)
     {
@@ -27,6 +25,11 @@ class DoctrineDelayQueueManager implements QueueManager
         $this->setOptions($options);
     }
 
+    /**
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Exception
+     */
     public function put(string $name, array $arguments = [], array $options = []): Job
     {
         if (\array_key_exists('manager_options', $options)) {
@@ -58,6 +61,7 @@ class DoctrineDelayQueueManager implements QueueManager
 
         $job = new DoctrineDelayJob($name, $arguments, $jobOptions, $jobManager, $jobTime);
 
+        /** @var EntityManager $em */
         $em = $this->getEntityManager();
         $em->persist($job);
         $em->flush($job);
@@ -65,12 +69,19 @@ class DoctrineDelayQueueManager implements QueueManager
         return $job;
     }
 
+    /**
+     * @throws NoSuchJobException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\ORMException
+     * @throws WrongJobException
+     */
     public function delete(Job $job): void
     {
         if (!$job instanceof DoctrineDelayJob) {
             throw new WrongJobException('Doctrine delay queue manager can only delete doctrine delay jobs');
         }
 
+        /** @var EntityManager $em */
         $em = $this->getEntityManager();
         if (!$em->contains($job)) {
             if (!$job->getId()) {

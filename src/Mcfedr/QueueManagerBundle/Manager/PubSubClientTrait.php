@@ -9,15 +9,12 @@ namespace Mcfedr\QueueManagerBundle\Manager;
  */
 trait PubSubClientTrait
 {
-    /**
-     * @var array
-     */
-    private $defaultQueue;
+    private array $defaultQueue;
 
     /**
      * @var array[]
      */
-    private $pubSubQueues;
+    private array $pubSubQueues;
 
     private function setOptions(array $options): void
     {

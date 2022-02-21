@@ -10,10 +10,7 @@ use Psr\Log\LoggerInterface;
 
 class TestQueueManager implements QueueManager
 {
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private LoggerInterface $logger;
 
     public function __construct(array $options, LoggerInterface $logger)
     {

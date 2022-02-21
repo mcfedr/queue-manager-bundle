@@ -10,12 +10,8 @@ use Psr\Log\LoggerInterface;
 
 class DoctrineTestWorker implements Worker
 {
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    private $count = [];
+    private LoggerInterface $logger;
+    private array $count = [];
 
     public function __construct(LoggerInterface $logger)
     {

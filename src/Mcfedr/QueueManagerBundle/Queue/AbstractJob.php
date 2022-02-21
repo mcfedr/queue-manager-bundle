@@ -6,15 +6,8 @@ namespace Mcfedr\QueueManagerBundle\Queue;
 
 abstract class AbstractJob implements Job
 {
-    /**
-     * @var string
-     */
-    private $name;
-
-    /**
-     * @var array
-     */
-    private $arguments;
+    private string $name;
+    private array $arguments;
 
     public function __construct(string $name, array $arguments)
     {

@@ -18,45 +18,22 @@ use Symfony\Component\Process\Process;
 
 abstract class RunnerCommand extends Command
 {
-    /**
-     * @var ?LoggerInterface
-     */
-    protected $logger;
+    protected ?LoggerInterface $logger;
+    private int $retryLimit = 3;
+    private int $sleepSeconds = 5;
+    private ?Process $process;
+    private JobExecutor $jobExecutor;
 
     /**
-     * @var int
-     */
-    private $retryLimit = 3;
-
-    /**
-     * @var int
-     */
-    private $sleepSeconds = 5;
-
-    /**
-     * @var ?Process
-     */
-    private $process;
-
-    /**
-     * @var JobExecutor
-     */
-    private $jobExecutor;
-
-    /**
-     * @var ?string
-     *
      * This is a chunk of memory that is reserved for use when handling out
-     * of memory errors
+     * of memory errors.
      */
-    private $reservedMemory;
+    private ?string $reservedMemory;
 
     /**
-     * @var ?JobBatch
-     *
-     * Stored for fatal exception handling, so we know what job was running
+     * Stored for fatal exception handling, so we know what job was running.
      */
-    private $jobs;
+    private ?JobBatch $jobs;
 
     public function __construct(string $name, array $options, JobExecutor $jobExecutor, ?LoggerInterface $logger = null)
     {

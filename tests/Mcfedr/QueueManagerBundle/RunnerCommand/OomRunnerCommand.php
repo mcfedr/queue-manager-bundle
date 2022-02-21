@@ -13,9 +13,9 @@ use Psr\Log\LoggerInterface;
 
 class OomRunnerCommand extends RunnerCommand
 {
-    private $options;
+    private array $options;
 
-    private $once = true;
+    private bool $once = true;
 
     public function __construct($name, array $options, JobExecutor $jobExecutor, ?LoggerInterface $logger = null)
     {

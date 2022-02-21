@@ -12,20 +12,9 @@ use Mcfedr\QueueManagerBundle\Worker\PeriodicWorker;
 
 class PeriodicQueueManager implements QueueManager
 {
-    /**
-     * @var QueueManagerRegistry
-     */
-    private $queueManagerRegistry;
-
-    /**
-     * @var string
-     */
-    private $delayManager;
-
-    /**
-     * @var array
-     */
-    private $delayManagerOptions = [];
+    private QueueManagerRegistry $queueManagerRegistry;
+    private string $delayManager;
+    private array $delayManagerOptions = [];
 
     public function __construct(QueueManagerRegistry $queueManagerRegistry, array $options)
     {

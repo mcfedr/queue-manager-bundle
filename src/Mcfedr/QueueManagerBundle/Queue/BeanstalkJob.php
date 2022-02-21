@@ -8,25 +8,10 @@ use Pheanstalk\Job;
 
 class BeanstalkJob extends AbstractRetryableJob
 {
-    /**
-     * @var ?int
-     */
-    private $id;
-
-    /**
-     * @var ?Job
-     */
-    private $job;
-
-    /**
-     * @var int
-     */
-    private $priority;
-
-    /**
-     * @var int
-     */
-    private $ttr;
+    private ?int $id;
+    private ?Job $job;
+    private int $priority;
+    private int $ttr;
 
     public function __construct(string $name, array $arguments, int $priority, int $ttr, ?int $id = null, int $retryCount = 0, ?Job $job = null)
     {

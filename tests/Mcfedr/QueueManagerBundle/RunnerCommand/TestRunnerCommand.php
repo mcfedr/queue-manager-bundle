@@ -13,7 +13,7 @@ use Psr\Log\LoggerInterface;
 
 class TestRunnerCommand extends RunnerCommand
 {
-    private $options;
+    private array $options;
 
     public function __construct($name, array $options, JobExecutor $jobExecutor, ?LoggerInterface $logger = null)
     {
@@ -26,10 +26,13 @@ class TestRunnerCommand extends RunnerCommand
         return $this->options;
     }
 
+    /**
+     * @throws \Exception
+     */
     protected function getJobs(): JobBatch
     {
         if (1 === random_int(1, 2)) {
-            return new JobBatch([new TestRetryableJob('test_worker', [], [])]);
+            return new JobBatch([new TestRetryableJob('test_worker', [])]);
         }
 
         return new JobBatch([new TestJob('test_worker', [])]);
