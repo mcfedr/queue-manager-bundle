@@ -28,7 +28,7 @@ final class McfedrQueueManagerExtensionTest extends WebTestCase
         static::assertSame(3, $options['retry_limit']);
         static::assertSame(5, $options['sleep_seconds']);
 
-        //Backwards compatibility
+        // Backwards compatibility
         static::assertTrue($client->getContainer()->has('mcfedr_queue_manager.default'));
         $service = $client->getContainer()->get('mcfedr_queue_manager.default');
         static::assertInstanceOf(TestQueueManager::class, $service);
@@ -54,7 +54,7 @@ final class McfedrQueueManagerExtensionTest extends WebTestCase
         static::assertSame(5, $commandOptions['sleep_seconds']);
 
         static::assertTrue($client->getContainer()->has(QueueManagerRegistry::class));
-        //Backwards compatibility
+        // Backwards compatibility
         static::assertTrue($client->getContainer()->has('mcfedr_queue_manager.registry'));
 
         // Default subscribers added

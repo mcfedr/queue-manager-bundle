@@ -45,6 +45,7 @@ class JobBatch implements \Countable
         $this->fails = $fails;
         $this->retries = $retries;
         $this->options = $options;
+        $this->currentJob = null;
     }
 
     public function next(): ?Job

@@ -43,7 +43,7 @@ class Configuration implements ConfigurationInterface
             ->scalarNode('host')->end()
             ->integerNode('port')->end()
             ->scalarNode('default_queue')->end()
-            //Beanstalk
+            // Beanstalk
             ->arrayNode('connection')
             ->children()
             ->integerNode('timeout')->end()
@@ -51,11 +51,11 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->end()
             ->scalarNode('pheanstalk')->end()
-            //Doctrine Delay
+            // Doctrine Delay
             ->scalarNode('entity_manager')->end()
             ->scalarNode('default_manager')->end()
             ->variableNode('default_manager_options')->end()
-            //SQS
+            // SQS
             ->arrayNode('queues')
             ->scalarPrototype()->end()
             ->end()
@@ -63,7 +63,7 @@ class Configuration implements ConfigurationInterface
             ->scalarNode('region')->end()
             ->variableNode('credentials')->end()
             ->scalarNode('sqs_client')->end()
-            //Pub/Sub
+            // Pub/Sub
             ->arrayNode('pub_sub_queues')
             ->arrayPrototype()
             ->children()

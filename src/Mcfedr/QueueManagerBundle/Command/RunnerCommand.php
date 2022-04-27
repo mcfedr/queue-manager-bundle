@@ -46,6 +46,7 @@ abstract class RunnerCommand extends Command
         }
         $this->jobExecutor = $jobExecutor;
         $this->logger = $logger;
+        $this->jobs = new JobBatch();
     }
 
     public function shutdown(): void
