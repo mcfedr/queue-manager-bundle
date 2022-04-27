@@ -87,7 +87,7 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
                 }, $jobs));
             }
         } catch (DriverException $e) {
-            if (1213 === $e->getCode()) { //Deadlock found when trying to get lock;
+            if (1213 === $e->getCode()) { // Deadlock found when trying to get lock;
                 $em->rollback();
 
                 // Just return an empty batch so that the runner sleeps
