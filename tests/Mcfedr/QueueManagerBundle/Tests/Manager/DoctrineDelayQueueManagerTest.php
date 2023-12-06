@@ -75,12 +75,12 @@ final class DoctrineDelayQueueManagerTest extends TestCase
     public function testPutWithSignificantDelay(): void
     {
         $this->entityManager
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('persist')
         ;
 
         $this->entityManager
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('flush')
         ;
 
@@ -88,21 +88,21 @@ final class DoctrineDelayQueueManagerTest extends TestCase
             'argument_a' => 'a',
         ], ['time' => new \DateTime('+1 minute')]);
 
-        static::assertSame('test_worker', $job->getName());
-        static::assertSame([
+        self::assertSame('test_worker', $job->getName());
+        self::assertSame([
             'argument_a' => 'a',
         ], $job->getArguments());
     }
 
     /**
-     * @dataProvider getNotSignificantDelayAndTimeInPastJobTimes
+     * @dataProvider providePutWithNotSignificantDelayAndTimeInPastCases
      */
     public function testPutWithNotSignificantDelayAndTimeInPast(\DateTime $jobTime): void
     {
         $job = $this->getMockBuilder(Job::class)->getMock();
 
         $this->queueManagerRegistry
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('put')
             ->with('test_worker', [
                 'argument_a' => 'a',
@@ -116,10 +116,10 @@ final class DoctrineDelayQueueManagerTest extends TestCase
             'argument_a' => 'a',
         ], ['time' => $jobTime]);
 
-        static::assertSame($job, $putJob);
+        self::assertSame($job, $putJob);
     }
 
-    public function getNotSignificantDelayAndTimeInPastJobTimes()
+    public function providePutWithNotSignificantDelayAndTimeInPastCases(): iterable
     {
         return [
             [new \DateTime('+12 seconds')],
@@ -132,7 +132,7 @@ final class DoctrineDelayQueueManagerTest extends TestCase
         $job = $this->getMockBuilder(Job::class)->getMock();
 
         $this->queueManagerRegistry
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('put')
             ->with('test_worker', [
                 'argument_a' => 'a',
@@ -146,7 +146,7 @@ final class DoctrineDelayQueueManagerTest extends TestCase
             'argument_a' => 'a',
         ]);
 
-        static::assertSame($job, $putJob);
+        self::assertSame($job, $putJob);
     }
 
     public function testDelete(): void
@@ -155,7 +155,7 @@ final class DoctrineDelayQueueManagerTest extends TestCase
         $toDelete->method('getId')->willReturn(1);
 
         $this->entityManager
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('contains')
             ->with($toDelete)
             ->willReturn(false)
@@ -164,19 +164,19 @@ final class DoctrineDelayQueueManagerTest extends TestCase
         $reference = 1;
 
         $this->entityManager
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('getReference')
             ->willReturn($reference)
         ;
 
         $this->entityManager
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('remove')
             ->with($reference)
         ;
 
         $this->entityManager
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('flush')
             ->with($reference)
         ;
@@ -189,20 +189,20 @@ final class DoctrineDelayQueueManagerTest extends TestCase
         $toDelete = new DoctrineDelayJob('test_worker', [], [], 'default', new \DateTime());
 
         $this->entityManager
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('contains')
             ->with($toDelete)
             ->willReturn(true)
         ;
 
         $this->entityManager
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('remove')
             ->with($toDelete)
         ;
 
         $this->entityManager
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('flush')
             ->with($toDelete)
         ;

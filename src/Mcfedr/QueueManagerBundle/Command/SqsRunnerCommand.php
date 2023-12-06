@@ -86,7 +86,7 @@ class SqsRunnerCommand extends RunnerCommand
             $count = 0;
             $this->sqs->deleteMessageBatch([
                 'QueueUrl' => $batch->getOption('url'),
-                'Entries' => array_map(function (SqsJob $job) use (&$count) {
+                'Entries' => array_map(static function (SqsJob $job) use (&$count) {
                     ++$count;
 
                     return [
@@ -103,7 +103,7 @@ class SqsRunnerCommand extends RunnerCommand
             $count = 0;
             $this->sqs->changeMessageVisibilityBatch([
                 'QueueUrl' => $batch->getOption('url'),
-                'Entries' => array_map(function (SqsJob $job) use (&$count) {
+                'Entries' => array_map(static function (SqsJob $job) use (&$count) {
                     ++$count;
                     $job->incrementRetryCount();
 
@@ -119,9 +119,9 @@ class SqsRunnerCommand extends RunnerCommand
 
     protected function handleInput(InputInterface $input): void
     {
-        if (($url = $input->getOption('url'))) {
+        if ($url = $input->getOption('url')) {
             $this->urls = explode(',', $url);
-        } elseif (($queue = $input->getOption('queue'))) {
+        } elseif ($queue = $input->getOption('queue')) {
             $this->urls = array_map(function ($queue) {
                 return $this->queues[$queue];
             }, explode(',', $queue));
@@ -133,15 +133,15 @@ class SqsRunnerCommand extends RunnerCommand
             $this->waitTime = 0;
         }
 
-        if (($timeout = $input->getOption('timeout'))) {
+        if ($timeout = $input->getOption('timeout')) {
             $this->visibilityTimeout = (int) $timeout;
         }
 
-        if (($batch = $input->getOption('batch-size'))) {
+        if ($batch = $input->getOption('batch-size')) {
             $this->batchSize = (int) $batch;
         }
 
-        if (($waitTime = $input->getOption('wait-time'))) {
+        if ($waitTime = $input->getOption('wait-time')) {
             $this->waitTime = (int) $waitTime;
         }
     }
@@ -195,7 +195,7 @@ class SqsRunnerCommand extends RunnerCommand
                 $count = 0;
                 $this->sqs->deleteMessageBatch([
                     'QueueUrl' => $url,
-                    'Entries' => array_map(function ($handle) use (&$count) {
+                    'Entries' => array_map(static function ($handle) use (&$count) {
                         ++$count;
 
                         return [
@@ -210,7 +210,7 @@ class SqsRunnerCommand extends RunnerCommand
                 $count = 0;
                 $this->sqs->changeMessageVisibilityBatch([
                     'QueueUrl' => $url,
-                    'Entries' => array_map(function (SqsJob $job) use (&$count) {
+                    'Entries' => array_map(static function (SqsJob $job) use (&$count) {
                         ++$count;
 
                         return [

@@ -147,7 +147,7 @@ abstract class RunnerCommand extends Command
             $this->jobs = $this->getJobs();
             if ($this->jobs) {
                 $this->jobExecutor->startBatch($this->jobs);
-                while (($job = $this->jobs->next())) {
+                while ($job = $this->jobs->next()) {
                     $result = $this->executeJob($job);
                     $this->jobs->result($result);
                 }
@@ -174,7 +174,7 @@ abstract class RunnerCommand extends Command
     {
         $process = $this->getProcess($input);
 
-        $process->run(function ($type, $data) use ($output): void {
+        $process->run(static function ($type, $data) use ($output): void {
             $output->write($data);
         });
     }

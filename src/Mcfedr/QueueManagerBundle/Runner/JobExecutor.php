@@ -147,7 +147,7 @@ class JobExecutor
                 'retryable' => !$exception instanceof UnrecoverableJobExceptionInterface,
                 'internal' => $internal,
             ];
-            if (($p = $exception->getPrevious())) {
+            if ($p = $exception->getPrevious()) {
                 $context['cause'] = $p->getMessage();
             }
             $this->logger->error('Job failed.', $context);

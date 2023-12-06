@@ -46,7 +46,7 @@ final class SqsQueueManagerTest extends TestCase
     public function testPut(): void
     {
         $this->sqsClient
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('sendMessage')
             ->with([
                 'QueueUrl' => 'http://sqs.com',
@@ -57,9 +57,9 @@ final class SqsQueueManagerTest extends TestCase
 
         $job = $this->manager->put('test_worker');
 
-        static::assertSame('test_worker', $job->getName());
-        static::assertInstanceOf(SqsJob::class, $job);
-        static::assertSame('test_id', $job->getId());
+        self::assertSame('test_worker', $job->getName());
+        self::assertInstanceOf(SqsJob::class, $job);
+        self::assertSame('test_id', $job->getId());
     }
 
     public function testDelete(): void

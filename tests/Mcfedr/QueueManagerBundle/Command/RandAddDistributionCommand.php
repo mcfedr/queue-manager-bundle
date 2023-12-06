@@ -18,7 +18,7 @@ class RandAddDistributionCommand extends PeriodDistributionCommand
     {
         $currentTime = 0;
 
-        return function () use (&$currentTime, $period) {
+        return static function () use (&$currentTime, $period) {
             $currentTime += random_int($period, $period * 2);
 
             return $currentTime;

@@ -17,63 +17,63 @@ final class McfedrQueueManagerExtensionTest extends WebTestCase
 {
     public function testExtension(): void
     {
-        $client = static::createClient();
-        static::assertTrue($client->getContainer()->has(TestQueueManager::class));
+        $client = self::createClient();
+        self::assertTrue($client->getContainer()->has(TestQueueManager::class));
         $service = $client->getContainer()->get(TestQueueManager::class);
-        static::assertInstanceOf(TestQueueManager::class, $service);
+        self::assertInstanceOf(TestQueueManager::class, $service);
         $options = $service->getOptions();
-        static::assertSame('127.0.0.2', $options['host']);
-        static::assertSame('mcfedr_queue', $options['default_queue']);
-        static::assertSame(1234, $options['port']);
-        static::assertSame(3, $options['retry_limit']);
-        static::assertSame(5, $options['sleep_seconds']);
+        self::assertSame('127.0.0.2', $options['host']);
+        self::assertSame('mcfedr_queue', $options['default_queue']);
+        self::assertSame(1234, $options['port']);
+        self::assertSame(3, $options['retry_limit']);
+        self::assertSame(5, $options['sleep_seconds']);
 
         // Backwards compatibility
-        static::assertTrue($client->getContainer()->has('mcfedr_queue_manager.default'));
+        self::assertTrue($client->getContainer()->has('mcfedr_queue_manager.default'));
         $service = $client->getContainer()->get('mcfedr_queue_manager.default');
-        static::assertInstanceOf(TestQueueManager::class, $service);
+        self::assertInstanceOf(TestQueueManager::class, $service);
 
         $parameterOptions = $client->getContainer()->getParameter('mcfedr_queue_manager.default.options');
-        static::assertSame('127.0.0.2', $parameterOptions['host']);
-        static::assertSame('mcfedr_queue', $parameterOptions['default_queue']);
-        static::assertSame(1234, $parameterOptions['port']);
-        static::assertSame(3, $parameterOptions['retry_limit']);
-        static::assertSame(5, $parameterOptions['sleep_seconds']);
+        self::assertSame('127.0.0.2', $parameterOptions['host']);
+        self::assertSame('mcfedr_queue', $parameterOptions['default_queue']);
+        self::assertSame(1234, $parameterOptions['port']);
+        self::assertSame(3, $parameterOptions['retry_limit']);
+        self::assertSame(5, $parameterOptions['sleep_seconds']);
 
-        static::assertTrue($client->getContainer()->has(TestRunnerCommand::class));
+        self::assertTrue($client->getContainer()->has(TestRunnerCommand::class));
 
         /** @var TestRunnerCommand $command */
         $command = $client->getContainer()->get(TestRunnerCommand::class);
-        static::assertInstanceOf(TestRunnerCommand::class, $command);
-        static::assertSame('mcfedr:queue:default-runner', $command->getName());
+        self::assertInstanceOf(TestRunnerCommand::class, $command);
+        self::assertSame('mcfedr:queue:default-runner', $command->getName());
         $commandOptions = $command->getOptions();
-        static::assertSame('127.0.0.2', $commandOptions['host']);
-        static::assertSame('mcfedr_queue', $commandOptions['default_queue']);
-        static::assertSame(1234, $commandOptions['port']);
-        static::assertSame(3, $commandOptions['retry_limit']);
-        static::assertSame(5, $commandOptions['sleep_seconds']);
+        self::assertSame('127.0.0.2', $commandOptions['host']);
+        self::assertSame('mcfedr_queue', $commandOptions['default_queue']);
+        self::assertSame(1234, $commandOptions['port']);
+        self::assertSame(3, $commandOptions['retry_limit']);
+        self::assertSame(5, $commandOptions['sleep_seconds']);
 
-        static::assertTrue($client->getContainer()->has(QueueManagerRegistry::class));
+        self::assertTrue($client->getContainer()->has(QueueManagerRegistry::class));
         // Backwards compatibility
-        static::assertTrue($client->getContainer()->has('mcfedr_queue_manager.registry'));
+        self::assertTrue($client->getContainer()->has('mcfedr_queue_manager.registry'));
 
         // Default subscribers added
-        static::assertTrue($client->getContainer()->has(DoctrineResetSubscriber::class));
+        self::assertTrue($client->getContainer()->has(DoctrineResetSubscriber::class));
 
         // Default managers added
-        static::assertTrue($client->getContainer()->has('mcfedr_queue_manager.delay'));
-        static::assertTrue($client->getContainer()->has('mcfedr_queue_manager.periodic'));
+        self::assertTrue($client->getContainer()->has('mcfedr_queue_manager.delay'));
+        self::assertTrue($client->getContainer()->has('mcfedr_queue_manager.periodic'));
     }
 
     public function testExtensionNoDoctrine(): void
     {
-        $client = static::createClient([
+        $client = self::createClient([
             'environment' => 'test_no_doctrine',
         ]);
         // Default subscribers not added
-        static::assertFalse($client->getContainer()->has(DoctrineResetSubscriber::class));
+        self::assertFalse($client->getContainer()->has(DoctrineResetSubscriber::class));
         // Default managers not added
-        static::assertFalse($client->getContainer()->has('mcfedr_queue_manager.delay'));
-        static::assertFalse($client->getContainer()->has('mcfedr_queue_manager.periodic'));
+        self::assertFalse($client->getContainer()->has('mcfedr_queue_manager.delay'));
+        self::assertFalse($client->getContainer()->has('mcfedr_queue_manager.periodic'));
     }
 }

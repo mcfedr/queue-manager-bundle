@@ -50,7 +50,7 @@ final class PubSubQueueManagerTest extends TestCase
             ->getMock()
         ;
 
-        $this->pubSubClient->expects(static::any())
+        $this->pubSubClient->expects(self::any())
             ->method('topic')
             ->with('projects/project/topics/test-topic')
             ->willReturn($this->pubSubClientTopic)
@@ -68,7 +68,7 @@ final class PubSubQueueManagerTest extends TestCase
         $job = new PubSubJob('test_worker', [], null, 0);
 
         $this->pubSubClientTopic
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('publish')
             ->with(['data' => $job->getMessageBody()])
             ->willReturn(['messageIds' => ['650887938849995']])
@@ -76,7 +76,7 @@ final class PubSubQueueManagerTest extends TestCase
 
         $job = $this->manager->put('test_worker');
 
-        static::assertSame('test_worker', $job->getName());
+        self::assertSame('test_worker', $job->getName());
     }
 
     public function testDelete(): void

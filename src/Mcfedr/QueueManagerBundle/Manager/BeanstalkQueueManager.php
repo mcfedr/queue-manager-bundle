@@ -49,7 +49,7 @@ class BeanstalkQueueManager implements QueueManager
 
     public function delete(Job $job): void
     {
-        if (!($job instanceof BeanstalkJob)) {
+        if (!$job instanceof BeanstalkJob) {
             throw new WrongJobException('Beanstalk manager can only delete beanstalk jobs');
         }
 

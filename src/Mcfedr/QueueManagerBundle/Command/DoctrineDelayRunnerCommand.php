@@ -82,7 +82,7 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
             $em->getConnection()->commit();
 
             if (\count($jobs)) {
-                return new JobBatch(array_map(function (DoctrineDelayJob $job) {
+                return new JobBatch(array_map(static function (DoctrineDelayJob $job) {
                     return new DoctrineDelayWorkerJob($job);
                 }, $jobs));
             }
@@ -152,7 +152,7 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
 
     protected function handleInput(InputInterface $input): void
     {
-        if (($batch = $input->getOption('batch-size'))) {
+        if ($batch = $input->getOption('batch-size')) {
             $this->batchSize = (int) $batch;
         }
         $this->reverse = $input->getOption('reverse');

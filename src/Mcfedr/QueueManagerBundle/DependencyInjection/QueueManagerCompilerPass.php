@@ -28,7 +28,7 @@ class QueueManagerCompilerPass implements CompilerPassInterface
             foreach ($tags as $attributes) {
                 if (isset($attributes['id'])) {
                     $serviceMap[$attributes['id']] = new Reference($id);
-                } elseif ($method && method_exists(($class = $container->getDefinition($id)->getClass()), $method)) {
+                } elseif ($method && method_exists($class = $container->getDefinition($id)->getClass(), $method)) {
                     $serviceMap[$class::$method()] = new Reference($id);
                 } else {
                     $serviceMap[$id] = new Reference($id);
