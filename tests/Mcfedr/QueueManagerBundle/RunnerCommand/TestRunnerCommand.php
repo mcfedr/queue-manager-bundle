@@ -38,7 +38,5 @@ class TestRunnerCommand extends RunnerCommand
         return new JobBatch([new TestJob('test_worker', [])]);
     }
 
-    protected function finishJobs(JobBatch $batch): void
-    {
-    }
+    protected function finishJobs(JobBatch $batch): void {}
 }

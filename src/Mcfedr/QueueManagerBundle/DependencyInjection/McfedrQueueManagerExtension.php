@@ -230,7 +230,7 @@ class McfedrQueueManagerExtension extends Extension implements PrependExtensionI
                 break;
 
             case 'doctrine_delay':
-                if (!isset(($container->getParameter('kernel.bundles'))['DoctrineBundle'])) {
+                if (!isset($container->getParameter('kernel.bundles')['DoctrineBundle'])) {
                     throw new \LogicException('"doctrine_delay" requires doctrine/doctrine-bundle to be installed.');
                 }
 

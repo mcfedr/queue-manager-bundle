@@ -58,7 +58,7 @@ class PubSubRunnerCommand extends RunnerCommand
             $topic = $this->pubSub->topic($batch->getOption('topic'));
 
             $topic->publishBatch(
-                array_map(function (PubSubJob $retryJob) {
+                array_map(static function (PubSubJob $retryJob) {
                     $retryJob->incrementRetryCount();
 
                     return ['data' => $retryJob->getMessageBody()];
@@ -69,7 +69,7 @@ class PubSubRunnerCommand extends RunnerCommand
         /** @var PubSubJob[] $toAcknowledge */
         $toAcknowledge = array_merge($batch->getOks(), $batch->getRetries(), $batch->getFails());
         if (\count($toAcknowledge)) {
-            $toAcknowledge = array_map(function (PubSubJob $message) {
+            $toAcknowledge = array_map(static function (PubSubJob $message) {
                 return $pubSubMessage = (new Message(['messageId' => $message->getId()], ['ackId' => $message->getAckId()]));
             }, $toAcknowledge);
 
@@ -89,7 +89,7 @@ class PubSubRunnerCommand extends RunnerCommand
             $this->pubSubQueues = ['default' => $this->defaultQueue];
         }
 
-        if (($batch = $input->getOption('batch-size'))) {
+        if ($batch = $input->getOption('batch-size')) {
             $this->batchSize = (int) $batch;
         }
     }

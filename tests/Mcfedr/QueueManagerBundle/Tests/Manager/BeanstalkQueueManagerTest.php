@@ -38,14 +38,14 @@ final class BeanstalkQueueManagerTest extends TestCase
         $job = new BeanstalkJob('test_worker', [], PheanstalkInterface::DEFAULT_PRIORITY, PheanstalkInterface::DEFAULT_TTR);
 
         $this->pheanstalk
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('useTube')
             ->with('test_queue')
             ->willReturn($this->pheanstalk)
         ;
 
         $this->pheanstalk
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('put')
             ->with($job->getData(), PheanstalkInterface::DEFAULT_PRIORITY, PheanstalkInterface::DEFAULT_DELAY, PheanstalkInterface::DEFAULT_TTR)
             ->willReturn(new \Pheanstalk\Job(0, 'data'))
@@ -53,7 +53,7 @@ final class BeanstalkQueueManagerTest extends TestCase
 
         $job = $this->manager->put('test_worker');
 
-        static::assertSame('test_worker', $job->getName());
+        self::assertSame('test_worker', $job->getName());
     }
 
     public function testDelete(): void
@@ -61,9 +61,9 @@ final class BeanstalkQueueManagerTest extends TestCase
         $job = new BeanstalkJob('test_worker', [], PheanstalkInterface::DEFAULT_PRIORITY, 0, 1);
 
         $this->pheanstalk
-            ->expects(static::once())
+            ->expects(self::once())
             ->method('delete')
-            ->with(static::callback(function ($value) {
+            ->with(self::callback(static function ($value) {
                 return $value instanceof \Pheanstalk\Job && $value->getId() === 1;
             }))
         ;

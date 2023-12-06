@@ -55,9 +55,9 @@ final class PeriodicWorkerTest extends TestCase
 
     public function testExecute(): void
     {
-        $this->executor->expects(static::once())
+        $this->executor->expects(self::once())
             ->method('executeJob')
-            ->with(static::callback(function ($job) {
+            ->with(self::callback(static function ($job) {
                 if (!$job instanceof Job) {
                     return false;
                 }
@@ -78,11 +78,11 @@ final class PeriodicWorkerTest extends TestCase
             }))
         ;
 
-        $this->registry->expects(static::once())
+        $this->registry->expects(self::once())
             ->method('put')
             ->withConsecutive([
                 PeriodicWorker::class,
-                static::callback(function ($arguments) {
+                self::callback(function ($arguments) {
                     $this->assertCount(6, $arguments);
                     $this->assertArrayHasKey('name', $arguments);
                     $this->assertSame('test_worker', $arguments['name']);
@@ -110,7 +110,7 @@ final class PeriodicWorkerTest extends TestCase
 
                     return true;
                 }),
-                static::callback(function ($options) {
+                self::callback(static function ($options) {
                     if (!\is_array($options)) {
                         return false;
                     }
@@ -148,9 +148,9 @@ final class PeriodicWorkerTest extends TestCase
     public function testExecuteThrows(): void
     {
         $this->expectException(UnrecoverableJobException::class);
-        $this->executor->expects(static::once())
+        $this->executor->expects(self::once())
             ->method('executeJob')
-            ->with(static::callback(function ($job) {
+            ->with(self::callback(static function ($job) {
                 if (!$job instanceof Job) {
                     return false;
                 }
@@ -172,7 +172,7 @@ final class PeriodicWorkerTest extends TestCase
             ->willThrowException(new UnrecoverableJobException('Fail'))
         ;
 
-        $this->registry->expects(static::never())
+        $this->registry->expects(self::never())
             ->method('put')
         ;
 
@@ -205,8 +205,8 @@ final class PeriodicWorkerTest extends TestCase
 
         $test = PeriodicWorker::nextRun($length);
 
-        static::assertGreaterThanOrEqual($start, $test);
-        static::assertLessThanOrEqual($end, $test);
+        self::assertGreaterThanOrEqual($start, $test);
+        self::assertLessThanOrEqual($end, $test);
     }
 
     /**
@@ -220,25 +220,25 @@ final class PeriodicWorkerTest extends TestCase
 
         [$startOfNextPeriod, $endOfNextPeriod] = PeriodicWorker::nextPeriod($length);
 
-        static::assertSame($time + 1, $startOfNextPeriod);
-        static::assertSame($time + $length, $endOfNextPeriod);
+        self::assertSame($time + 1, $startOfNextPeriod);
+        self::assertSame($time + $length, $endOfNextPeriod);
 
         Carbon::setTestNow(Carbon::createFromTimestamp($time + 1));
 
         [$startOfNextPeriod, $endOfNextPeriod] = PeriodicWorker::nextPeriod($length);
 
-        static::assertSame($time + $length + 1, $startOfNextPeriod);
-        static::assertSame($time + $length + $length, $endOfNextPeriod);
+        self::assertSame($time + $length + 1, $startOfNextPeriod);
+        self::assertSame($time + $length + $length, $endOfNextPeriod);
 
         Carbon::setTestNow(Carbon::createFromTimestamp($time + 15));
 
         [$startOfNextPeriod, $endOfNextPeriod] = PeriodicWorker::nextPeriod($length);
 
-        static::assertSame($time + $length + 1, $startOfNextPeriod);
-        static::assertSame($time + $length + $length, $endOfNextPeriod);
+        self::assertSame($time + $length + 1, $startOfNextPeriod);
+        self::assertSame($time + $length + $length, $endOfNextPeriod);
     }
 
-    public function length()
+    public function length(): iterable
     {
         return [
             [3600],

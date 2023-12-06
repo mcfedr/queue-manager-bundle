@@ -8,60 +8,36 @@ use Carbon\Carbon;
 use Doctrine\ORM\Mapping as ORM;
 use Mcfedr\QueueManagerBundle\Queue\RetryableJob;
 
-/**
- * @ORM\Entity
- * @ORM\Table(name="DoctrineDelayJob", indexes={
- *     @ORM\Index(columns={"time"}),
- *     @ORM\Index(columns={"processing"})
- * })
- */
+#[ORM\Entity]
+#[ORM\Table(name: 'DoctrineDelayJob')]
+#[ORM\Index(columns: ['time'])]
+#[ORM\Index(columns: ['processing'])]
 class DoctrineDelayJob implements RetryableJob
 {
-    /**
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
+    #[ORM\Column(type: 'string', length: 255)]
     private string $name;
 
-    /**
-     * @ORM\Column(type="json")
-     */
+    #[ORM\Column(type: 'json')]
     private array $arguments;
 
-    /**
-     * @ORM\Column(type="json")
-     */
+    #[ORM\Column(type: 'json')]
     private array $options;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $manager;
 
-    /**
-     * @ORM\Column(name="time", type="datetime")
-     */
+    #[ORM\Column(name: 'time', type: 'datetime')]
     private \DateTime $time;
-
-    /**
-     * @ORM\Column(type="datetime")
-     */
+    #[ORM\Column(type: 'datetime')]
     private \DateTime $createdAt;
-
-    /**
-     * @ORM\Column(name="processing", type="boolean")
-     */
+    #[ORM\Column(name: 'processing', type: 'boolean')]
     private bool $processing = false;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Column(type: 'integer')]
     private int $retryCount;
 
     public function __construct(string $name, array $arguments, array $options, ?string $manager, \DateTime $time, int $retryCount = 0)

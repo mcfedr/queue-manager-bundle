@@ -9,6 +9,4 @@ namespace Mcfedr\QueueManagerBundle\Queue;
  *
  * @internal
  */
-interface InternalWorker extends Worker
-{
-}
+interface InternalWorker extends Worker {}

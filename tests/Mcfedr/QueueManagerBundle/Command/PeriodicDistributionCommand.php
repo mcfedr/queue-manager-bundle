@@ -21,7 +21,7 @@ class PeriodicDistributionCommand extends PeriodDistributionCommand
     {
         $time = new Carbon();
 
-        return function () use (&$time, $period) {
+        return static function () use (&$time, $period) {
             Carbon::setTestNow($time);
             $time = Carbon::createFromTimestamp(PeriodicWorker::nextRun($period)->getTimestamp());
 

@@ -57,7 +57,7 @@ final class PubSubRunnerCommandTest extends TestCase
             ->getMock()
         ;
 
-        $this->pubSubClient->expects(static::once())
+        $this->pubSubClient->expects(self::once())
             ->method('subscription')
             ->with('test_sub')
             ->willReturn($this->pubSubClientSubscription)
@@ -83,34 +83,34 @@ final class PubSubRunnerCommandTest extends TestCase
         $meta = ['ackId' => '1', 'subscription' => null];
         $meta1 = ['ackId' => '2', 'subscription' => null];
 
-        $this->pubSubClientSubscription->expects(static::once())
+        $this->pubSubClientSubscription->expects(self::once())
             ->method('pull')
             ->with(['maxMessages' => 10])
-            ->willReturn([(new Message($message, $meta)), (new Message($message1, $meta1))])
+            ->willReturn([new Message($message, $meta), new Message($message1, $meta1)])
         ;
 
         $this->command->handleInput(new ArrayInput([], $this->command->getDefinition()));
         $batch = $this->command->getJobs();
-        static::assertCount(2, $batch);
+        self::assertCount(2, $batch);
         $job = $batch->next();
-        static::assertSame('job_name1', $job->getName());
-        static::assertSame(['job' => 0], $job->getArguments());
-        static::assertInstanceOf(PubSubJob::class, $job);
-        static::assertSame('1', $job->getId());
-        static::assertSame('test_sub', $batch->getOption('subscription'));
-        static::assertSame('1', $job->getAckId());
+        self::assertSame('job_name1', $job->getName());
+        self::assertSame(['job' => 0], $job->getArguments());
+        self::assertInstanceOf(PubSubJob::class, $job);
+        self::assertSame('1', $job->getId());
+        self::assertSame('test_sub', $batch->getOption('subscription'));
+        self::assertSame('1', $job->getAckId());
         $job = $batch->next();
-        static::assertSame('job_name2', $job->getName());
-        static::assertSame(['job' => 1], $job->getArguments());
-        static::assertInstanceOf(PubSubJob::class, $job);
-        static::assertSame('2', $job->getId());
-        static::assertSame('test_sub', $batch->getOption('subscription'));
-        static::assertSame('2', $job->getAckId());
+        self::assertSame('job_name2', $job->getName());
+        self::assertSame(['job' => 1], $job->getArguments());
+        self::assertInstanceOf(PubSubJob::class, $job);
+        self::assertSame('2', $job->getId());
+        self::assertSame('test_sub', $batch->getOption('subscription'));
+        self::assertSame('2', $job->getAckId());
     }
 
     public function testGetJobsEmpty(): void
     {
-        $this->pubSubClientSubscription->expects(static::once())
+        $this->pubSubClientSubscription->expects(self::once())
             ->method('pull')
             ->with(['maxMessages' => 10])
             ->willReturn([])
@@ -118,7 +118,7 @@ final class PubSubRunnerCommandTest extends TestCase
 
         $this->command->handleInput(new ArrayInput([], $this->command->getDefinition()));
         $batch = $this->command->getJobs();
-        static::assertNull($batch);
+        self::assertNull($batch);
     }
 
     public function testFinishJobs(): void
@@ -131,7 +131,7 @@ final class PubSubRunnerCommandTest extends TestCase
             0,
             2
         );
-        $this->pubSubClientSubscription->expects(static::once())
+        $this->pubSubClientSubscription->expects(self::once())
             ->method('acknowledgeBatch')
             ->with([$pubSubMessage])
         ;

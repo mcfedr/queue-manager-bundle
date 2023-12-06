@@ -19,29 +19,29 @@ final class JobBatchTest extends TestCase
         $job1 = $this->getMockBuilder(Job::class)->getMock();
         $job2 = $this->getMockBuilder(Job::class)->getMock();
         $batch = new JobBatch([$job1, $job2]);
-        static::assertCount(2, $batch);
-        static::assertCount(2, $batch->getJobs());
-        static::assertCount(0, $batch->getOks());
-        static::assertCount(0, $batch->getFails());
-        static::assertCount(0, $batch->getRetries());
+        self::assertCount(2, $batch);
+        self::assertCount(2, $batch->getJobs());
+        self::assertCount(0, $batch->getOks());
+        self::assertCount(0, $batch->getFails());
+        self::assertCount(0, $batch->getRetries());
 
         $first = $batch->next();
-        static::assertSame($job1, $first);
-        static::assertSame($job1, $batch->current());
-        static::assertCount(1, $batch);
-        static::assertCount(1, $batch->getJobs());
-        static::assertCount(0, $batch->getOks());
-        static::assertCount(0, $batch->getFails());
-        static::assertCount(0, $batch->getRetries());
+        self::assertSame($job1, $first);
+        self::assertSame($job1, $batch->current());
+        self::assertCount(1, $batch);
+        self::assertCount(1, $batch->getJobs());
+        self::assertCount(0, $batch->getOks());
+        self::assertCount(0, $batch->getFails());
+        self::assertCount(0, $batch->getRetries());
 
         $second = $batch->next();
-        static::assertSame($job2, $second);
-        static::assertSame($job2, $batch->current());
-        static::assertCount(0, $batch);
-        static::assertCount(0, $batch->getJobs());
-        static::assertCount(0, $batch->getOks());
-        static::assertCount(0, $batch->getFails());
-        static::assertCount(0, $batch->getRetries());
+        self::assertSame($job2, $second);
+        self::assertSame($job2, $batch->current());
+        self::assertCount(0, $batch);
+        self::assertCount(0, $batch->getJobs());
+        self::assertCount(0, $batch->getOks());
+        self::assertCount(0, $batch->getFails());
+        self::assertCount(0, $batch->getRetries());
     }
 
     public function testOk(): void
@@ -51,12 +51,12 @@ final class JobBatchTest extends TestCase
         $batch->next();
         $batch->result(null);
 
-        static::assertCount(0, $batch);
-        static::assertCount(0, $batch->getJobs());
-        static::assertCount(1, $batch->getOks());
-        static::assertSame([$job], $batch->getOks());
-        static::assertCount(0, $batch->getFails());
-        static::assertCount(0, $batch->getRetries());
+        self::assertCount(0, $batch);
+        self::assertCount(0, $batch->getJobs());
+        self::assertCount(1, $batch->getOks());
+        self::assertSame([$job], $batch->getOks());
+        self::assertCount(0, $batch->getFails());
+        self::assertCount(0, $batch->getRetries());
     }
 
     public function testRetry(): void
@@ -66,12 +66,12 @@ final class JobBatchTest extends TestCase
         $batch->next();
         $batch->result(new \Exception('Fail'));
 
-        static::assertCount(0, $batch);
-        static::assertCount(0, $batch->getJobs());
-        static::assertCount(0, $batch->getOks());
-        static::assertCount(0, $batch->getFails());
-        static::assertCount(1, $batch->getRetries());
-        static::assertSame([$job], $batch->getRetries());
+        self::assertCount(0, $batch);
+        self::assertCount(0, $batch->getJobs());
+        self::assertCount(0, $batch->getOks());
+        self::assertCount(0, $batch->getFails());
+        self::assertCount(1, $batch->getRetries());
+        self::assertSame([$job], $batch->getRetries());
     }
 
     public function testFail(): void
@@ -81,11 +81,11 @@ final class JobBatchTest extends TestCase
         $batch->next();
         $batch->result(new UnrecoverableJobException('Fail'));
 
-        static::assertCount(0, $batch);
-        static::assertCount(0, $batch->getJobs());
-        static::assertCount(0, $batch->getOks());
-        static::assertCount(1, $batch->getFails());
-        static::assertSame([$job], $batch->getFails());
-        static::assertCount(0, $batch->getRetries());
+        self::assertCount(0, $batch);
+        self::assertCount(0, $batch->getJobs());
+        self::assertCount(0, $batch->getOks());
+        self::assertCount(1, $batch->getFails());
+        self::assertSame([$job], $batch->getFails());
+        self::assertCount(0, $batch->getRetries());
     }
 }

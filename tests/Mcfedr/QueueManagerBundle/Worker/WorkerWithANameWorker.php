@@ -13,7 +13,5 @@ class WorkerWithANameWorker implements Worker
         return 'worker_with_a_name';
     }
 
-    public function execute(array $arguments): void
-    {
-    }
+    public function execute(array $arguments): void {}
 }

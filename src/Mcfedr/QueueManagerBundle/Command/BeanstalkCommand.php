@@ -37,7 +37,7 @@ class BeanstalkCommand extends RunnerCommand
 
     protected function handleInput(InputInterface $input): void
     {
-        if (($queues = $input->getOption('queue'))) {
+        if ($queues = $input->getOption('queue')) {
             foreach (explode(',', $queues) as $queue) {
                 $this->pheanstalk->watch($queue);
             }
