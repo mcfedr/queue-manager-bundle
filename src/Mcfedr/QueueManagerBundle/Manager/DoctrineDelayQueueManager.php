@@ -55,7 +55,7 @@ class DoctrineDelayQueueManager implements QueueManager
             $jobTime = new Carbon("+{$options['delay']} seconds", new \DateTimeZone('UTC'));
         }
 
-        if (!isset($jobTime) || $jobTime < new \DateTime('+30 seconds', new \DateTimeZone('UTC'))) {
+        if (!isset($jobTime) || $jobTime < new \DateTime('+5 seconds', new \DateTimeZone('UTC'))) {
             return $this->queueManagerRegistry->put($name, $arguments, $jobOptions, $jobManager);
         }
 

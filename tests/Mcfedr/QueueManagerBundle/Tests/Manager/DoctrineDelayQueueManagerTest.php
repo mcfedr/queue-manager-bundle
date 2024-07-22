@@ -122,7 +122,7 @@ final class DoctrineDelayQueueManagerTest extends TestCase
     public function providePutWithNotSignificantDelayAndTimeInPastCases(): iterable
     {
         return [
-            [new \DateTime('+12 seconds')],
+            [new \DateTime('+4 seconds')],
             [new \DateTime('-12 seconds')],
         ];
     }
