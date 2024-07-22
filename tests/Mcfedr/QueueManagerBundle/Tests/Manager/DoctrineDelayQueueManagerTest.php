@@ -224,4 +224,22 @@ final class DoctrineDelayQueueManagerTest extends TestCase
 
         $this->manager->delete($toDelete);
     }
+
+    public function testForceDelay(): void
+    {
+        $putJob = $this->manager->put('test_worker', [
+            'argument_a' => 'a',
+        ], ['time' => new \DateTime('+5 seconds'), 'force_delay' => true]);
+
+        self::assertInstanceOf(DoctrineDelayJob::class, $putJob);
+    }
+
+    public function testNonForceDelay(): void
+    {
+        $putJob = $this->manager->put('test_worker', [
+            'argument_a' => 'a',
+        ], ['time' => new \DateTime('+5 seconds')]);
+
+        self::assertNotInstanceOf(DoctrineDelayJob::class, $putJob);
+    }
 }

@@ -56,7 +56,9 @@ class DoctrineDelayQueueManager implements QueueManager
         }
 
         if (!isset($jobTime) || $jobTime < new \DateTime('+30 seconds', new \DateTimeZone('UTC'))) {
-            return $this->queueManagerRegistry->put($name, $arguments, $jobOptions, $jobManager);
+            if (isset($jobTime) && (!isset($options['force_delay']) || !$options['force_delay'])) {
+                return $this->queueManagerRegistry->put($name, $arguments, $jobOptions, $jobManager);
+            }
         }
 
         $job = new DoctrineDelayJob($name, $arguments, $jobOptions, $jobManager, $jobTime);
