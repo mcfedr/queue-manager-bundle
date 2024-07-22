@@ -122,7 +122,7 @@ final class DoctrineDelayQueueManagerTest extends TestCase
     public function providePutWithNotSignificantDelayAndTimeInPastCases(): iterable
     {
         return [
-            [new \DateTime('+4 seconds')],
+            [new \DateTime('+12 seconds')],
             [new \DateTime('-12 seconds')],
         ];
     }
@@ -223,5 +223,23 @@ final class DoctrineDelayQueueManagerTest extends TestCase
         $toDelete = new DoctrineDelayJob('test_worker', [], [], 'default', new \DateTime());
 
         $this->manager->delete($toDelete);
+    }
+
+    public function testForceDelay(): void
+    {
+        $putJob = $this->manager->put('test_worker', [
+            'argument_a' => 'a',
+        ], ['time' => new \DateTime('+5 seconds'), 'force_delay' => true]);
+
+        self::assertInstanceOf(DoctrineDelayJob::class, $putJob);
+    }
+
+    public function testNonForceDelay(): void
+    {
+        $putJob = $this->manager->put('test_worker', [
+            'argument_a' => 'a',
+        ], ['time' => new \DateTime('+5 seconds')]);
+
+        self::assertNotInstanceOf(DoctrineDelayJob::class, $putJob);
     }
 }
