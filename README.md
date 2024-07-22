@@ -254,7 +254,7 @@ This will create a `QueueManager` service named `"mcfedr_queue_manager.delay"`.
 
 * `time` - A `\DateTime` object of when to schedule this job.
 * `delay` - Number of seconds from now to schedule this job.
-* `force_delay` - A boolean that forces the job to be delayed by the specified number of seconds regardless of the time parameter.
+* `force_delay` - A boolean that forces the job to be delayed by the specified number of seconds.
 * `manager` - Use a different job processor for this job.
 * `manager_options` - Options to pass to the processors `put` method.
 
