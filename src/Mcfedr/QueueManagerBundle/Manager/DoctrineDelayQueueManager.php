@@ -55,10 +55,11 @@ class DoctrineDelayQueueManager implements QueueManager
             $jobTime = new Carbon("+{$options['delay']} seconds", new \DateTimeZone('UTC'));
         }
 
-        if (!isset($jobTime) || $jobTime < new \DateTime('+30 seconds', new \DateTimeZone('UTC'))) {
-            if (isset($jobTime) && (!isset($options['force_delay']) || !$options['force_delay'])) {
-                return $this->queueManagerRegistry->put($name, $arguments, $jobOptions, $jobManager);
-            }
+        $executeImmediately = !isset($jobTime) || $jobTime < new \DateTime('+30 seconds', new \DateTimeZone('UTC'));
+        $executeImmediately = $executeImmediately && (!isset($jobTime) || !isset($options['force_delay']) || !$options['force_delay']);
+
+        if ($executeImmediately) {
+            return $this->queueManagerRegistry->put($name, $arguments, $jobOptions, $jobManager);
         }
 
         $job = new DoctrineDelayJob($name, $arguments, $jobOptions, $jobManager, $jobTime);
