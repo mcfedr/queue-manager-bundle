@@ -242,4 +242,13 @@ final class DoctrineDelayQueueManagerTest extends TestCase
 
         self::assertNotInstanceOf(DoctrineDelayJob::class, $putJob);
     }
+
+    public function testNonForceDelayWithNoTimeSet(): void
+    {
+        $putJob = $this->manager->put('test_worker', [
+            'argument_a' => 'a',
+        ]);
+
+        self::assertNotInstanceOf(DoctrineDelayJob::class, $putJob);
+    }
 }
