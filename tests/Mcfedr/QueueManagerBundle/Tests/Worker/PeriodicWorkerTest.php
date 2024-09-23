@@ -238,7 +238,7 @@ final class PeriodicWorkerTest extends TestCase
         self::assertSame($time + $length + $length, $endOfNextPeriod);
     }
 
-    public function length(): iterable
+    public static function length(): iterable
     {
         return [
             [3600],

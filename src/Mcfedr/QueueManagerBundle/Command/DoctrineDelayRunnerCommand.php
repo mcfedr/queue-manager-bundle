@@ -9,6 +9,8 @@ use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Mcfedr\QueueManagerBundle\Entity\DoctrineDelayJob;
 use Mcfedr\QueueManagerBundle\Manager\DoctrineDelayTrait;
@@ -101,8 +103,8 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
     }
 
     /**
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\ORMException
+     * @throws OptimisticLockException
+     * @throws ORMException
      */
     protected function finishJobs(JobBatch $batch): void
     {
@@ -119,7 +121,7 @@ class DoctrineDelayRunnerCommand extends RunnerCommand
                     $oldJob->getArguments(),
                     $oldJob->getOptions(),
                     $oldJob->getManager(),
-                    new Carbon(sprintf('+%d seconds', $this->getRetryDelaySeconds($retryCount))),
+                    new Carbon(\sprintf('+%d seconds', $this->getRetryDelaySeconds($retryCount))),
                     $retryCount
                 );
                 $em->persist($newJob);

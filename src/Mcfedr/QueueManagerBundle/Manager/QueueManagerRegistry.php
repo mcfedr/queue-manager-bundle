@@ -6,7 +6,9 @@ namespace Mcfedr\QueueManagerBundle\Manager;
 
 use Mcfedr\QueueManagerBundle\Exception\WrongJobException;
 use Mcfedr\QueueManagerBundle\Queue\Job;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class QueueManagerRegistry
 {
@@ -27,8 +29,8 @@ class QueueManagerRegistry
     }
 
     /**
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function put(string $name, array $arguments = [], array $options = [], ?string $manager = null): Job
     {
@@ -36,8 +38,8 @@ class QueueManagerRegistry
     }
 
     /**
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws ContainerExceptionInterface
      * @throws WrongJobException
      */
     public function delete(Job $job, ?string $manager = null): void

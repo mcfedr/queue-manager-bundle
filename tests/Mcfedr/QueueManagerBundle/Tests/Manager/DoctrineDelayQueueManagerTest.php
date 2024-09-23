@@ -119,7 +119,7 @@ final class DoctrineDelayQueueManagerTest extends TestCase
         self::assertSame($job, $putJob);
     }
 
-    public function providePutWithNotSignificantDelayAndTimeInPastCases(): iterable
+    public static function providePutWithNotSignificantDelayAndTimeInPastCases(): iterable
     {
         return [
             [new \DateTime('+12 seconds')],

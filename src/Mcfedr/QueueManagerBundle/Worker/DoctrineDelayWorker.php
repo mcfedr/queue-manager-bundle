@@ -8,6 +8,8 @@ use Mcfedr\QueueManagerBundle\Entity\DoctrineDelayJob;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
 use Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry;
 use Mcfedr\QueueManagerBundle\Queue\InternalWorker;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class DoctrineDelayWorker implements InternalWorker
 {
@@ -23,8 +25,8 @@ class DoctrineDelayWorker implements InternalWorker
      *
      * @throws \Exception
      * @throws UnrecoverableJobException
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function execute(array $arguments): void
     {
