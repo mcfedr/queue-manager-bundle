@@ -283,7 +283,7 @@ final class RunnerCommandTest extends TestCase
         return $job;
     }
 
-    private function getMockWorker(\Exception $exce = null, int $count = 1): MockObject
+    private function getMockWorker(?\Exception $exce = null, int $count = 1): MockObject
     {
         $worker = $this->getMockBuilder(Worker::class)
             ->getMock()
@@ -316,7 +316,7 @@ final class RunnerCommandTest extends TestCase
         return $command;
     }
 
-    private function getJobExecutor($worker, EventDispatcher $eventDispatcher = null): JobExecutor
+    private function getJobExecutor($worker, ?EventDispatcher $eventDispatcher = null): JobExecutor
     {
         return new JobExecutor(new ServiceLocator([
             'worker' => static function () use ($worker) { return $worker; },

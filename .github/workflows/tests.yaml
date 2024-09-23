@@ -30,6 +30,7 @@ jobs:
           composer config extra.symfony.require ${{ matrix.version.symfony }}
           composer update
       - run: vendor/bin/php-cs-fixer fix --dry-run --diff
+      - run: chmod +x tests/console
       - run: tests/console cache:clear
       - run: vendor/bin/phpstan analyse -c phpstan.neon
       - run: vendor/bin/phpunit

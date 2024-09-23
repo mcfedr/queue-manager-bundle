@@ -2,20 +2,25 @@
 
 declare(strict_types=1);
 
+use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
+use Mcfedr\QueueManagerBundle\McfedrQueueManagerBundle;
+use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
+use Symfony\Bundle\MonologBundle\MonologBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\HttpKernel\Kernel;
 
-class TestKernel extends Symfony\Component\HttpKernel\Kernel
+class TestKernel extends Kernel
 {
     public function registerBundles(): array
     {
         $bundles = [
-            new Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
-            new Symfony\Bundle\MonologBundle\MonologBundle(),
-            new Mcfedr\QueueManagerBundle\McfedrQueueManagerBundle(),
+            new FrameworkBundle(),
+            new MonologBundle(),
+            new McfedrQueueManagerBundle(),
         ];
 
         if ($this->environment !== 'test_no_doctrine') {
-            $bundles[] = new Doctrine\Bundle\DoctrineBundle\DoctrineBundle();
+            $bundles[] = new DoctrineBundle();
         }
 
         return $bundles;

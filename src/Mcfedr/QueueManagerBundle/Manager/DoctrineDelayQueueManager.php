@@ -6,6 +6,8 @@ namespace Mcfedr\QueueManagerBundle\Manager;
 
 use Carbon\Carbon;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Mcfedr\QueueManagerBundle\Entity\DoctrineDelayJob;
 use Mcfedr\QueueManagerBundle\Exception\NoSuchJobException;
@@ -26,8 +28,8 @@ class DoctrineDelayQueueManager implements QueueManager
     }
 
     /**
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\ORMException
+     * @throws OptimisticLockException
+     * @throws ORMException
      * @throws \Exception
      */
     public function put(string $name, array $arguments = [], array $options = []): Job
@@ -58,7 +60,7 @@ class DoctrineDelayQueueManager implements QueueManager
         $executeImmediately = !isset($jobTime) || $jobTime < new \DateTime('+30 seconds', new \DateTimeZone('UTC'));
         $executeImmediately = $executeImmediately && (!isset($jobTime) || !isset($options['force_delay']) || !$options['force_delay']);
 
-        if ($executeImmediately) {
+        if ($executeImmediately || !isset($jobTime)) {
             return $this->queueManagerRegistry->put($name, $arguments, $jobOptions, $jobManager);
         }
 
@@ -74,8 +76,8 @@ class DoctrineDelayQueueManager implements QueueManager
 
     /**
      * @throws NoSuchJobException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\ORMException
+     * @throws OptimisticLockException
+     * @throws ORMException
      * @throws WrongJobException
      */
     public function delete(Job $job): void

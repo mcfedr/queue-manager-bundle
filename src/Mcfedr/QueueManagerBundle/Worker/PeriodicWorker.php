@@ -6,10 +6,13 @@ namespace Mcfedr\QueueManagerBundle\Worker;
 
 use Carbon\Carbon;
 use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobException;
+use Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobExceptionInterface;
 use Mcfedr\QueueManagerBundle\Manager\QueueManagerRegistry;
 use Mcfedr\QueueManagerBundle\Queue\InternalWorker;
 use Mcfedr\QueueManagerBundle\Queue\PeriodicJob;
 use Mcfedr\QueueManagerBundle\Runner\JobExecutor;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class PeriodicWorker implements InternalWorker
 {
@@ -23,11 +26,11 @@ class PeriodicWorker implements InternalWorker
     }
 
     /**
-     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws NotFoundExceptionInterface
      * @throws \Throwable
      * @throws UnrecoverableJobException
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Mcfedr\QueueManagerBundle\Exception\UnrecoverableJobExceptionInterface
+     * @throws ContainerExceptionInterface
+     * @throws UnrecoverableJobExceptionInterface
      */
     public function execute(array $arguments): void
     {
