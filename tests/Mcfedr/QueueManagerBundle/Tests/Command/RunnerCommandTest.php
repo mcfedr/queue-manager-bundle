@@ -326,7 +326,7 @@ final class RunnerCommandTest extends TestCase
     private function executeCommand(Command $command): void
     {
         $application = new Application();
-        $application->add($command);
+        $application->addCommand($command);
 
         $command = $application->find('mcfedr:queue:default-runner');
         $commandTester = new CommandTester($command);
